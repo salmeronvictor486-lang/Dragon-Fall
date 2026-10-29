@@ -591,7 +591,7 @@ function render(dt) {
 }
 
 /* =================== INTERFAZ =================== */
-const SCREENS = ['shrine', 'title', 'select', 'stages', 'shop', 'dex', 'opts', 'account', 'gacha', 'reveal', 'levelup', 'pause', 'over', 'shenron', 'capsule', 'missions', 'rank'];
+const SCREENS = ['cards', 'shrine', 'title', 'select', 'stages', 'shop', 'dex', 'opts', 'account', 'gacha', 'reveal', 'levelup', 'pause', 'over', 'shenron', 'capsule', 'missions', 'rank'];
 function showScreen(id) {
   SCREENS.forEach(s => $('#' + s).classList.toggle('on', s === id));
   $('#pausebtn').style.display = id ? 'none' : 'block';
@@ -610,6 +610,7 @@ function go(id) {
   if (id === 'gacha') renderShop2();
   if (id === 'missions') renderMissions();
   if (id === 'rank') renderRank();
+  if (id === 'cards') renderCards();
 }
 document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => {
   const to = b.dataset.back;
@@ -635,6 +636,7 @@ $('#bPlay').onclick = () => { audioInit(); go('select'); };
 $('#bDex').onclick = () => go('dex');
 $('#bMis').onclick = () => { audioInit(); go('missions'); };
 $('#bRank').onclick = () => { audioInit(); go('rank'); };
+$('#bCards').onclick = () => { audioInit(); go('cards'); };
 $('#bGacha').onclick = () => { audioInit(); go('gacha'); };
 $('#bShop').onclick = () => go('shop');
 $('#bOpts').onclick = () => { optsReturn = 'title'; go('opts'); };
@@ -1072,7 +1074,7 @@ function onKey(e) {
 
 /* ---------- Arranque ---------- */
 (function boot() {
-  [['bPlay', 'dball', '#ff9a1c'], ['bGacha', 'cap', '#fff'], ['bMis', 'win', '#ffd23f'], ['bRank', 'lvl', '#ff8a1c'], ['bDex', 'book', '#3aa0ff'], ['bShop', 'temple', '#e8d8b0'], ['bOpts', 'gear', '#b8c0dc'], ['bAcct', 'user', '#59d66b']].forEach(([id, ic, col]) => { const b = $('#' + id + ' .mi'); if (b) b.appendChild(iconCanvas(ic, col, 24)); });
+  [['bPlay', 'dball', '#ff9a1c'], ['bGacha', 'cap', '#fff'], ['bMis', 'win', '#ffd23f'], ['bCards', 'gem', '#ff8ac8'], ['bRank', 'lvl', '#ff8a1c'], ['bDex', 'book', '#3aa0ff'], ['bShop', 'temple', '#e8d8b0'], ['bOpts', 'gear', '#b8c0dc'], ['bAcct', 'user', '#59d66b']].forEach(([id, ic, col]) => { const b = $('#' + id + ' .mi'); if (b) b.appendChild(iconCanvas(ic, col, 24)); });
   const lb = $('#logoBall'), x = lb.getContext('2d'); x.imageSmoothingEnabled = false; drawDragonBall(x, 10, 10, 8.5, 4);
   renderTitle();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { });

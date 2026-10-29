@@ -44,6 +44,11 @@ El juego publicado es un solo archivo, **`index.html`**, con el código **proteg
 - **Idiomas:** castellano, català e English (se elige en Opciones; la primera vez usa el idioma del navegador).
 - **Instalable (PWA):** se puede añadir a la pantalla de inicio y funciona sin conexión.
 - **21 técnicas, cada una con su evolución, y 11 pasivas.** Entre ellas el Hakai de Beerus, la Espada de Ki y el Impacto de Poder de Jiren.
+- **Cartas coleccionables (78):** cada guerrero que consigues tiene su carta, y cada transformación que alcanzas en partida, otra (por ejemplo, Broly y Broly SSJ Legendario).
+  - Cuatro acabados: Normal, Holo, Oro y Arcoíris, con brillo animado e inclinación 3D al mover el ratón o el dedo.
+  - Cada carta lleva tu nombre y un número de serie propio, y se puede **descargar como PNG**.
+  - **Tienda de sobres** con zenis, que da versiones brillantes de tus cartas.
+  - **Simulador** gratis e ilimitado con todas las cartas. Se guardan en otra carpeta y llevan la marca «SIMULADOR · NO OFICIAL».
 - **Templo de Kami:** mejoras permanentes que se compran con zenis.
 - **Dragonpedia:** todos los guerreros, enemigos y jefes con nombre, dibujo y descripción, aunque no los tengas. Indica cuáles has conseguido y cómo conseguir los que te faltan.
 - **Guardar la partida, de dos formas:**
