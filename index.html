@@ -324,6 +324,68 @@ html.fr .boxc{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--bc) 35%,transp
 .card.locked .nm{color:#9aa3c9}
 @media (max-width:560px){.gifts{grid-template-columns:repeat(4,minmax(0,1fr))}.reel{height:130px}.rc{width:98px}}
 [hidden]{display:none!important}
+/* ---------- Botones con volumen ---------- */
+html.fr .btn{position:relative;overflow:hidden;text-shadow:0 2px 0 rgba(0,0,0,.4);letter-spacing:.03em;transition:transform .08s,filter .12s}
+html.fr .btn.primary,html.fr .btn.gold,html.fr .btn.on,html.fr .toggle.on{text-shadow:0 1px 0 rgba(255,255,255,.4)}
+html.fr .btn::after{content:"";position:absolute;top:-30%;bottom:-30%;left:-70%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.38),transparent);transform:skewX(-20deg);pointer-events:none;opacity:0}
+html.fr .btn:not([disabled]):hover::after,html.fr .btn:focus-visible::after{animation:shine .75s ease}
+@keyframes shine{0%{left:-70%;opacity:1}100%{left:130%;opacity:0}}
+html.fr .btn:not([disabled]):hover{transform:translateY(-2px);filter:drop-shadow(3px 5px 0 rgba(0,0,0,.45)) brightness(1.12)}
+html.fr .btn:not([disabled]):active{transform:translateY(2px);filter:drop-shadow(1px 1px 0 rgba(0,0,0,.4));border-image-source:var(--fr-btnDn)}
+html.fr .btn.primary:not([disabled]):active,html.fr .btn.on:not([disabled]):active{border-image-source:var(--fr-btnpDn)}
+html.fr .btn.gold:not([disabled]):active{border-image-source:var(--fr-btngDn)}
+html.fr .btn:focus-visible{outline:3px dashed rgba(255,255,255,.7);outline-offset:3px}
+html.fr .btn[disabled]{filter:grayscale(.7) brightness(.7);opacity:1;cursor:not-allowed}
+@media (prefers-reduced-motion:reduce){html.fr .btn::after{display:none}html.fr .btn:hover{transform:none}}
+/* ---------- Menú principal ---------- */
+html.fr .menu{gap:12px;width:min(520px,94vw)}
+html.fr .menu .mbtn{justify-content:flex-start;text-align:left;gap:12px;padding:6px 10px}
+.mbtn .mi{width:38px;height:38px;flex:none;display:grid;place-items:center;border:6px solid transparent;border-image:var(--fr-slot) 4 fill / 6px stretch;image-rendering:pixelated}
+html.fr .menu .mbtn .mi canvas{width:24px;height:24px}
+.mbtn .ml{display:flex;flex-direction:column;gap:5px;min-width:0}
+.mbtn .ml b{font-weight:400;font-size:12px;line-height:1.2}
+.mbtn .ml small{font-family:'VT323',monospace;font-size:17px;letter-spacing:0;line-height:1;opacity:.85;text-shadow:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.fr .menu .btn.primary.mbtn{justify-content:center;padding:10px 14px;animation:pulse 2.4s ease-in-out infinite}
+html.fr .menu .btn.primary.mbtn .ml b{font-size:20px}
+html.fr .menu .btn.primary.mbtn .mi{width:48px;height:48px}
+html.fr .menu .btn.primary.mbtn .mi canvas{width:32px;height:32px}
+@keyframes pulse{50%{filter:drop-shadow(0 0 14px rgba(255,170,60,.75)) drop-shadow(3px 4px 0 rgba(0,0,0,.4))}}
+.mbadge{display:inline-grid;place-items:center;width:18px;height:18px;margin-left:6px;vertical-align:middle;font-size:10px;background:var(--red);color:#fff;border-radius:50%;box-shadow:0 0 0 2px var(--line),0 0 10px rgba(232,67,58,.8);text-shadow:none;animation:bounce 1s ease-in-out infinite}
+.mbadge[hidden]{display:none!important}
+@keyframes bounce{50%{transform:translateY(-3px)}}
+@media (max-height:800px) and (min-width:481px){.tagline{display:none}#title{padding-top:max(3vh,12px)}}
+@media (max-width:480px){html.fr .menu{grid-template-columns:1fr;gap:9px}}
+@media (max-width:420px){.mbtn .ml b{font-size:10px}.mbtn .ml small{font-size:15px}.mbtn .mi{width:32px;height:32px}html.fr .menu .mbtn .mi canvas{width:18px;height:18px}html.fr .menu .btn.primary.mbtn .ml b{font-size:16px}}
+.title-stats{gap:10px;font-size:18px}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:4px 10px 4px 6px;border:6px solid transparent;border-image:var(--fr-slot) 4 fill / 6px stretch;image-rendering:pixelated;color:#dfe4ff}
+.chip canvas{width:18px;height:18px;image-rendering:pixelated}
+.chip b{font-weight:400;color:var(--gold)}
+html.fr .acct-badge{border:7px solid transparent;border-image:var(--fr-slot) 4 fill / 7px stretch;box-shadow:none;background:transparent;image-rendering:pixelated}
+html.fr .acct-badge:hover{filter:brightness(1.2)}
+/* ---------- Cuenta ---------- */
+.seg{display:flex;padding:5px;gap:4px;border:7px solid transparent;border-image:var(--fr-slot) 4 fill / 7px stretch;image-rendering:pixelated}
+.seg button{flex:1;font-family:'Press Start 2P';font-size:11px;color:#aab4e0;background:transparent;border:0;padding:11px 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:color .12s}
+.seg button:hover{color:#fff}
+.seg button.on{color:#2a1300;border:7px solid transparent;border-image:var(--fr-btnp) 4 fill / 7px stretch;padding:4px 6px}
+.seg button:focus-visible{outline:3px dashed rgba(255,255,255,.7);outline-offset:2px}
+.seg.small button{font-size:10px}
+.field{font-size:19px}
+.inp{position:relative;display:flex;align-items:center}
+.inp .ico{position:absolute;left:12px;color:#7a86c0;display:flex;pointer-events:none}
+.field .inp input{padding-left:38px;padding-right:44px}
+.field .inp input:focus + .eye,.field .inp:focus-within .ico{color:var(--orange2)}
+.eye{position:absolute;right:6px;background:transparent;border:0;color:#9aa3c9;cursor:pointer;padding:8px;display:flex}
+.eye:hover{color:#fff}
+.orsep{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:19px}
+.orsep::before,.orsep::after{content:"";flex:1;height:2px;background:#2b3670}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;background:#ffffff;color:#1f1f1f;border:1px solid #dadce0;border-radius:4px;padding:11px 16px;font:500 16px/1 Roboto,'Segoe UI',Arial,sans-serif;cursor:pointer;box-shadow:0 0 0 3px var(--line),4px 5px 0 3px rgba(0,0,0,.4);transition:transform .08s,background .12s}
+.gbtn:hover{background:#f2f2f2;transform:translateY(-1px)}
+.gbtn:active{transform:translateY(2px);box-shadow:0 0 0 3px var(--line),1px 1px 0 3px rgba(0,0,0,.4)}
+.gbtn:focus-visible{outline:3px dashed rgba(255,255,255,.8);outline-offset:4px}
+.gbtn svg{flex:none}
+.prof{display:flex;gap:14px;align-items:center}
+.prof canvas{width:72px;height:76px;image-rendering:pixelated;flex:none;border:7px solid transparent;border-image:var(--fr-rL) 4 fill / 7px stretch}
+#account .panel{gap:12px}
 </style>
 </head>
 <body>
@@ -337,12 +399,12 @@ html.fr .boxc{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--bc) 35%,transp
   </div>
   <p class="tagline">Sobrevive a las sagas, reúne las 7 Bolas de Dragón y despierta tu verdadero poder.</p>
   <div class="menu">
-    <button class="btn primary" id="bPlay">JUGAR</button>
-    <button class="btn gold" id="bGacha">TIENDA</button>
-    <button class="btn" id="bDex">DRAGONPEDIA</button>
-    <button class="btn" id="bShop">TEMPLO DE KAMI</button>
-    <button class="btn" id="bOpts">OPCIONES</button>
-    <button class="btn" id="bAcct">CUENTA</button>
+    <button class="btn primary mbtn" id="bPlay"><span class="mi"></span><span class="ml"><b>JUGAR</b><small>Elige guerrero y saga</small></span></button>
+    <button class="btn gold mbtn" id="bGacha"><span class="mi"></span><span class="ml"><b>TIENDA <span class="mbadge" id="giftBadge" hidden title="Regalo diario disponible">!</span></b><small id="subShop">Ofertas y cajas</small></span></button>
+    <button class="btn mbtn" id="bDex"><span class="mi"></span><span class="ml"><b>DRAGONPEDIA</b><small id="subDex">Todos los guerreros</small></span></button>
+    <button class="btn mbtn" id="bShop"><span class="mi"></span><span class="ml"><b>TEMPLO DE KAMI</b><small>Mejoras permanentes</small></span></button>
+    <button class="btn mbtn" id="bOpts"><span class="mi"></span><span class="ml"><b>OPCIONES</b><small>Sonido y controles</small></span></button>
+    <button class="btn mbtn" id="bAcct"><span class="mi"></span><span class="ml"><b>CUENTA</b><small id="subAcct">Guarda tu partida</small></span></button>
   </div>
   <button class="acct-badge" id="acctBadge"></button>
   <div class="title-stats" id="titleStats"></div>
@@ -1136,9 +1198,15 @@ function makeFrame(o) {
   r(2, 1, 12, 1, o.lt); r(1, 2, 1, 12, o.lt);
   r(2, 14, 12, 1, o.dk); r(14, 2, 1, 12, o.dk);
   r(3, 2, 10, 12, inn); r(2, 3, 12, 10, inn);
-  r(3, 3, 10, 10, o.fill); r(3, 3, 10, 1, o.fillLt); r(3, 12, 10, 1, shade(o.fill, -.15));
+  if (o.grad) {   // botón con volumen: luz arriba, sombra abajo (o al revés si está pulsado)
+    const top = o.down ? shade(o.fill, -.22) : shade(o.fillLt, .12), bot = o.down ? o.fillLt : shade(o.fill, -.28);
+    for (let y = 3; y < 13; y++) { const t = (y - 3) / 9; r(3, y, 10, 1, mixHex(top, bot, t < .45 ? t * .6 : .27 + (t - .45) * 1.3)); }
+    r(3, o.down ? 12 : 3, 10, 1, o.down ? shade(o.fill, .2) : shade(o.fillLt, .4));
+    r(4, o.down ? 3 : 12, 8, 1, shade(o.fill, -.35));
+  } else { r(3, 3, 10, 10, o.fill); r(3, 3, 10, 1, o.fillLt); r(3, 12, 10, 1, shade(o.fill, -.15)); }
   return c;
 }
+for (const k of Object.keys(FRAME_DEF)) if (k.startsWith('btn')) { FRAME_DEF[k].grad = true; FRAME_DEF[k + 'Dn'] = Object.assign({}, FRAME_DEF[k], { down: true }); }
 for (const k in FRAME_DEF) { FRAMES[k] = makeFrame(FRAME_DEF[k]); document.documentElement.style.setProperty('--fr-' + k, `url(${FRAMES[k].toDataURL()})`); }
 document.documentElement.classList.add('fr');
 /* Dibuja un marco de 9 piezas en un canvas (s = escala de píxel) */
@@ -2798,7 +2866,13 @@ document.addEventListener('pointerdown', () => audioInit(), { once: false, captu
 
 function renderTitle() {
   const n = CHARS.filter(isUnlocked).length;
-  $('#titleStats').innerHTML = `<span class="zeni"><i></i>${fmtNum(save.zeni)}</span><span>Guerreros ${n}/${CHARS.length}</span><span>Sagas ${Object.keys(save.cleared).length}/${STAGES.length}</span><span>Bajas ${fmtNum(save.kills)}</span>`;
+  const sagas = Object.keys(save.cleared).filter(k => STAGES.some(s => s.id === k)).length, ts = $('#titleStats'); ts.innerHTML = '';
+  [['zeni', '#ffd23f', fmtNum(save.zeni), 'zenis'], ['user', '#59d66b', `${n}/${CHARS.length}`, 'guerreros'], ['book', '#3aa0ff', `${sagas}/${STAGES.length}`, 'sagas'], ['skull', '#fff', fmtNum(save.kills), 'bajas']].forEach(([ic, col, v, l]) => {
+    const ch = document.createElement('span'); ch.className = 'chip'; ch.appendChild(iconCanvas(ic, col, 18)); ch.insertAdjacentHTML('beforeend', `<span><b>${v}</b> ${l}</span>`); ts.appendChild(ch);
+  });
+  $('#subDex').textContent = `${n}/${CHARS.length} guerreros conseguidos`;
+  if (typeof giftState === 'function') { const g = giftState().can; $('#giftBadge').hidden = !g; $('#subShop').textContent = g ? 'Tu regalo diario te espera' : 'Ofertas de hoy y cajas'; }
+  $('#subAcct').textContent = typeof Account !== 'undefined' && Account.user ? Account.user.name : 'Guarda tu partida';
   menu.stage = 'saiyan';
   if (typeof renderAccountBadge === 'function') renderAccountBadge();
 }
@@ -3195,7 +3269,7 @@ function onKey(e) {
 
 /* ---------- Arranque ---------- */
 (function boot() {
-  [['bPlay', 'dball', '#ff9a1c'], ['bGacha', 'cap', '#fff'], ['bDex', 'book', '#3aa0ff'], ['bShop', 'temple', '#e8d8b0'], ['bOpts', 'gear', '#b8c0dc'], ['bAcct', 'user', '#59d66b']].forEach(([id, ic, col]) => { const b = $('#' + id); if (b) b.prepend(iconCanvas(ic, col, 24)); });
+  [['bPlay', 'dball', '#ff9a1c'], ['bGacha', 'cap', '#fff'], ['bDex', 'book', '#3aa0ff'], ['bShop', 'temple', '#e8d8b0'], ['bOpts', 'gear', '#b8c0dc'], ['bAcct', 'user', '#59d66b']].forEach(([id, ic, col]) => { const b = $('#' + id + ' .mi'); if (b) b.appendChild(iconCanvas(ic, col, 24)); });
   const lb = $('#logoBall'), x = lb.getContext('2d'); x.imageSmoothingEnabled = false; drawDragonBall(x, 10, 10, 8.5, 4);
   renderTitle();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { });
@@ -3291,7 +3365,7 @@ function claimGift() {
   const g = giftState(); if (!g.can) return;
   const rw = DAILY_GIFTS[g.day - 1];
   if (rw.z) save.zeni += rw.z; if (rw.t) save.tickets[rw.t] = (save.tickets[rw.t] || 0) + 1;
-  save.streak = { last: dayKey(), n: g.day }; persist(); sfx('ball');
+  save.streak = { last: dayKey(), n: g.day }; persist(); sfx('ball'); renderTitle();
   toastShop(`Regalo del día ${g.day}: ${giftLabel(rw)}`);
   renderShop2();
 }
@@ -3429,6 +3503,7 @@ function showResult(c, res, box, pay) {
   $('#rvPlay').onclick = () => { selChar = c.id; save.lastChar = c.id; persist(); go('select'); };
   $('#rvBack').onclick = () => go('gacha');
 }
+if (state === 'title') renderTitle();
 </script>
 <script>
 'use strict';
@@ -3584,6 +3659,20 @@ function hasProgress(s) { return !!s && (s.runs > 0 || s.zeni > 0 || Object.keys
 function saveSummary(s) { return `${fmtNum(s.zeni)} zenis · ${CHARS.filter(c => s.owned[c.id] || (c.unlock == null)).length} guerreros · ${Object.keys(s.cleared).filter(k => STAGES.some(st => st.id === k)).length} sagas · ${fmtNum(s.runs)} partidas`; }
 
 /* ---------- interfaz de cuenta ---------- */
+const svg = (d, vb = '0 0 16 16') => `<svg viewBox="${vb}" width="16" height="16" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true">${d}</svg>`;
+const ICO = {
+  mail: svg('<path d="M1 3h14v10H1z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 4l6 5 6-5" fill="none" stroke="currentColor" stroke-width="2"/>'),
+  lock: svg('<rect x="2" y="7" width="12" height="8"/><path d="M4 7V5a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="2"/>'),
+  user: svg('<rect x="5" y="1" width="6" height="6"/><rect x="2" y="9" width="12" height="6"/>'),
+  key: svg('<rect x="1" y="5" width="6" height="6"/><rect x="6" y="7" width="9" height="2"/><rect x="11" y="9" width="2" height="3"/><rect x="13" y="9" width="2" height="2"/>'),
+  eye: svg('<path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="6" y="6" width="4" height="4"/>'),
+  eyeOff: svg('<path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 14L14 2" stroke="currentColor" stroke-width="2"/>'),
+};
+/* Logotipo «G» oficial de Google para el botón de acceso */
+const GOOGLE_G = `<svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>`;
+function fieldHTML(id, label, ico, type, ac, ph, extra = '') {
+  return `<label class="field" for="${id}">${label}<span class="inp"><span class="ico">${ICO[ico]}</span><input id="${id}" type="${type}" autocomplete="${ac}" placeholder="${ph}" ${extra}>${type === 'password' ? `<button type="button" class="eye" data-for="${id}" aria-label="Mostrar contraseña">${ICO.eye}</button>` : ''}</span></label>`;
+}
 function renderAccountBadge() {
   const el = $('#acctBadge'); if (!el) return;
   const A = Account, dot = { ok: 'ok', sync: 'sync', off: 'off' }[A.status] || '';
@@ -3620,32 +3709,35 @@ function renderAccount() {
   const A = Account, box = $('#acctPanel');
   const msg = `<div class="msg${acctMsg ? ' on ' + acctMsg.type : ''}" id="acctMsg">${acctMsg ? esc(acctMsg.text) : ''}</div>`;
   if (!A.ready) { box.innerHTML = '<p class="muted">Conectando…</p>'; return; }
-  const tabs = `<div class="tabs" style="margin:0 0 6px"><button class="btn small ${acctTab === 'mail' ? 'on' : ''}" id="tMail">✉ CON CORREO</button><button class="btn small ${acctTab === 'code' ? 'on' : ''}" id="tCode">🔑 CON CÓDIGO</button></div>`;
+  const tabs = `<div class="seg" role="tablist"><button class="${acctTab === 'mail' ? 'on' : ''}" id="tMail" role="tab">${ICO.mail} CON CORREO</button><button class="${acctTab === 'code' ? 'on' : ''}" id="tCode" role="tab">${ICO.key} CON CÓDIGO</button></div>`;
   let body = '';
   if (acctTab === 'code') body = codePane();
   else if (!A.backend) {
     body = `<div class="msg on" style="background:#2a2410;color:#ffe9a8">Las cuentas con correo todavía no están activadas en esta web. De momento, guarda tu partida con tu <b>código</b> (pestaña «Con código»): cuando se activen, podrás crear tu cuenta y pegar ese código para conservarlo todo.</div>`;
   } else if (A.user) {
     const st = A.status === 'ok' ? `Guardado en la nube${A.lastSync ? ' a las ' + new Date(A.lastSync).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : ''}` : A.status === 'sync' ? 'Sincronizando…' : 'Sin conexión: se subirá cuando vuelva internet';
-    body = `<h2 class="px">${esc(A.user.name).toUpperCase()}</h2>
+    body = `<div class="prof"><canvas id="profCv" width="18" height="19"></canvas><div><h2 class="px" style="text-align:left">${esc(A.user.name).toUpperCase()}</h2><div class="muted" style="font-size:18px">${esc(A.user.email)}</div></div></div>
       <div class="stats"><span>Email</span><b>${esc(A.user.email)}</b><span>Estado</span><b>${st}</b><span>Zenis</span><b class="gold">${fmtNum(save.zeni)}</b><span>Guerreros</span><b>${CHARS.filter(isUnlocked).length}/${CHARS.length}</b><span>Sagas completadas</span><b>${Object.keys(save.cleared).filter(k => STAGES.some(s => s.id === k)).length}/${STAGES.length}</b><span>Partidas</span><b>${fmtNum(save.runs)}</b></div>
       <div class="row wrap"><button class="btn primary small" id="acSync">SINCRONIZAR AHORA</button><button class="btn small" id="acOut">CERRAR SESIÓN</button></div>
       <p class="muted" style="font-size:17px">Tu código de guardado sigue funcionando también: lo tienes en la pestaña «Con código».</p>
       <button class="linkbtn" id="acDel" style="color:#ff8a7a">Borrar mi cuenta y todos mis datos</button>`;
   } else {
     const reg = mailTab === 'register';
-    body = `<div class="tabs" style="margin:0"><button class="btn small ${reg ? '' : 'on'}" id="tLogin">ENTRAR</button><button class="btn small ${reg ? 'on' : ''}" id="tReg">CREAR CUENTA</button></div>
+    body = `<div class="seg small"><button class="${reg ? '' : 'on'}" id="tLogin">ENTRAR</button><button class="${reg ? 'on' : ''}" id="tReg">CREAR CUENTA</button></div>
       <p class="muted" style="font-size:19px">${reg ? 'Con una cuenta tu progreso se guarda solo en la nube y lo recuperas en cualquier móvil u ordenador con tu correo y tu contraseña.' : 'Entra con tu correo para recuperar tu progreso.'}</p>
       <form id="acForm" class="col" novalidate>
-        ${reg ? `<label class="field">Nombre de jugador<input id="fName" maxlength="16" autocomplete="nickname" placeholder="Ej.: Kakarotto99"></label>` : ''}
-        <label class="field">Correo electrónico<input id="fMail" type="email" autocomplete="email" placeholder="tu@correo.com"></label>
-        <label class="field">Contraseña<input id="fPass" type="password" autocomplete="${reg ? 'new-password' : 'current-password'}" placeholder="${reg ? 'Mínimo 6 caracteres' : ''}"></label>
-        ${reg ? `<label class="field">Repite la contraseña<input id="fPass2" type="password" autocomplete="new-password"></label>${sourcePicker()}<label class="check"><input type="checkbox" id="fOk"><span>He leído la privacidad y tengo 14 años o más (o permiso de mi madre, padre o tutor).</span></label>${PRIVACY}` : `<button type="button" class="linkbtn" id="fForgot">¿Has olvidado la contraseña?</button>`}
+        ${reg ? fieldHTML('fName', 'Nombre de jugador', 'user', 'text', 'nickname', 'Ej.: Kakarotto99', 'maxlength="16"') : ''}
+        ${fieldHTML('fMail', 'Correo electrónico', 'mail', 'email', 'email', 'tu@correo.com')}
+        ${fieldHTML('fPass', 'Contraseña', 'lock', 'password', reg ? 'new-password' : 'current-password', reg ? 'Mínimo 6 caracteres' : 'Tu contraseña')}
+        ${reg ? `${fieldHTML('fPass2', 'Repite la contraseña', 'lock', 'password', 'new-password', 'Otra vez la misma')}${sourcePicker()}<label class="check"><input type="checkbox" id="fOk"><span>He leído la privacidad y tengo 14 años o más (o permiso de mi madre, padre o tutor).</span></label>${PRIVACY}` : `<button type="button" class="linkbtn" id="fForgot">¿Has olvidado la contraseña?</button>`}
         <button class="btn primary" type="submit" id="fGo">${reg ? 'CREAR CUENTA' : 'ENTRAR'}</button>
       </form>
-      <button class="btn google" id="fGoogle">${reg ? 'CREAR CUENTA' : 'ENTRAR'} CON GOOGLE</button>`;
+      <div class="orsep"><span>o</span></div>
+      <button class="gbtn" id="fGoogle" type="button">${GOOGLE_G}<span>${reg ? 'Registrarse' : 'Continuar'} con Google</span></button>`;
   }
   box.innerHTML = tabs + msg + body;
+  const pc = $('#profCv'); if (pc) pc.getContext('2d').drawImage(getPortrait(save.lastChar && CHAR[save.lastChar] ? save.lastChar : 'goku'), 0, 0);
+  box.querySelectorAll('.eye').forEach(btn => btn.onclick = () => { const inp = $('#' + btn.dataset.for), show = inp.type === 'password'; inp.type = show ? 'text' : 'password'; btn.innerHTML = show ? ICO.eyeOff : ICO.eye; btn.setAttribute('aria-label', show ? 'Ocultar contraseña' : 'Mostrar contraseña'); });
   $('#tMail').onclick = () => { acctTab = 'mail'; acctMsg = null; renderAccount(); };
   $('#tCode').onclick = () => { acctTab = 'code'; acctMsg = null; renderAccount(); };
   if (acctTab === 'code') {
