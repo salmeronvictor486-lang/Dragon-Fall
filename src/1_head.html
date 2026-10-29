@@ -108,7 +108,7 @@ h2.px{font-size:18px;color:var(--gold);text-shadow:3px 3px 0 var(--line);text-al
 .stage.done .t::after{content:' ★';color:var(--orange)}
 
 /* ---------- HUD overlays ---------- */
-#levelup .panel{width:min(760px,96vw)}
+#levelup .panel,#shrine .panel{width:min(760px,96vw)}
 .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:14px 0}
 .choice{background:var(--panel2);border:0;color:var(--ink);text-align:left;padding:12px;cursor:pointer;box-shadow:0 0 0 3px var(--line);display:flex;flex-direction:column;gap:6px;transition:transform .08s;min-height:150px}
 .choice:hover,.choice:focus-visible{transform:translateY(-3px);outline:none;background:#2c3878}
@@ -414,6 +414,7 @@ html.fr .acct-badge:hover{filter:brightness(1.2)}
 @media (max-width:560px){.bi-grid{grid-template-columns:repeat(3,1fr)}.bi-head canvas{width:64px;height:43px}.bi-panel{padding:12px}}
 /* ---- modos, dificultad, misiones, ranking, compañero ---- */
 .langs{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.langs .btn.on{background:var(--orange);color:#2a1300}
+.choice.boon{box-shadow:0 0 0 3px var(--rc)}.choice.boon .ds.big{font-family:'Press Start 2P';font-size:16px;color:var(--rc);margin-top:10px;text-align:center}.choice .kb{margin-left:auto;align-self:flex-start;color:#8a90b8;font-size:16px}
 .padfocus{outline:3px solid #ffd23f!important;outline-offset:3px;filter:brightness(1.15)}
 .instbtn{position:absolute!important;top:14px;left:16px;padding:8px 12px}
 .optbtn{position:absolute!important;top:14px;right:16px;display:flex;align-items:center;gap:8px;padding:8px 12px}.optbtn .mi canvas{width:20px;height:20px;image-rendering:pixelated;display:block}
@@ -605,6 +606,15 @@ html.fr .acct-badge:hover{filter:brightness(1.2)}
       <button class="btn small" id="bReroll">CAMBIAR</button>
       <button class="btn small" id="bSkip">SALTAR (+ZENIS)</button>
     </div>
+  </div>
+</section>
+
+<!-- ALTAR DE KI -->
+<section id="shrine" class="screen dim">
+  <div class="panel">
+    <h2 class="px" style="color:#c89bff">ALTAR DE KI</h2>
+    <p class="muted" style="text-align:center;margin:4px 0 10px">Elige una bendición para esta partida</p>
+    <div class="choices" id="shrineChoices"></div>
   </div>
 </section>
 

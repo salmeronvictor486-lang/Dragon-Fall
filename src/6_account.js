@@ -85,7 +85,7 @@ const Account = {
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.flush(); });
     addEventListener('online', () => { if (this.user && this.dirty) this.push(); });
   },
-  inRun() { return G && ['play', 'levelup', 'paused', 'shenron', 'capsule'].includes(state); },
+  inRun() { return G && ['play', 'levelup', 'paused', 'shenron', 'capsule', 'shrine'].includes(state); },
   async onUser(u) {
     if (!u) {
       this.user = null; this.status = 'guest';
