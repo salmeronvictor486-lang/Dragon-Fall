@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="84" viewBox="0 0 360 84">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd23f"/><stop offset=".55" stop-color="#ff9a1c"/><stop offset="1" stop-color="#e8433a"/></linearGradient>
+  </defs>
+  <rect x="6" y="10" width="348" height="70" fill="#1a0a2e"/>
+  <rect x="2" y="4" width="348" height="70" fill="url(#g)" stroke="#05060f" stroke-width="4"/>
+  <rect x="8" y="10" width="336" height="6" fill="#fff6b0" opacity=".7"/>
+  <polygon points="44,22 44,56 72,39" fill="#05060f"/>
+  <text x="198" y="50" text-anchor="middle" font-family="'Courier New',Courier,monospace" font-weight="900" font-size="30" letter-spacing="2" fill="#05060f">JUGAR AHORA</text>
+</svg>
