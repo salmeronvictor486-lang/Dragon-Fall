@@ -85,9 +85,9 @@ function blurGlow(src, key, col, scale, S) {
 }
 
 // Fondos por tipo de guerrero (escenario de su saga)
-const ART_STAGE = { saiyan: 'saiyan', earth: 'saiyan', namek: 'namek', android: 'cell', majin: 'buu', empire: 'namek', god: 'top', uni: 'top' };
-const ART_FOE = { saiyan: 'saibaman', earth: 'saibaman', namek: 'soldado_f', android: 'celljr', majin: 'majin', empire: 'soldado_f', god: 'pride', uni: 'pride' };
-const SKY = { saiyan: ['#3a1a5e', '#ff8a5a'], namek: ['#1e5a4a', '#9fe8b0'], cell: ['#2a3a5a', '#c8d0e8'], buu: ['#4a2a6a', '#ffb0d8'], top: ['#0a0a1e', '#3a3a7a'] };
+const ART_STAGE = { saiyan: 'saiyan', earth: 'db', namek: 'namek', android: 'cell', majin: 'buu', empire: 'namek', god: 'top', uni: 'top', demon: 'daima', dragon: 'gt', space: 'super' };
+const ART_FOE = { saiyan: 'saibaman', earth: 'rr', namek: 'soldado_f', android: 'celljr', majin: 'majin', empire: 'soldado_f', god: 'pride', uni: 'pride', demon: 'demon_s', dragon: 'tsufur', space: 'prisoner' };
+const SKY = { saiyan: ['#3a1a5e', '#ff8a5a'], namek: ['#1e5a4a', '#9fe8b0'], cell: ['#2a3a5a', '#c8d0e8'], buu: ['#4a2a6a', '#ffb0d8'], top: ['#0a0a1e', '#3a3a7a'], db: ['#3a7ad8', '#bfe8ff'], pelis: ['#5a1a2a', '#ffb05a'], daima: ['#1a0a2e', '#8a4ac8'], super: ['#1a1a2e', '#e85a4a'], gt: ['#2a0a0a', '#e8843a'] };
 function seededR(seed) { let s = seed >>> 0 || 1; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
 function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 

@@ -25,6 +25,16 @@ const WORLD = {
     props: [['tree', 5], ['boulder', 2.4], ['bship', .15], ['rubble', 1]], amb: 'leaf', tint: null, water: '#5fb8e8', flowers: true },
   top: { tiles: 32, ground: ['#6e7088', '#7c7e96', '#8a8ca4', '#9a9cb2'], grout: '#3c3e54', seed: 17, rock: ['#4a4c62', '#62647a', '#7c7e94', '#a2a4b8'],
     props: [['pillar', 2], ['crystal', 1.6], ['rubble', 3]], amb: 'spark', tint: 'rgba(110,60,200,.10)', glow: '#9a6aff' },
+  db: { ground: ['#4f9a3a', '#5eab45', '#70bc52', '#86cc64', '#9ed87a'], seed: 21, rock: ['#6a6458', '#86806e', '#a29a86', '#c0b8a2'], tuft: ['#3e7e2c', '#b8e88a'],
+    props: [['tree', 4], ['boulder', 2.5], ['mesa', .8], ['rubble', 1]], amb: 'leaf', tint: null, water: '#5fb8e8', flowers: true },
+  pelis: { ground: ['#d8a84a', '#e4b85a', '#eec86e', '#f6d888', '#fbe6a8'], seed: 25, rock: ['#8a3a4a', '#a84a5a', '#c86a6a', '#e08a7a'],
+    props: [['crystal', 1.2], ['spire', 2], ['pillar', 1.6], ['deadtree', 1.6], ['rubble', 2]], amb: 'spark', tint: 'rgba(255,120,80,.07)', glow: '#ff7a3a' },
+  daima: { ground: ['#3a2a52', '#463462', '#543e72', '#644a84', '#765a98'], seed: 29, rock: ['#2a1e3e', '#3e2e5a', '#56427a', '#70589a'],
+    props: [['crystal', 2.5], ['spire', 2.5], ['deadtree', 2], ['boulder', 1.5], ['rubble', 2]], amb: 'spark', tint: 'rgba(150,60,220,.10)', glow: '#c86aff' },
+  super: { tiles: 28, ground: ['#5a6070', '#666c7c', '#727888', '#808696'], grout: '#2e3240', seed: 33, rock: ['#4a4e5c', '#62667a', '#7c8094', '#a2a6b8'],
+    props: [['pillar', 1.4], ['rubble', 3.5], ['crystal', .6], ['boulder', 1]], amb: 'dust', tint: 'rgba(255,60,60,.05)' },
+  gt: { ground: ['#7a5a4a', '#8a6a56', '#9a7a62', '#ac8c72', '#be9e84'], seed: 37, rock: ['#5a3e32', '#76523e', '#946a50', '#b48a6a'],
+    props: [['spire', 2.5], ['boulder', 2.5], ['rubble', 3], ['deadtree', 1.4], ['crystal', .5]], amb: 'dust', tint: 'rgba(255,80,40,.08)' },
 };
 
 /* ---------- suelo ---------- */
