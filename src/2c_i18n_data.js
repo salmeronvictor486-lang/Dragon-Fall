@@ -60,6 +60,7 @@ const TR = {
   'Números de daño': ['Números de dany', 'Damage numbers'],
   'Temblor de pantalla': ['Tremolor de pantalla', 'Screen shake'],
   'Vibración (móvil)': ['Vibració (mòbil)', 'Vibration (mobile)'],
+  'Voces al abrir cajas (Kamehameha)': ['Veus en obrir caixes (Kamehameha)', 'Voices when opening boxes (Kamehameha)'],
   'Idioma · Idioma · Language': ['Idioma · Idioma · Language', 'Idioma · Idioma · Language'],
   'Cómo se juega:': ['Com es juga:', 'How to play:'],
   'muévete con': ['mou-te amb', 'move with'],

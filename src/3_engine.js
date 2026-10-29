@@ -311,7 +311,7 @@ function musicSet(on) {
 /* =================== GUARDADO =================== */
 const SAVE_KEY = 'dragonfall_save_v1';
 let saveKey = SAVE_KEY;   // invitado; con cuenta: SAVE_KEY + '_' + uid
-function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, pid: '', streak: { last: '', n: 0 }, daily: { day: '', bought: {} }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true, vib: true }, clearedD: {}, stats: defStats(), acc: { lvl: 1, xp: 0 }, missions: { day: '', list: [], bonus: 0 }, ach: {}, titles: { novato: 1 }, title: 'novato', buddy: '', diff: 0, mode: 'saga', rankSent: {}, lang: '' }; }
+function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, pid: '', streak: { last: '', n: 0 }, daily: { day: '', bought: {} }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true, vib: true, voice: true }, clearedD: {}, stats: defStats(), acc: { lvl: 1, xp: 0 }, missions: { day: '', list: [], bonus: 0 }, ach: {}, titles: { novato: 1 }, title: 'novato', buddy: '', diff: 0, mode: 'saga', rankSent: {}, lang: '' }; }
 function defStats() { return { wins: 0, time: 0, specials: 0, bosses: 0, boxes: 0, events: 0, fusions: 0, shenron: 0, evos: 0, trans: 0, zeniRun: 0, daily: 0, bestKills: 0, bestInf: 0, bestInfT: 0, shrines: 0, chests: 0, crates: 0, healed: 0, chars: {} }; }
 function normalizeSave(o) {
   const s = Object.assign(defSave(), o || {});
