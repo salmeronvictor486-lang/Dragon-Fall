@@ -1,5 +1,7 @@
 # Activar las cuentas online (Firebase)
 
+> ✅ **Activado** en el proyecto `dragon-fall-5aaa6` (Authentication con correo/contraseña y Firestore con las reglas de `firestore.rules`). Esta guía queda como referencia.
+
 Si no configuras Firebase, el juego guarda la partida en el navegador y con el **código de guardado**. La pestaña «Con correo» explica que las cuentas aún no están activas. Al configurarlo, los jugadores pueden **crear una cuenta** y su progreso se guarda en la nube: zenis, mejoras, personajes, sagas, récords, Dragonpedia y opciones. Así lo recuperan en cualquier móvil u ordenador.
 
 Firebase es gratis con el plan **Spark**, que no pide tarjeta. Permite 50.000 lecturas y 20.000 escrituras al día, mucho más de lo que necesita el juego: solo guarda unos segundos después de cada cambio.
