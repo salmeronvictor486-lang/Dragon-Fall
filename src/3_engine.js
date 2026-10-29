@@ -312,7 +312,7 @@ function musicSet(on) {
 const SAVE_KEY = 'dragonfall_save_v1';
 let saveKey = SAVE_KEY;   // invitado; con cuenta: SAVE_KEY + '_' + uid
 function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, pid: '', streak: { last: '', n: 0 }, daily: { day: '', bought: {} }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true, vib: true, voice: true }, clearedD: {}, stats: defStats(), acc: { lvl: 1, xp: 0 }, missions: { day: '', list: [], bonus: 0 }, ach: {}, titles: { novato: 1 }, title: 'novato', buddy: '', diff: 0, mode: 'saga', rankSent: {}, lang: '', cards: {}, sim: {} }; }
-function defStats() { return { wins: 0, time: 0, specials: 0, bosses: 0, boxes: 0, events: 0, fusions: 0, shenron: 0, evos: 0, trans: 0, zeniRun: 0, daily: 0, bestKills: 0, bestInf: 0, bestInfT: 0, shrines: 0, chests: 0, crates: 0, healed: 0, packs: 0, chars: {} }; }
+function defStats() { return { wins: 0, time: 0, specials: 0, bosses: 0, boxes: 0, events: 0, fusions: 0, shenron: 0, evos: 0, trans: 0, zeniRun: 0, daily: 0, bestKills: 0, bestInf: 0, bestInfT: 0, shrines: 0, chests: 0, crates: 0, healed: 0, packs: 0, play: 0, chars: {} }; }
 function normalizeSave(o) {
   const s = Object.assign(defSave(), o || {});
   s.opts = Object.assign(defSave().opts, (o && o.opts) || {});
@@ -327,6 +327,7 @@ function normalizeSave(o) {
   const st = defStats(), so = s.stats && typeof s.stats === 'object' ? s.stats : {};
   for (const k in st) st[k] = k === 'chars' ? (so.chars && typeof so.chars === 'object' ? so.chars : {}) : Number(so[k]) || 0;
   s.stats = st;
+  if (st.play < st.time) st.play = Math.round(st.time);   // partidas antiguas: al menos el tiempo jugado en partidas
   s.acc = { lvl: Math.max(1, Number(s.acc && s.acc.lvl) || 1), xp: Math.max(0, Number(s.acc && s.acc.xp) || 0) };
   if (!s.missions || typeof s.missions !== 'object' || !Array.isArray(s.missions.list)) s.missions = { day: '', list: [], bonus: 0 };
   s.diff = Math.max(0, Math.min(2, Number(s.diff) || 0)); if (s.mode !== 'inf') s.mode = 'saga';

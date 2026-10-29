@@ -622,7 +622,7 @@ document.addEventListener('pointerdown', () => audioInit(), { once: false, captu
 function renderTitle() {
   const n = CHARS.filter(isUnlocked).length;
   const sagas = Object.keys(save.cleared).filter(k => STAGES.some(s => s.id === k)).length, ts = $('#titleStats'); ts.innerHTML = '';
-  [['zeni', '#ffd23f', fmtNum(save.zeni), 'zenis'], ['user', '#59d66b', `${n}/${CHARS.length}`, 'guerreros'], ['book', '#3aa0ff', `${sagas}/${STAGES.length}`, 'sagas'], ['skull', '#fff', fmtNum(save.kills), 'bajas'], ['lvl', '#9fd8ff', 'Nv ' + save.acc.lvl, 'cuenta']].forEach(([ic, col, v, l]) => {
+  [['zeni', '#ffd23f', fmtNum(save.zeni), 'zenis'], ['user', '#59d66b', `${n}/${CHARS.length}`, 'guerreros'], ['book', '#3aa0ff', `${sagas}/${STAGES.length}`, 'sagas'], ['skull', '#fff', fmtNum(save.kills), 'bajas'], ['lvl', '#9fd8ff', 'Nv ' + save.acc.lvl, 'cuenta'], ['clock', '#c8d0f0', typeof fmtPlay === 'function' ? fmtPlay(save.stats.play) : '', 'jugadas']].forEach(([ic, col, v, l]) => {
     const ch = document.createElement('span'); ch.className = 'chip'; ch.appendChild(iconCanvas(ic, col, 18)); ch.insertAdjacentHTML('beforeend', `<span><b>${v}</b> ${l}</span>`); ts.appendChild(ch);
   });
   $('#subDex').textContent = `${n}/${CHARS.length} guerreros conseguidos`;
