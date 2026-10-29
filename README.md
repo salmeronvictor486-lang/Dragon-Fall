@@ -22,7 +22,7 @@ Todo el juego está en **`index.html`** (HTML + CSS + JavaScript con `<canvas>`)
 - **18 técnicas, 18 evoluciones y 11 pasivas.**
 - **Templo de Kami:** mejoras permanentes que se compran con zenis.
 - **Dragonpedia:** todos los personajes con nombre, saga y descripción. Los que aún no has visto salen como silueta.
-- El progreso se guarda en el navegador (`localStorage`).
+- **Cuentas y guardado en la nube:** creas una cuenta con email o con Google y recuperas tu progreso en cualquier dispositivo. Sin cuenta, se guarda en el navegador y puedes exportar o importar un código de copia de seguridad. Para activar las cuentas, sigue [FIREBASE.md](FIREBASE.md).
 
 ## Publicarlo en GitHub Pages
 

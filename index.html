@@ -148,6 +148,26 @@ h2.px{font-size:18px;color:var(--gold);text-shadow:3px 3px 0 var(--line);text-al
 .howto{font-size:20px;color:#cfd6f5;max-width:460px}
 .howto b{color:var(--gold)}
 .back{position:absolute;top:12px;left:12px}
+
+/* ---------- Cuenta ---------- */
+.acct-badge{margin-top:min(14px,1.6vh);font-size:19px;color:#cfd6f5;text-align:center;background:rgba(5,6,15,.55);padding:6px 12px;box-shadow:0 0 0 2px var(--line);cursor:pointer;border:0}
+.acct-badge b{color:var(--gold)}
+.dot{display:inline-block;width:9px;height:9px;margin-right:6px;background:#6b739a;box-shadow:0 0 0 2px var(--line)}
+.dot.ok{background:var(--green)}.dot.sync{background:var(--gold)}.dot.off{background:var(--red)}
+#account .panel{width:min(520px,94vw);max-height:calc(100vh - 80px);overflow:auto;margin-top:40px}
+.field{display:flex;flex-direction:column;gap:4px;font-size:19px;color:var(--muted)}
+.field input,textarea.code{font-family:'VT323',monospace;font-size:22px;color:var(--ink);background:#0b0f24;border:0;padding:10px 12px;box-shadow:0 0 0 3px var(--line),inset 0 0 0 2px #2b3670;outline:none;-webkit-user-select:text;user-select:text;touch-action:auto;width:100%}
+.field input:focus,textarea.code:focus{box-shadow:0 0 0 3px var(--orange)}
+textarea.code{height:84px;resize:vertical;font-size:16px;word-break:break-all}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:18px;color:#cfd6f5;cursor:pointer}
+.check input{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--orange)}
+.msg{font-size:19px;padding:8px 10px;box-shadow:0 0 0 2px var(--line);display:none}
+.msg.on{display:block}.msg.err{background:#3a1018;color:#ffb0a8}.msg.ok{background:#0f2e18;color:#a8f0b4}
+.linkbtn{background:none;border:0;color:var(--orange2);font-size:19px;cursor:pointer;text-decoration:underline;padding:0;align-self:flex-start}
+.btn.google{background:#f4f1e8;color:#1a1a2a}
+details.priv{font-size:17px;color:var(--muted)}
+details.priv summary{cursor:pointer;color:#cfd6f5}
+.sep{height:3px;background:#0b0f24;margin:4px 0}
 </style>
 </head>
 <body>
@@ -165,7 +185,9 @@ h2.px{font-size:18px;color:var(--gold);text-shadow:3px 3px 0 var(--line);text-al
     <button class="btn" id="bDex">DRAGONPEDIA</button>
     <button class="btn" id="bShop">TEMPLO DE KAMI</button>
     <button class="btn" id="bOpts">OPCIONES</button>
+    <button class="btn" id="bAcct">CUENTA</button>
   </div>
+  <button class="acct-badge" id="acctBadge"></button>
   <div class="title-stats" id="titleStats"></div>
   <p class="disclaimer">Fan game sin ánimo de lucro. Dragon Ball © Bird Studio / Shueisha / Toei Animation.</p>
 </section>
@@ -207,6 +229,12 @@ h2.px{font-size:18px;color:var(--gold);text-shadow:3px 3px 0 var(--line);text-al
     <button class="btn" id="bResetSave" style="font-size:10px">BORRAR PARTIDA GUARDADA</button>
     <button class="btn primary" data-back="title">VOLVER</button>
   </div>
+</section>
+
+<!-- ACCOUNT -->
+<section id="account" class="screen dim">
+  <div class="topbar"><button class="btn small" data-back="title">◀ VOLVER</button><h2 class="px">CUENTA</h2><span></span></div>
+  <div class="panel col" id="acctPanel"></div>
 </section>
 
 <!-- LEVEL UP -->
@@ -833,13 +861,19 @@ function musicSet(on) {
 
 /* =================== GUARDADO =================== */
 const SAVE_KEY = 'dragonfall_save_v1';
-function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, kills: 0, maxTime: 0, runs: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true } }; }
-function loadSave() {
-  let s = defSave();
-  try { const raw = localStorage.getItem(SAVE_KEY); if (raw) { const o = JSON.parse(raw); s = Object.assign(s, o); s.opts = Object.assign(defSave().opts, o.opts || {}); } } catch (e) { }
+let saveKey = SAVE_KEY;   // invitado; con cuenta: SAVE_KEY + '_' + uid
+function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true } }; }
+function normalizeSave(o) {
+  const s = Object.assign(defSave(), o || {});
+  s.opts = Object.assign(defSave().opts, (o && o.opts) || {});
+  ['shop', 'cleared', 'best', 'bosses', 'seen', 'bought'].forEach(k => { if (!s[k] || typeof s[k] !== 'object') s[k] = {}; });
+  ['zeni', 'kills', 'maxTime', 'runs', 'ts'].forEach(k => { s[k] = Number(s[k]) || 0; });
   return s;
 }
-function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { } }
+function readSave(key) { try { const raw = localStorage.getItem(key); return raw ? normalizeSave(JSON.parse(raw)) : null; } catch (e) { return null; } }
+function loadSave(key = saveKey) { return readSave(key) || defSave(); }
+function writeLocal() { try { localStorage.setItem(saveKey, JSON.stringify(save)); } catch (e) { } }
+function persist() { save.ts = Date.now(); writeLocal(); if (typeof Account !== 'undefined') Account.queue(); }
 let save = loadSave();
 function isUnlocked(c) {
   const u = c.unlock; if (!u) return true;
@@ -1872,7 +1906,7 @@ function render(dt) {
 }
 
 /* =================== INTERFAZ =================== */
-const SCREENS = ['title', 'select', 'stages', 'shop', 'dex', 'opts', 'levelup', 'pause', 'over', 'shenron', 'capsule'];
+const SCREENS = ['title', 'select', 'stages', 'shop', 'dex', 'opts', 'account', 'levelup', 'pause', 'over', 'shenron', 'capsule'];
 function showScreen(id) {
   SCREENS.forEach(s => $('#' + s).classList.toggle('on', s === id));
   $('#pausebtn').style.display = id ? 'none' : 'block';
@@ -1887,6 +1921,7 @@ function go(id) {
   if (id === 'shop') renderShop();
   if (id === 'dex') renderDex();
   if (id === 'opts') renderOpts();
+  if (id === 'account') renderAccount();
 }
 document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => {
   const to = b.dataset.back;
@@ -1899,6 +1934,7 @@ function renderTitle() {
   const n = CHARS.filter(isUnlocked).length;
   $('#titleStats').innerHTML = `<span class="zeni"><i></i>${fmtNum(save.zeni)}</span><span>Guerreros ${n}/${CHARS.length}</span><span>Sagas ${Object.keys(save.cleared).length}/${STAGES.length}</span><span>Bajas ${fmtNum(save.kills)}</span>`;
   menu.stage = 'saiyan';
+  if (typeof renderAccountBadge === 'function') renderAccountBadge();
 }
 $('#bPlay').onclick = () => { audioInit(); go('select'); };
 $('#bDex').onclick = () => go('dex');
@@ -2228,6 +2264,219 @@ function onKey(e) {
   window.DF = { CHARS, STAGES, get G() { return G; }, get P() { return P; }, startRun, go, save: () => save, persist };
   requestAnimationFrame(loop);
 })();
+</script>
+<script>
+'use strict';
+/* =========================================================
+   CUENTAS Y GUARDADO EN LA NUBE (Firebase Auth + Firestore)
+   Pega aquí la configuración de tu proyecto de Firebase
+   (Consola de Firebase → Configuración del proyecto → Tus apps → Web).
+   Mientras sea null, el juego guarda solo en este navegador.
+   ========================================================= */
+const FIREBASE_CONFIG = null;
+/* Ejemplo:
+const FIREBASE_CONFIG = {
+  apiKey: 'AIza...',
+  authDomain: 'dragon-fall-xxxx.firebaseapp.com',
+  projectId: 'dragon-fall-xxxx',
+  appId: '1:123456789:web:abc123',
+};
+*/
+
+async function firebaseBackend(cfg) {
+  const B = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  const [app, auth, fs] = await Promise.all([import(B + 'firebase-app.js'), import(B + 'firebase-auth.js'), import(B + 'firebase-firestore.js')]);
+  const a = app.initializeApp(cfg), au = auth.getAuth(a), db = fs.getFirestore(a);
+  au.languageCode = 'es';
+  const wrap = u => u && { uid: u.uid, email: u.email || '', name: u.displayName || '' };
+  const ref = uid => fs.doc(db, 'players', uid);
+  return {
+    online: true,
+    onAuth: cb => auth.onAuthStateChanged(au, u => cb(wrap(u))),
+    register: async (email, pw, name) => { const c = await auth.createUserWithEmailAndPassword(au, email, pw); await auth.updateProfile(c.user, { displayName: name }); },
+    login: (email, pw) => auth.signInWithEmailAndPassword(au, email, pw),
+    google: () => auth.signInWithPopup(au, new auth.GoogleAuthProvider()),
+    logout: () => auth.signOut(au),
+    reset: email => auth.sendPasswordResetEmail(au, email),
+    load: async uid => { const d = await fs.getDoc(ref(uid)); return d.exists() ? d.data() : null; },
+    store: (uid, data) => fs.setDoc(ref(uid), { name: data.name, save: data.save, updatedAt: fs.serverTimestamp() }),
+    remove: async uid => { await fs.deleteDoc(ref(uid)); await auth.deleteUser(au.currentUser); },
+  };
+}
+
+const AUTH_ERR = {
+  'auth/email-already-in-use': 'Ya existe una cuenta con ese email. Prueba a entrar.',
+  'auth/invalid-email': 'El email no es válido.',
+  'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+  'auth/invalid-credential': 'Email o contraseña incorrectos.',
+  'auth/wrong-password': 'Email o contraseña incorrectos.',
+  'auth/user-not-found': 'No hay ninguna cuenta con ese email.',
+  'auth/missing-password': 'Escribe la contraseña.',
+  'auth/too-many-requests': 'Demasiados intentos. Espera un momento y vuelve a probar.',
+  'auth/network-request-failed': 'Sin conexión a internet.',
+  'auth/popup-closed-by-user': 'Has cerrado la ventana de Google.',
+  'auth/popup-blocked': 'El navegador ha bloqueado la ventana de Google.',
+  'auth/operation-not-allowed': 'Este método de acceso no está activado en Firebase.',
+  'auth/unauthorized-domain': 'Este dominio no está autorizado en Firebase.',
+  'auth/requires-recent-login': 'Por seguridad, cierra sesión, vuelve a entrar y repite la acción.',
+};
+const authMsg = e => {
+  const c = (e && e.code) || '';
+  if (c.startsWith('auth/api-key-not-valid') || c === 'auth/invalid-api-key') return 'La configuración de Firebase no es válida (revisa FIREBASE_CONFIG).';
+  if (c === 'permission-denied') return 'Firebase ha rechazado el guardado: revisa las reglas de Firestore.';
+  return AUTH_ERR[c] || 'Algo ha fallado. Inténtalo de nuevo.';
+};
+
+const Account = {
+  backend: null, user: null, status: 'local', lastSync: 0, timer: null, dirty: false, pendingName: '', transferGuest: false, ready: false,
+  async init() {
+    try {
+      if (window.DF_BACKEND) this.backend = window.DF_BACKEND;
+      else if (FIREBASE_CONFIG) this.backend = await firebaseBackend(FIREBASE_CONFIG);
+    } catch (e) { console.warn('Firebase no disponible', e); this.backend = null; this.status = 'error'; }
+    this.ready = true;
+    if (!this.backend) { renderAccountBadge(); return; }
+    this.status = 'guest';
+    this.backend.onAuth(u => this.onUser(u));
+    addEventListener('pagehide', () => this.flush());
+    document.addEventListener('visibilitychange', () => { if (document.hidden) this.flush(); });
+    addEventListener('online', () => { if (this.user && this.dirty) this.push(); });
+  },
+  inRun() { return G && ['play', 'levelup', 'paused', 'shenron', 'capsule'].includes(state); },
+  async onUser(u) {
+    if (!u) {
+      this.user = null; this.status = 'guest';
+      if (!this.inRun()) { saveKey = SAVE_KEY; save = loadSave(); }
+      this.refresh(); return;
+    }
+    if (!u.name) u.name = this.pendingName || u.email.split('@')[0];
+    this.user = u; this.status = 'sync'; this.refresh();
+    const guest = readSave(SAVE_KEY), key = SAVE_KEY + '_' + u.uid, local = readSave(key);
+    let cloud = null, cloudOk = true;
+    try { const d = await this.backend.load(u.uid); if (d) { cloud = normalizeSave(d.save); if (d.name) u.name = d.name; } } catch (e) { cloudOk = false; }
+    let chosen;
+    if (this.transferGuest && guest && !cloud) { chosen = guest; try { localStorage.removeItem(SAVE_KEY); } catch (e) { } }   // cuenta nueva: se lleva el progreso de invitado
+    else chosen = [local, cloud].filter(Boolean).sort((a, b) => b.ts - a.ts)[0];   // la versión más reciente
+    this.transferGuest = false; this.pendingName = '';
+    if (this.inRun()) { this.status = cloudOk ? 'ok' : 'off'; this.refresh(); return; }
+    saveKey = key; save = normalizeSave(chosen || defSave()); if (!save.ts) save.ts = Date.now();
+    writeLocal();
+    if (cloudOk) await this.push(); else { this.status = 'off'; this.dirty = true; }
+    this.refresh();
+  },
+  queue() { if (!this.user) return; this.dirty = true; clearTimeout(this.timer); this.timer = setTimeout(() => this.push(), 2500); },
+  flush() { if (this.user && this.dirty) { clearTimeout(this.timer); return this.push(); } return Promise.resolve(); },
+  async push() {
+    if (!this.user || !this.backend) return;
+    clearTimeout(this.timer); this.status = 'sync'; renderAccountBadge();
+    try { await this.backend.store(this.user.uid, { name: this.user.name, save: JSON.parse(JSON.stringify(save)) }); this.dirty = false; this.status = 'ok'; this.lastSync = Date.now(); }
+    catch (e) { console.warn('No se pudo sincronizar', e); this.status = 'off'; this.dirty = true; }
+    this.refresh();
+  },
+  refresh() { renderAccountBadge(); if (state === 'account') renderAccount(); if (state === 'title') renderTitle(); },
+};
+
+/* ---------- copia de seguridad ---------- */
+function exportCode() { const json = JSON.stringify(save); return 'DF1.' + btoa(unescape(encodeURIComponent(json))); }
+function importCode(code) {
+  code = (code || '').trim(); if (!code.startsWith('DF1.')) throw new Error('El código no es de Dragon Fall.');
+  let o; try { o = JSON.parse(decodeURIComponent(escape(atob(code.slice(4))))); } catch (e) { throw new Error('El código está incompleto o dañado.'); }
+  if (!o || typeof o !== 'object' || !('zeni' in o)) throw new Error('El código no contiene una partida válida.');
+  const opts = save.opts; save = normalizeSave(o); save.opts = opts; persist();
+}
+
+/* ---------- interfaz ---------- */
+function renderAccountBadge() {
+  const el = $('#acctBadge'); if (!el) return;
+  const A = Account, dot = { ok: 'ok', sync: 'sync', off: 'off' }[A.status] || '';
+  if (A.user) {
+    const st = A.status === 'ok' ? 'guardado en la nube' : A.status === 'sync' ? 'sincronizando…' : 'sin conexión, se guardará al volver';
+    el.innerHTML = `<span class="dot ${dot}"></span>👤 <b>${esc(A.user.name)}</b> · ${st}`;
+  } else if (A.backend) el.innerHTML = `<span class="dot"></span>Invitado · <b>crea una cuenta</b> para no perder tu progreso`;
+  else el.innerHTML = `<span class="dot"></span>Progreso guardado en este navegador`;
+}
+function esc(t) { return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
+let acctTab = 'login', acctMsg = null;
+const PRIVACY = `<details class="priv"><summary>Privacidad (léela antes de registrarte)</summary>
+  <p style="margin-top:6px">Solo guardamos tu <b>email</b>, tu <b>nombre de jugador</b> y tu <b>progreso del juego</b>, únicamente para que puedas recuperar tu partida en cualquier dispositivo. No se usa para publicidad ni se comparte con nadie. Los datos se alojan en Firebase (Google). Puedes borrar tu cuenta y todos tus datos cuando quieras desde esta misma pantalla. Si tienes menos de 14 años necesitas el permiso de tu madre, padre o tutor para crear una cuenta.</p></details>`;
+function backupBlock() {
+  return `<div class="sep"></div><b class="px gold" style="font-size:10px">COPIA DE SEGURIDAD</b>
+   <p class="muted" style="font-size:18px">Copia este código para guardar tu progreso o pasarlo a otro navegador.</p>
+   <textarea class="code" id="bkCode" placeholder="Pega aquí un código DF1… para cargarlo"></textarea>
+   <div class="row wrap"><button class="btn small" id="bkExport">COPIAR MI CÓDIGO</button><button class="btn small" id="bkImport">CARGAR CÓDIGO</button></div>`;
+}
+function setMsg(type, text) { acctMsg = text ? { type, text } : null; const m = $('#acctMsg'); if (m) { m.className = 'msg' + (text ? ' on ' + type : ''); m.textContent = text || ''; } }
+async function busy(btn, fn) { const t = btn.textContent; btn.disabled = true; btn.textContent = '...'; try { await fn(); } finally { btn.disabled = false; btn.textContent = t; } }
+function renderAccount() {
+  const A = Account, box = $('#acctPanel');
+  const msg = `<div class="msg${acctMsg ? ' on ' + acctMsg.type : ''}" id="acctMsg">${acctMsg ? esc(acctMsg.text) : ''}</div>`;
+  if (!A.ready) { box.innerHTML = '<p class="muted">Conectando…</p>'; return; }
+  if (!A.backend) {
+    box.innerHTML = `<h2 class="px">TU PROGRESO</h2><p style="font-size:20px">Las cuentas online todavía no están activadas en esta web. Tu progreso se guarda automáticamente en este navegador.</p>${msg}${backupBlock()}`;
+  } else if (A.user) {
+    const st = A.status === 'ok' ? `Guardado en la nube${A.lastSync ? ' a las ' + new Date(A.lastSync).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : ''}` : A.status === 'sync' ? 'Sincronizando…' : 'Sin conexión: se subirá cuando vuelva internet';
+    box.innerHTML = `<h2 class="px">${esc(A.user.name).toUpperCase()}</h2>
+      <div class="stats"><span>Email</span><b>${esc(A.user.email)}</b><span>Estado</span><b>${st}</b><span>Zenis</span><b class="gold">${fmtNum(save.zeni)}</b><span>Guerreros</span><b>${CHARS.filter(isUnlocked).length}/${CHARS.length}</b><span>Sagas completadas</span><b>${Object.keys(save.cleared).length}/${STAGES.length}</b><span>Partidas</span><b>${fmtNum(save.runs)}</b></div>
+      ${msg}
+      <div class="row wrap"><button class="btn primary small" id="acSync">SINCRONIZAR AHORA</button><button class="btn small" id="acOut">CERRAR SESIÓN</button></div>
+      ${backupBlock()}
+      <div class="sep"></div><button class="linkbtn" id="acDel" style="color:#ff8a7a">Borrar mi cuenta y todos mis datos</button>`;
+    $('#acSync').onclick = e => busy(e.target, async () => { await A.push(); setMsg(A.status === 'ok' ? 'ok' : 'err', A.status === 'ok' ? 'Progreso guardado en la nube.' : 'No hay conexión. Lo intentaremos más tarde.'); });
+    $('#acOut').onclick = e => busy(e.target, async () => { await A.flush(); await A.backend.logout(); setMsg('ok', 'Has cerrado sesión. Ahora juegas como invitado.'); });
+    $('#acDel').onclick = async () => {
+      if (!confirm('¿Borrar tu cuenta? Se eliminarán tu email, tu nombre y todo tu progreso en la nube. No se puede deshacer.')) return;
+      const uid = A.user.uid;
+      try { await A.backend.remove(uid); try { localStorage.removeItem(SAVE_KEY + '_' + uid); } catch (e) { } setMsg('ok', 'Cuenta borrada.'); }
+      catch (e) { setMsg('err', authMsg(e)); }
+    };
+  } else {
+    const reg = acctTab === 'register';
+    box.innerHTML = `<div class="tabs" style="margin:0 0 4px"><button class="btn small ${reg ? '' : 'on'}" id="tLogin">ENTRAR</button><button class="btn small ${reg ? 'on' : ''}" id="tReg">CREAR CUENTA</button></div>
+      <p class="muted" style="font-size:19px">${reg ? 'Crea tu cuenta y tu progreso actual se guardará en ella. Podrás seguir jugando desde cualquier móvil u ordenador.' : 'Entra para recuperar tu progreso guardado.'}</p>
+      <form id="acForm" class="col" novalidate>
+        ${reg ? `<label class="field">Nombre de jugador<input id="fName" maxlength="16" autocomplete="nickname" placeholder="Ej.: Kakarotto99"></label>` : ''}
+        <label class="field">Email<input id="fMail" type="email" autocomplete="email" placeholder="tu@email.com"></label>
+        <label class="field">Contraseña<input id="fPass" type="password" autocomplete="${reg ? 'new-password' : 'current-password'}" placeholder="${reg ? 'Mínimo 6 caracteres' : ''}"></label>
+        ${reg ? `<label class="check"><input type="checkbox" id="fOk"><span>He leído la privacidad y tengo 14 años o más (o permiso de mi madre, padre o tutor).</span></label>${PRIVACY}` : `<button type="button" class="linkbtn" id="fForgot">¿Has olvidado la contraseña?</button>`}
+        ${msg}
+        <button class="btn primary" type="submit" id="fGo">${reg ? 'CREAR CUENTA' : 'ENTRAR'}</button>
+      </form>
+      <button class="btn google" id="fGoogle">${reg ? 'REGISTRARSE' : 'ENTRAR'} CON GOOGLE</button>
+      ${backupBlock()}`;
+    $('#tLogin').onclick = () => { acctTab = 'login'; acctMsg = null; renderAccount(); };
+    $('#tReg').onclick = () => { acctTab = 'register'; acctMsg = null; renderAccount(); };
+    $('#acForm').onsubmit = ev => {
+      ev.preventDefault();
+      const mail = $('#fMail').value.trim(), pass = $('#fPass').value;
+      if (reg) {
+        const name = $('#fName').value.trim();
+        if (name.length < 3) return setMsg('err', 'El nombre debe tener al menos 3 caracteres.');
+        if (!/^[\p{L}\p{N} _.-]+$/u.test(name)) return setMsg('err', 'El nombre solo puede tener letras, números, espacios, puntos y guiones.');
+        if (!$('#fOk').checked) return setMsg('err', 'Tienes que aceptar la privacidad para crear la cuenta.');
+        busy($('#fGo'), async () => { A.pendingName = name; A.transferGuest = true; try { await A.backend.register(mail, pass, name); acctMsg = { type: 'ok', text: `¡Cuenta creada! Bienvenido, ${name}.` }; } catch (e) { A.transferGuest = false; setMsg('err', authMsg(e)); } });
+      } else busy($('#fGo'), async () => { try { await A.backend.login(mail, pass); acctMsg = { type: 'ok', text: 'Sesión iniciada. Progreso recuperado.' }; } catch (e) { setMsg('err', authMsg(e)); } });
+    };
+    $('#fGoogle').onclick = e => {
+      if (reg && !$('#fOk').checked) return setMsg('err', 'Tienes que aceptar la privacidad para crear la cuenta.');
+      busy(e.target, async () => { A.transferGuest = reg; try { await A.backend.google(); acctMsg = { type: 'ok', text: 'Sesión iniciada con Google.' }; } catch (er) { A.transferGuest = false; setMsg('err', authMsg(er)); } });
+    };
+    if (!reg) $('#fForgot').onclick = () => {
+      const mail = $('#fMail').value.trim(); if (!mail) return setMsg('err', 'Escribe tu email y vuelve a pulsar.');
+      A.backend.reset(mail).then(() => setMsg('ok', 'Te hemos enviado un email para cambiar la contraseña.'), e => setMsg('err', authMsg(e)));
+    };
+  }
+  const ex = $('#bkExport'), im = $('#bkImport');
+  ex.onclick = async () => { const c = exportCode(); $('#bkCode').value = c; try { await navigator.clipboard.writeText(c); setMsg('ok', 'Código copiado. Guárdalo en un sitio seguro.'); } catch (e) { $('#bkCode').select(); setMsg('ok', 'Código listo: cópialo del cuadro.'); } };
+  im.onclick = () => {
+    const c = $('#bkCode').value; if (!c.trim()) return setMsg('err', 'Pega primero un código.');
+    if (!confirm('Cargar este código sustituirá tu progreso actual. ¿Continuar?')) return;
+    try { importCode(c); setMsg('ok', 'Progreso cargado.'); renderAccount(); } catch (e) { setMsg('err', e.message); }
+  };
+}
+$('#bAcct').onclick = () => { acctMsg = null; go('account'); };
+$('#acctBadge').onclick = () => { acctMsg = null; go('account'); };
+Account.init();
+window.DF.account = Account;
 </script>
 </body>
 </html>
