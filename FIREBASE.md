@@ -1,6 +1,6 @@
 # Activar las cuentas online (Firebase)
 
-Si no configuras Firebase, el juego guarda la partida en el navegador y ofrece un código de copia de seguridad. Al configurarlo, los jugadores pueden **crear una cuenta** y su progreso se guarda en la nube: zenis, mejoras, personajes, sagas, récords, Dragonpedia y opciones. Así lo recuperan en cualquier móvil u ordenador.
+Si no configuras Firebase, el juego guarda la partida en el navegador y con el **código de guardado**. La pestaña «Con correo» explica que las cuentas aún no están activas. Al configurarlo, los jugadores pueden **crear una cuenta** y su progreso se guarda en la nube: zenis, mejoras, personajes, sagas, récords, Dragonpedia y opciones. Así lo recuperan en cualquier móvil u ordenador.
 
 Firebase es gratis con el plan **Spark**, que no pide tarjeta. Permite 50.000 lecturas y 20.000 escrituras al día, mucho más de lo que necesita el juego: solo guarda unos segundos después de cada cambio.
 
@@ -44,8 +44,11 @@ const FIREBASE_CONFIG = {
 
 ## Cómo funciona el guardado
 
-- **Invitado:** la partida se guarda en el navegador.
-- **Al crear una cuenta:** el progreso de invitado pasa automáticamente a la cuenta.
+- **Invitado:** la partida se guarda en el navegador y se puede copiar como **código** (`DF2.…`).
+- **Al crear una cuenta**, el jugador elige con qué progreso empieza:
+  - el de este navegador;
+  - **su código**, si jugó en versiones anteriores u otro dispositivo (se comprueba antes de crear la cuenta);
+  - o de cero.
 - **Con sesión iniciada:** cada cambio se sube a la nube a los 2–3 segundos, y también al cerrar o minimizar la pestaña. Si no hay internet, se guarda en local y se sube al volver la conexión.
 - **Al entrar desde otro dispositivo:** se carga la versión más reciente.
 - **Borrar cuenta:** elimina la cuenta y la partida de la nube. Lo exige el RGPD.

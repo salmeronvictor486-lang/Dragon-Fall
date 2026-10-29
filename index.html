@@ -263,6 +263,10 @@ html.fr .menu .btn:last-child:nth-child(even){grid-column:1 / -1}
 .choice .meta{display:flex;flex-direction:column;gap:5px;min-width:0}
 .screen{justify-content:safe center}
 #title{justify-content:flex-start}
+.srcbox{border:0;padding:10px;display:flex;flex-direction:column;gap:8px;background:#0f1430;box-shadow:0 0 0 2px var(--line)}
+.srcbox legend{font-family:'Press Start 2P';font-size:10px;color:var(--gold);padding:0 0 6px;float:left;width:100%}
+.check input[type=radio]{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--orange)}
+#account .msg{margin:2px 0}
 </style>
 </head>
 <body>
@@ -1223,6 +1227,7 @@ function resize() {
 addEventListener('resize', resize); resize();
 cv.addEventListener('pointerdown', e => {
   audioInit();
+  if (state === 'play' && G && G.intro) G.intro.t = Math.min(G.intro.t, .15);
   if (state !== 'play' || e.pointerType === 'mouse') return;
   joy.on = true; joy.id = e.pointerId; joy.ox = joy.x = e.clientX; joy.oy = joy.y = e.clientY;
 });
@@ -1521,7 +1526,8 @@ function newRun(cid, si) {
     t: 0, si, stage: st, cid, kills: 0, zeni: 0, lvl: 1, xp: 0, xpNext: xpNeed(1),
     enemies: [], projs: [], eprojs: [], gems: [], picks: [], fx: [], nums: [],
     bossIdx: 0, boss: null, balls: [], spawnT: .5, eliteT: 55, waveT: 95, pendingLv: 0,
-    rerolls: save.shop.reroll || 0, shake: 0, flash: 0, victoryT: -1, killedBosses: [], seen: {}, endT: -1, auraT: 0, pid: 0, maxCombo: 0,
+    rerolls: save.shop.reroll || 0, intro: null,
+    tut: save.tut ? null : [[1, 'Muévete con WASD o las flechas. En el móvil, arrastra el dedo por la pantalla.'], [8, 'Tus ataques se lanzan solos contra el enemigo más cercano.'], [15, 'Recoge los cristales de ki para subir de nivel y elegir mejoras.'], [24, 'Los enemigos con nombre naranja sueltan Bolas de Dragón. ¡Reúne las 7!']], shake: 0, flash: 0, victoryT: -1, killedBosses: [], seen: {}, endT: -1, auraT: 0, pid: 0, maxCombo: 0,
   };
   P = {
     x: 0, y: 0, r: 6, dirx: 1, diry: 0, face: 1, ft: 0, frame: 0, inv: 1, moving: false,
@@ -1634,7 +1640,7 @@ function spawnBoss(id) {
   };
   G.enemies.push(e); G.boss = e;
   if (!G.seen[id]) { G.seen[id] = 1; markSeen(id); }
-  banner(`¡${d.name.toUpperCase()} HA APARECIDO!`, d.final ? 'Jefe final de la saga' : d.saga);
+  G.intro = { kind: 'boss', t: 2, max: 2, spr, name: d.name, saga: d.saga, final: !!d.final, col: e.aura };
   sfx('boss'); G.shake = Math.max(G.shake, .5);
   return e;
 }
@@ -2046,7 +2052,7 @@ function checkForm() {
     P.formIdx++; P.spr = f.spr; P.name = f.name; P.aura = f.aura || (SPR[f.spr] && SPR[f.spr].aura) || '#ffffff';
     recalc(); P.hp = Math.min(P.maxHp, P.hp + P.maxHp * .3);
     markSeen(f.spr);
-    banner(`¡${f.name.toUpperCase()}!`, 'Transformación desbloqueada');
+    G.intro = { kind: 'trans', t: 1.7, max: 1.7, spr: f.spr, name: f.name, col: P.aura };
     sfx('trans'); G.shake = .7; G.flash = .5;
     shockwave(150, 60 + G.lvl * 4);
     G.fx.push({ k: 'pillar', x: P.x, y: P.y, life: 1.1, max: 1.1, col: P.aura });
@@ -2128,6 +2134,7 @@ function upDesc(u) {
 
 /* =================== BUCLE PRINCIPAL =================== */
 function update(dt) {
+  if (G.intro) { G.intro.t -= dt; if (G.intro.t <= 0) G.intro = null; return; }
   G.t += dt;
   updatePlayer(dt);
   if (G.endT < 0 && G.victoryT < 0) director(dt);
@@ -2410,6 +2417,9 @@ function renderScreen() {
     gr.addColorStop(0, 'rgba(232,67,58,0)'); gr.addColorStop(1, `rgba(232,67,58,${a})`); ctx.fillStyle = gr; ctx.fillRect(0, 0, SWd, SHd);
   }
   drawHUD(small);
+  drawPointers();
+  if (G.tut) { const cur = G.tut.filter(([t]) => G.t >= t && G.t < t + 6).pop(); if (cur) drawTip(cur[1], G.t - cur[0]); }
+  if (G.intro) drawIntro(G.intro);
   if (joy.on) {
     ctx.globalAlpha = .3; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(joy.ox, joy.oy, 48, 0, TAU); ctx.fill();
     const dx = joy.x - joy.ox, dy = joy.y - joy.oy, d = Math.hypot(dx, dy), m = Math.min(d, 48) / (d || 1);
@@ -2417,6 +2427,73 @@ function renderScreen() {
   }
 }
 function hudText(t, x, y, size, col, align = 'left') { txt(t, x, y, size, col, align); }
+/* Flechas hacia objetivos fuera de pantalla */
+function drawPointers() {
+  const tg = [];
+  for (const p of G.picks) if (p.k === 'ball' || p.k === 'capsule') tg.push({ x: p.x, y: p.y, k: p.k, v: p.v });
+  if (G.boss) tg.push({ x: G.boss.x, y: G.boss.y - G.boss.h / 2, k: 'boss', spr: G.boss.spr });
+  const m = 34, top = 150, cx = SWd / 2, cy = SHd / 2;
+  for (const t of tg) {
+    let [sx, sy] = toS(t.x, t.y);
+    if (sx > m && sx < SWd - m && sy > top && sy < SHd - m) continue;
+    const dx = sx - cx, dy = sy - cy, k = Math.min(Math.abs((SWd / 2 - m) / (dx || 1e-6)), Math.abs(((dy < 0 ? cy - top : SHd / 2 - m)) / (dy || 1e-6)));
+    const px = cx + dx * k, py = cy + dy * k, a = Math.atan2(dy, dx), pul = 1 + Math.sin(performance.now() / 180) * .08, r = 15 * pul;
+    ctx.save(); ctx.translate(px, py); ctx.rotate(a); ctx.fillStyle = t.k === 'boss' ? '#e8433a' : '#ffd23f';
+    ctx.beginPath(); ctx.moveTo(r + 10, 0); ctx.lineTo(r + 1, -6); ctx.lineTo(r + 1, 6); ctx.closePath(); ctx.fill(); ctx.restore();
+    draw9(ctx, t.k === 'boss' ? 'cardsel' : 'slot', px - r - 3, py - r - 3, (r + 3) * 2, (r + 3) * 2, 1.5);
+    if (t.k === 'ball') drawDragonBall(ctx, px, py, 8, t.v);
+    else if (t.k === 'capsule') ctx.drawImage(makeIcon('cap', '#fff'), px - 10, py - 10, 20, 20);
+    else { const pr = getPortrait(t.spr); ctx.drawImage(pr, px - 9 * 1.2, py - 11, 18 * 1.2, 19 * 1.2); }
+    const d = Math.round(Math.hypot(t.x - P.x, t.y - P.y) / 10);
+    txt(d + 'm', px, py + r + 10, 6, '#ffffff', 'center');
+  }
+}
+/* Consejos de la primera partida */
+function drawTip(text, age) {
+  const a = Math.min(1, age * 3, (6 - age) * 2); if (a <= 0) return;
+  ctx.globalAlpha = a; ctx.font = '21px VT323, monospace';
+  const w = Math.min(SWd - 24, ctx.measureText(text).width + 50), lines = ctx.measureText(text).width > w - 40 ? 2 : 1, h = 34 + lines * 20, x = (SWd - w) / 2, y = SHd - h - 74;
+  draw9(ctx, 'panel', x, y, w, h, 2);
+  ctx.fillStyle = '#f6efdc'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (lines === 1) ctx.fillText(text, SWd / 2, y + h / 2);
+  else { const words = text.split(' '), half = Math.ceil(words.length / 2); ctx.fillText(words.slice(0, half).join(' '), SWd / 2, y + h / 2 - 10); ctx.fillText(words.slice(half).join(' '), SWd / 2, y + h / 2 + 10); }
+  ctx.globalAlpha = 1;
+}
+/* Escenas: presentación de jefe (VS) y transformación */
+function drawIntro(it) {
+  const bn = $('#banner'); if (bn.classList.contains('on')) bn.classList.remove('on');
+  const p = 1 - it.t / it.max, ease = x => 1 - Math.pow(1 - clamp(x, 0, 1), 3), fade = Math.min(1, p * 5, it.t * 4);
+  ctx.save(); ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = `rgba(6,4,18,${.72 * fade})`; ctx.fillRect(0, 0, SWd, SHd);
+  const big = Math.max(4, Math.floor(Math.min(SWd, SHd) / 95));
+  if (it.kind === 'boss') {
+    const bh = Math.min(SHd * .42, 260), by = SHd / 2 - bh / 2, sl = ease(p * 2.2);
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = '#1e3a8a'; ctx.beginPath(); ctx.moveTo(-SWd * (1 - sl), by); ctx.lineTo(SWd * .55 - SWd * (1 - sl), by); ctx.lineTo(SWd * .45 - SWd * (1 - sl), by + bh); ctx.lineTo(-SWd * (1 - sl), by + bh); ctx.fill();
+    ctx.fillStyle = '#8a1a24'; ctx.beginPath(); ctx.moveTo(SWd * .55 + SWd * (1 - sl), by); ctx.lineTo(SWd * 2, by); ctx.lineTo(SWd * 2, by + bh); ctx.lineTo(SWd * .45 + SWd * (1 - sl), by + bh); ctx.fill();
+    ctx.fillStyle = '#ffd23f'; ctx.fillRect(0, by - 4, SWd, 4); ctx.fillRect(0, by + bh, SWd, 4);
+    const ps = getPortrait(P.spr), bs = getPortrait(it.spr), sc = Math.floor(bh * .82 / 19);
+    ctx.drawImage(ps, SWd * .26 - 9 * sc - SWd * (1 - sl), by + bh - 19 * sc, 18 * sc, 19 * sc);
+    ctx.save(); ctx.translate(SWd * .74 + 9 * sc + SWd * (1 - sl), by + bh - 19 * sc); ctx.scale(-1, 1); ctx.drawImage(bs, 0, 0, 18 * sc, 19 * sc); ctx.restore();
+    const vs = ease((p - .25) * 4), vsz = Math.round(Math.min(SWd, SHd) * .14 * (2 - vs));
+    if (p > .25) { ctx.globalAlpha = fade * vs; txt('VS', SWd / 2, SHd / 2, vsz, Math.floor(p * 20) % 2 ? '#ffd23f' : '#ffffff', 'center'); }
+    ctx.globalAlpha = fade;
+    txt(P.name.toUpperCase(), SWd * .26, by - 22, SWd < 560 ? 8 : 12, '#9ad0ff', 'center');
+    txt(it.name.toUpperCase(), SWd * .74, by - 22, SWd < 560 ? 9 : 14, '#ff9a8a', 'center');
+    txt(it.final ? '¡JEFE FINAL!' : it.saga, SWd / 2, by + bh + 26, SWd < 560 ? 8 : 11, it.final ? '#ffd23f' : '#ffffff', 'center');
+  } else {
+    const cx = SWd / 2, cy = SHd / 2, R = Math.hypot(SWd, SHd), rot = performance.now() / 900;
+    ctx.globalAlpha = .35 * fade; ctx.fillStyle = it.col || '#ffd23f';
+    for (let i = 0; i < 18; i++) { const a = rot + i / 18 * TAU; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx.lineTo(cx + Math.cos(a + .12) * R, cy + Math.sin(a + .12) * R); ctx.fill(); }
+    ctx.globalAlpha = fade;
+    const s = getSprite(it.spr, 0, false), sc = big * (1 + (1 - ease(p * 3)) * .6);
+    if (p < .18) { ctx.globalAlpha = 1 - p / .18; ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, SWd, SHd); ctx.globalAlpha = fade; }
+    ctx.drawImage(s, Math.round(cx - s.width * sc / 2), Math.round(cy - s.height * sc / 2 - 20), Math.round(s.width * sc), Math.round(s.height * sc));
+    txt(it.name.toUpperCase(), cx, cy + s.height * big / 2 + 20, SWd < 560 ? 10 : 16, '#ffd23f', 'center');
+    txt('¡TRANSFORMACIÓN!', cx, cy - s.height * big / 2 - 40, SWd < 560 ? 8 : 10, '#ffffff', 'center');
+  }
+  ctx.restore(); ctx.globalAlpha = 1;
+}
 function drawHUD(small) {
   ctx.imageSmoothingEnabled = false;
   const S = small ? 1.5 : 2, f = small ? .78 : 1;
@@ -2915,6 +2992,7 @@ function endRun(win, quit) {
     save.cleared[st.id] = 1;
     const b = save.best[st.id]; if (!b || G.t < b.t) save.best[st.id] = { t: G.t, lvl: G.lvl, c: G.cid };
   }
+  save.tut = 1;
   const tk = []; if (win) { if (!save.gifts[st.id]) { save.gifts[st.id] = 1; save.tickets.g++; tk.push('Cápsula Dorada'); } save.tickets.n++; tk.push('Cápsula Normal'); }
   const newly = CHARS.filter(c => isUnlocked(c) && !before.has(c.id));
   newly.forEach(c => markSeen(c.id));
@@ -3065,6 +3143,7 @@ function banner(a, b) {
 
 /* ---------- Teclado ---------- */
 function onKey(e) {
+  if (state === 'play' && G && G.intro && ['Space', 'Enter', 'Escape'].includes(e.code)) { G.intro.t = Math.min(G.intro.t, .15); return; }
   if (state === 'play' && (e.code === 'Escape' || e.code === 'KeyP')) { pauseGame(); return; }
   if (state === 'paused' && (e.code === 'Escape' || e.code === 'KeyP')) { resumeGame(); return; }
   if (state === 'levelup') {
@@ -3147,7 +3226,7 @@ const authMsg = e => {
 };
 
 const Account = {
-  backend: null, user: null, status: 'local', lastSync: 0, timer: null, dirty: false, pendingName: '', transferGuest: false, ready: false,
+  backend: null, user: null, status: 'local', lastSync: 0, timer: null, dirty: false, pendingName: '', pendingInit: null, initFromGuest: false, ready: false,
   async init() {
     try {
       if (window.DF_BACKEND) this.backend = window.DF_BACKEND;
@@ -3170,13 +3249,16 @@ const Account = {
     }
     if (!u.name) u.name = this.pendingName || u.email.split('@')[0];
     this.user = u; this.status = 'sync'; this.refresh();
-    const guest = readSave(SAVE_KEY), key = SAVE_KEY + '_' + u.uid, local = readSave(key);
+    const key = SAVE_KEY + '_' + u.uid, local = readSave(key);
     let cloud = null, cloudOk = true;
     try { const d = await this.backend.load(u.uid); if (d) { cloud = normalizeSave(d.save); if (d.name) u.name = d.name; } } catch (e) { cloudOk = false; }
     let chosen;
-    if (this.transferGuest && guest && !cloud) { chosen = guest; try { localStorage.removeItem(SAVE_KEY); } catch (e) { } }   // cuenta nueva: se lleva el progreso de invitado
-    else chosen = [local, cloud].filter(Boolean).sort((a, b) => b.ts - a.ts)[0];   // la versión más reciente
-    this.transferGuest = false; this.pendingName = '';
+    const init = this.pendingInit;
+    if (init && !cloud) {   // cuenta nueva: empieza con el progreso elegido (navegador, código o de cero)
+      chosen = normalizeSave(init); chosen.opts = save.opts; chosen.ts = Date.now();
+      if (this.initFromGuest) try { localStorage.removeItem(SAVE_KEY); } catch (e) { }
+    } else chosen = [local, cloud].filter(Boolean).sort((a, b) => b.ts - a.ts)[0];   // la versión más reciente
+    this.pendingInit = null; this.initFromGuest = false; this.pendingName = '';
     if (this.inRun()) { this.status = cloudOk ? 'ok' : 'off'; this.refresh(); return; }
     saveKey = key; save = normalizeSave(chosen || defSave()); if (!save.ts) save.ts = Date.now();
     writeLocal();
@@ -3195,105 +3277,166 @@ const Account = {
   refresh() { renderAccountBadge(); if (state === 'account') renderAccount(); if (state === 'title') renderTitle(); },
 };
 
-/* ---------- copia de seguridad ---------- */
-function exportCode() { const json = JSON.stringify(save); return 'DF1.' + btoa(unescape(encodeURIComponent(json))); }
-function importCode(code) {
-  code = (code || '').trim(); if (!code.startsWith('DF1.')) throw new Error('El código no es de Dragon Fall.');
-  let o; try { o = JSON.parse(decodeURIComponent(escape(atob(code.slice(4))))); } catch (e) { throw new Error('El código está incompleto o dañado.'); }
-  if (!o || typeof o !== 'object' || !('zeni' in o)) throw new Error('El código no contiene una partida válida.');
-  const opts = save.opts; save = normalizeSave(o); save.opts = opts; persist();
+/* ---------- código de guardado ----------
+   DF2 = JSON comprimido (deflate) en base64url + suma de control. DF1 (antiguo) sigue funcionando. */
+const b64u = {
+  enc: bytes => { let s = ''; bytes.forEach(b => s += String.fromCharCode(b)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); },
+  dec: str => { str = str.replace(/-/g, '+').replace(/_/g, '/'); while (str.length % 4) str += '='; const s = atob(str), a = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; },
+};
+function crc4(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36).slice(-4).toUpperCase(); }
+async function streamBytes(bytes, stream) { const s = new Blob([bytes]).stream().pipeThrough(stream); return new Uint8Array(await new Response(s).arrayBuffer()); }
+function codeData() { const o = JSON.parse(JSON.stringify(save)); delete o.opts; delete o.ts; return o; }
+async function exportCode() {
+  const json = JSON.stringify(codeData());
+  if (typeof CompressionStream === 'undefined') return 'DF1.' + btoa(unescape(encodeURIComponent(json)));
+  const body = b64u.enc(await streamBytes(new TextEncoder().encode(json), new CompressionStream('deflate-raw')));
+  return `DF2.${body}.${crc4(body)}`;
 }
+async function decodeCode(code) {
+  code = (code || '').replace(/\s+/g, '');
+  let o;
+  if (code.startsWith('DF1.')) { try { o = JSON.parse(decodeURIComponent(escape(atob(code.slice(4))))); } catch (e) { throw new Error('El código está incompleto o dañado.'); } }
+  else if (code.startsWith('DF2.')) {
+    const parts = code.split('.'); if (parts.length !== 3) throw new Error('El código está incompleto: cópialo entero, desde «DF2.» hasta el final.');
+    if (crc4(parts[1]) !== parts[2].toUpperCase()) throw new Error('El código tiene algún carácter mal copiado. Vuelve a copiarlo entero.');
+    if (typeof DecompressionStream === 'undefined') throw new Error('Este navegador es demasiado antiguo para leer el código. Actualízalo y vuelve a probar.');
+    try { o = JSON.parse(new TextDecoder().decode(await streamBytes(b64u.dec(parts[1]), new DecompressionStream('deflate-raw')))); } catch (e) { throw new Error('El código está dañado.'); }
+  } else throw new Error('Eso no es un código de Dragon Fall (empieza por «DF2.» o «DF1.»).');
+  if (!o || typeof o !== 'object' || !('zeni' in o)) throw new Error('El código no contiene una partida válida.');
+  return normalizeSave(o);
+}
+async function importCode(code) { const s = await decodeCode(code); s.opts = save.opts; save = s; persist(); }
+function hasProgress(s) { return !!s && (s.runs > 0 || s.zeni > 0 || Object.keys(s.owned || {}).length > 0 || Object.keys(s.shop || {}).length > 0 || Object.keys(s.cleared || {}).length > 0); }
+function saveSummary(s) { return `${fmtNum(s.zeni)} zenis · ${CHARS.filter(c => s.owned[c.id] || (c.unlock == null)).length} guerreros · ${Object.keys(s.cleared).filter(k => STAGES.some(st => st.id === k)).length} sagas · ${fmtNum(s.runs)} partidas`; }
 
-/* ---------- interfaz ---------- */
+/* ---------- interfaz de cuenta ---------- */
 function renderAccountBadge() {
   const el = $('#acctBadge'); if (!el) return;
   const A = Account, dot = { ok: 'ok', sync: 'sync', off: 'off' }[A.status] || '';
   if (A.user) {
     const st = A.status === 'ok' ? 'guardado en la nube' : A.status === 'sync' ? 'sincronizando…' : 'sin conexión, se guardará al volver';
     el.innerHTML = `<span class="dot ${dot}"></span>👤 <b>${esc(A.user.name)}</b> · ${st}`;
-  } else if (A.backend) el.innerHTML = `<span class="dot"></span>Invitado · <b>crea una cuenta</b> para no perder tu progreso`;
-  else el.innerHTML = `<span class="dot"></span>Progreso guardado en este navegador`;
+  } else el.innerHTML = `<span class="dot"></span>Invitado · <b>guarda tu partida</b> con correo o con código`;
 }
 function esc(t) { return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
-let acctTab = 'login', acctMsg = null;
+let acctTab = 'mail', mailTab = 'login', acctMsg = null, regSource = null;
 const PRIVACY = `<details class="priv"><summary>Privacidad (léela antes de registrarte)</summary>
   <p style="margin-top:6px">Solo guardamos tu <b>email</b>, tu <b>nombre de jugador</b> y tu <b>progreso del juego</b>, únicamente para que puedas recuperar tu partida en cualquier dispositivo. No se usa para publicidad ni se comparte con nadie. Los datos se alojan en Firebase (Google). Puedes borrar tu cuenta y todos tus datos cuando quieras desde esta misma pantalla. Si tienes menos de 14 años necesitas el permiso de tu madre, padre o tutor para crear una cuenta.</p></details>`;
-function backupBlock() {
-  return `<div class="sep"></div><b class="px gold" style="font-size:10px">COPIA DE SEGURIDAD</b>
-   <p class="muted" style="font-size:18px">Copia este código para guardar tu progreso o pasarlo a otro navegador.</p>
-   <textarea class="code" id="bkCode" placeholder="Pega aquí un código DF1… para cargarlo"></textarea>
-   <div class="row wrap"><button class="btn small" id="bkExport">COPIAR MI CÓDIGO</button><button class="btn small" id="bkImport">CARGAR CÓDIGO</button></div>`;
-}
 function setMsg(type, text) { acctMsg = text ? { type, text } : null; const m = $('#acctMsg'); if (m) { m.className = 'msg' + (text ? ' on ' + type : ''); m.textContent = text || ''; } }
 async function busy(btn, fn) { const t = btn.textContent; btn.disabled = true; btn.textContent = '...'; try { await fn(); } finally { btn.disabled = false; btn.textContent = t; } }
+function codePane() {
+  return `<p style="font-size:20px">Tu <b class="gold">código de guardado</b> contiene todo tu progreso: zenis, guerreros, estrellas, mejoras y sagas. Cópialo y guárdalo donde quieras (notas del móvil, un correo a ti mismo…). Para recuperar la partida en otro navegador, pégalo abajo.</p>
+   <div class="row wrap"><button class="btn primary small" id="bkExport">COPIAR MI CÓDIGO</button></div>
+   <textarea class="code" id="bkCode" placeholder="Pega aquí tu código DF2… para cargar tu partida" spellcheck="false"></textarea>
+   <div class="row wrap"><button class="btn small" id="bkImport">CARGAR CÓDIGO</button></div>
+   <p class="muted" style="font-size:17px">Progreso actual: ${saveSummary(save)}</p>`;
+}
+function sourcePicker() {
+  const guest = readSave(SAVE_KEY), local = hasProgress(guest);
+  if (!regSource) regSource = local ? 'local' : 'new';
+  const opt = (v, t, d) => `<label class="check"><input type="radio" name="src" value="${v}" ${regSource === v ? 'checked' : ''}><span><b class="gold">${t}</b><br>${d}</span></label>`;
+  return `<fieldset class="srcbox"><legend>¿Ya habías jugado antes?</legend>
+    ${local ? opt('local', 'Sí, en este navegador', 'Tu cuenta empezará con lo que ya tienes aquí: ' + saveSummary(guest) + '.') : ''}
+    ${opt('code', 'Sí, tengo un código', 'Si jugaste en una versión anterior o en otro dispositivo, pega tu código para no perder nada.')}
+    <textarea class="code" id="fCode" placeholder="Pega tu código DF2… o DF1…" spellcheck="false" ${regSource === 'code' ? '' : 'hidden'}></textarea>
+    ${opt('new', 'No, empiezo de cero', 'Tu cuenta empezará sin progreso.')}
+  </fieldset>`;
+}
 function renderAccount() {
   const A = Account, box = $('#acctPanel');
   const msg = `<div class="msg${acctMsg ? ' on ' + acctMsg.type : ''}" id="acctMsg">${acctMsg ? esc(acctMsg.text) : ''}</div>`;
   if (!A.ready) { box.innerHTML = '<p class="muted">Conectando…</p>'; return; }
-  if (!A.backend) {
-    box.innerHTML = `<h2 class="px">TU PROGRESO</h2><p style="font-size:20px">Las cuentas online todavía no están activadas en esta web. Tu progreso se guarda automáticamente en este navegador.</p>${msg}${backupBlock()}`;
+  const tabs = `<div class="tabs" style="margin:0 0 6px"><button class="btn small ${acctTab === 'mail' ? 'on' : ''}" id="tMail">✉ CON CORREO</button><button class="btn small ${acctTab === 'code' ? 'on' : ''}" id="tCode">🔑 CON CÓDIGO</button></div>`;
+  let body = '';
+  if (acctTab === 'code') body = codePane();
+  else if (!A.backend) {
+    body = `<div class="msg on" style="background:#2a2410;color:#ffe9a8">Las cuentas con correo todavía no están activadas en esta web. De momento, guarda tu partida con tu <b>código</b> (pestaña «Con código»): cuando se activen, podrás crear tu cuenta y pegar ese código para conservarlo todo.</div>`;
   } else if (A.user) {
     const st = A.status === 'ok' ? `Guardado en la nube${A.lastSync ? ' a las ' + new Date(A.lastSync).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : ''}` : A.status === 'sync' ? 'Sincronizando…' : 'Sin conexión: se subirá cuando vuelva internet';
-    box.innerHTML = `<h2 class="px">${esc(A.user.name).toUpperCase()}</h2>
-      <div class="stats"><span>Email</span><b>${esc(A.user.email)}</b><span>Estado</span><b>${st}</b><span>Zenis</span><b class="gold">${fmtNum(save.zeni)}</b><span>Guerreros</span><b>${CHARS.filter(isUnlocked).length}/${CHARS.length}</b><span>Sagas completadas</span><b>${Object.keys(save.cleared).length}/${STAGES.length}</b><span>Partidas</span><b>${fmtNum(save.runs)}</b></div>
-      ${msg}
+    body = `<h2 class="px">${esc(A.user.name).toUpperCase()}</h2>
+      <div class="stats"><span>Email</span><b>${esc(A.user.email)}</b><span>Estado</span><b>${st}</b><span>Zenis</span><b class="gold">${fmtNum(save.zeni)}</b><span>Guerreros</span><b>${CHARS.filter(isUnlocked).length}/${CHARS.length}</b><span>Sagas completadas</span><b>${Object.keys(save.cleared).filter(k => STAGES.some(s => s.id === k)).length}/${STAGES.length}</b><span>Partidas</span><b>${fmtNum(save.runs)}</b></div>
       <div class="row wrap"><button class="btn primary small" id="acSync">SINCRONIZAR AHORA</button><button class="btn small" id="acOut">CERRAR SESIÓN</button></div>
-      ${backupBlock()}
-      <div class="sep"></div><button class="linkbtn" id="acDel" style="color:#ff8a7a">Borrar mi cuenta y todos mis datos</button>`;
+      <p class="muted" style="font-size:17px">Tu código de guardado sigue funcionando también: lo tienes en la pestaña «Con código».</p>
+      <button class="linkbtn" id="acDel" style="color:#ff8a7a">Borrar mi cuenta y todos mis datos</button>`;
+  } else {
+    const reg = mailTab === 'register';
+    body = `<div class="tabs" style="margin:0"><button class="btn small ${reg ? '' : 'on'}" id="tLogin">ENTRAR</button><button class="btn small ${reg ? 'on' : ''}" id="tReg">CREAR CUENTA</button></div>
+      <p class="muted" style="font-size:19px">${reg ? 'Con una cuenta tu progreso se guarda solo en la nube y lo recuperas en cualquier móvil u ordenador con tu correo y tu contraseña.' : 'Entra con tu correo para recuperar tu progreso.'}</p>
+      <form id="acForm" class="col" novalidate>
+        ${reg ? `<label class="field">Nombre de jugador<input id="fName" maxlength="16" autocomplete="nickname" placeholder="Ej.: Kakarotto99"></label>` : ''}
+        <label class="field">Correo electrónico<input id="fMail" type="email" autocomplete="email" placeholder="tu@correo.com"></label>
+        <label class="field">Contraseña<input id="fPass" type="password" autocomplete="${reg ? 'new-password' : 'current-password'}" placeholder="${reg ? 'Mínimo 6 caracteres' : ''}"></label>
+        ${reg ? `<label class="field">Repite la contraseña<input id="fPass2" type="password" autocomplete="new-password"></label>${sourcePicker()}<label class="check"><input type="checkbox" id="fOk"><span>He leído la privacidad y tengo 14 años o más (o permiso de mi madre, padre o tutor).</span></label>${PRIVACY}` : `<button type="button" class="linkbtn" id="fForgot">¿Has olvidado la contraseña?</button>`}
+        <button class="btn primary" type="submit" id="fGo">${reg ? 'CREAR CUENTA' : 'ENTRAR'}</button>
+      </form>
+      <button class="btn google" id="fGoogle">${reg ? 'CREAR CUENTA' : 'ENTRAR'} CON GOOGLE</button>`;
+  }
+  box.innerHTML = tabs + msg + body;
+  $('#tMail').onclick = () => { acctTab = 'mail'; acctMsg = null; renderAccount(); };
+  $('#tCode').onclick = () => { acctTab = 'code'; acctMsg = null; renderAccount(); };
+  if (acctTab === 'code') {
+    $('#bkExport').onclick = async () => { const c = await exportCode(); $('#bkCode').value = c; try { await navigator.clipboard.writeText(c); setMsg('ok', 'Código copiado. Guárdalo en un sitio seguro.'); } catch (e) { $('#bkCode').select(); setMsg('ok', 'Código listo: cópialo del cuadro.'); } };
+    $('#bkImport').onclick = async () => {
+      const c = $('#bkCode').value; if (!c.trim()) return setMsg('err', 'Pega primero un código.');
+      let s; try { s = await decodeCode(c); } catch (e) { return setMsg('err', e.message); }
+      if (!(await ask(`Este código tiene: ${saveSummary(s)}. Sustituirá tu progreso actual. ¿Cargarlo?`, 'CARGAR'))) return;
+      await importCode(c); acctMsg = { type: 'ok', text: 'Partida cargada.' + (A.user ? ' También se ha guardado en tu cuenta.' : '') }; renderAccount();
+    };
+    return;
+  }
+  if (!A.backend) return;
+  if (A.user) {
     $('#acSync').onclick = e => busy(e.target, async () => { await A.push(); setMsg(A.status === 'ok' ? 'ok' : 'err', A.status === 'ok' ? 'Progreso guardado en la nube.' : 'No hay conexión. Lo intentaremos más tarde.'); });
-    $('#acOut').onclick = e => busy(e.target, async () => { await A.flush(); await A.backend.logout(); setMsg('ok', 'Has cerrado sesión. Ahora juegas como invitado.'); });
+    $('#acOut').onclick = e => busy(e.target, async () => { await A.flush(); await A.backend.logout(); acctMsg = { type: 'ok', text: 'Has cerrado sesión. Ahora juegas como invitado.' }; });
     $('#acDel').onclick = async () => {
       if (!(await ask('¿Borrar tu cuenta? Se eliminarán tu email, tu nombre y todo tu progreso en la nube. No se puede deshacer.', 'BORRAR CUENTA'))) return;
       const uid = A.user.uid;
-      try { await A.backend.remove(uid); try { localStorage.removeItem(SAVE_KEY + '_' + uid); } catch (e) { } setMsg('ok', 'Cuenta borrada.'); }
+      try { await A.backend.remove(uid); try { localStorage.removeItem(SAVE_KEY + '_' + uid); } catch (e) { } acctMsg = { type: 'ok', text: 'Cuenta borrada.' }; renderAccount(); }
       catch (e) { setMsg('err', authMsg(e)); }
     };
-  } else {
-    const reg = acctTab === 'register';
-    box.innerHTML = `<div class="tabs" style="margin:0 0 4px"><button class="btn small ${reg ? '' : 'on'}" id="tLogin">ENTRAR</button><button class="btn small ${reg ? 'on' : ''}" id="tReg">CREAR CUENTA</button></div>
-      <p class="muted" style="font-size:19px">${reg ? 'Crea tu cuenta y tu progreso actual se guardará en ella. Podrás seguir jugando desde cualquier móvil u ordenador.' : 'Entra para recuperar tu progreso guardado.'}</p>
-      <form id="acForm" class="col" novalidate>
-        ${reg ? `<label class="field">Nombre de jugador<input id="fName" maxlength="16" autocomplete="nickname" placeholder="Ej.: Kakarotto99"></label>` : ''}
-        <label class="field">Email<input id="fMail" type="email" autocomplete="email" placeholder="tu@email.com"></label>
-        <label class="field">Contraseña<input id="fPass" type="password" autocomplete="${reg ? 'new-password' : 'current-password'}" placeholder="${reg ? 'Mínimo 6 caracteres' : ''}"></label>
-        ${reg ? `<label class="check"><input type="checkbox" id="fOk"><span>He leído la privacidad y tengo 14 años o más (o permiso de mi madre, padre o tutor).</span></label>${PRIVACY}` : `<button type="button" class="linkbtn" id="fForgot">¿Has olvidado la contraseña?</button>`}
-        ${msg}
-        <button class="btn primary" type="submit" id="fGo">${reg ? 'CREAR CUENTA' : 'ENTRAR'}</button>
-      </form>
-      <button class="btn google" id="fGoogle">${reg ? 'REGISTRARSE' : 'ENTRAR'} CON GOOGLE</button>
-      ${backupBlock()}`;
-    $('#tLogin').onclick = () => { acctTab = 'login'; acctMsg = null; renderAccount(); };
-    $('#tReg').onclick = () => { acctTab = 'register'; acctMsg = null; renderAccount(); };
-    $('#acForm').onsubmit = ev => {
-      ev.preventDefault();
-      const mail = $('#fMail').value.trim(), pass = $('#fPass').value;
-      if (reg) {
-        const name = $('#fName').value.trim();
-        if (name.length < 3) return setMsg('err', 'El nombre debe tener al menos 3 caracteres.');
-        if (!/^[\p{L}\p{N} _.-]+$/u.test(name)) return setMsg('err', 'El nombre solo puede tener letras, números, espacios, puntos y guiones.');
-        if (!$('#fOk').checked) return setMsg('err', 'Tienes que aceptar la privacidad para crear la cuenta.');
-        busy($('#fGo'), async () => { A.pendingName = name; A.transferGuest = true; try { await A.backend.register(mail, pass, name); acctMsg = { type: 'ok', text: `¡Cuenta creada! Bienvenido, ${name}.` }; } catch (e) { A.transferGuest = false; setMsg('err', authMsg(e)); } });
-      } else busy($('#fGo'), async () => { try { await A.backend.login(mail, pass); acctMsg = { type: 'ok', text: 'Sesión iniciada. Progreso recuperado.' }; } catch (e) { setMsg('err', authMsg(e)); } });
-    };
-    $('#fGoogle').onclick = e => {
-      if (reg && !$('#fOk').checked) return setMsg('err', 'Tienes que aceptar la privacidad para crear la cuenta.');
-      busy(e.target, async () => { A.transferGuest = reg; try { await A.backend.google(); acctMsg = { type: 'ok', text: 'Sesión iniciada con Google.' }; } catch (er) { A.transferGuest = false; setMsg('err', authMsg(er)); } });
-    };
-    if (!reg) $('#fForgot').onclick = () => {
-      const mail = $('#fMail').value.trim(); if (!mail) return setMsg('err', 'Escribe tu email y vuelve a pulsar.');
-      A.backend.reset(mail).then(() => setMsg('ok', 'Te hemos enviado un email para cambiar la contraseña.'), e => setMsg('err', authMsg(e)));
-    };
+    return;
   }
-  const ex = $('#bkExport'), im = $('#bkImport');
-  ex.onclick = async () => { const c = exportCode(); $('#bkCode').value = c; try { await navigator.clipboard.writeText(c); setMsg('ok', 'Código copiado. Guárdalo en un sitio seguro.'); } catch (e) { $('#bkCode').select(); setMsg('ok', 'Código listo: cópialo del cuadro.'); } };
-  im.onclick = async () => {
-    const c = $('#bkCode').value; if (!c.trim()) return setMsg('err', 'Pega primero un código.');
-    if (!(await ask('Cargar este código sustituirá tu progreso actual. ¿Continuar?', 'CARGAR'))) return;
-    try { importCode(c); setMsg('ok', 'Progreso cargado.'); renderAccount(); } catch (e) { setMsg('err', e.message); }
+  const reg = mailTab === 'register';
+  $('#tLogin').onclick = () => { mailTab = 'login'; acctMsg = null; renderAccount(); };
+  $('#tReg').onclick = () => { mailTab = 'register'; acctMsg = null; renderAccount(); };
+  if (reg) document.querySelectorAll('input[name=src]').forEach(r => r.onchange = () => { regSource = r.value; $('#fCode').hidden = regSource !== 'code'; });
+  // Prepara el progreso inicial de la cuenta nueva según lo elegido
+  const prepareInit = async () => {
+    if (regSource === 'code') { const c = $('#fCode').value; if (!c.trim()) throw new Error('Pega tu código o elige otra opción.'); A.pendingInit = await decodeCode(c); A.initFromGuest = false; }
+    else if (regSource === 'local') { A.pendingInit = readSave(SAVE_KEY); A.initFromGuest = true; }
+    else { A.pendingInit = defSave(); A.initFromGuest = false; }
+  };
+  $('#acForm').onsubmit = ev => {
+    ev.preventDefault();
+    const mail = $('#fMail').value.trim(), pass = $('#fPass').value;
+    if (!reg) return busy($('#fGo'), async () => { try { await A.backend.login(mail, pass); acctMsg = { type: 'ok', text: 'Sesión iniciada. Progreso recuperado.' }; } catch (e) { setMsg('err', authMsg(e)); } });
+    const name = $('#fName').value.trim();
+    if (name.length < 3) return setMsg('err', 'El nombre debe tener al menos 3 caracteres.');
+    if (!/^[\p{L}\p{N} _.-]+$/u.test(name)) return setMsg('err', 'El nombre solo puede tener letras, números, espacios, puntos y guiones.');
+    if (pass.length < 6) return setMsg('err', 'La contraseña debe tener al menos 6 caracteres.');
+    if (pass !== $('#fPass2').value) return setMsg('err', 'Las dos contraseñas no coinciden.');
+    if (!$('#fOk').checked) return setMsg('err', 'Tienes que aceptar la privacidad para crear la cuenta.');
+    busy($('#fGo'), async () => {
+      try { await prepareInit(); } catch (e) { return setMsg('err', e.message); }
+      A.pendingName = name;
+      try { await A.backend.register(mail, pass, name); acctMsg = { type: 'ok', text: `¡Cuenta creada! Bienvenido, ${name}. Tu progreso ya está en la nube.` }; regSource = null; }
+      catch (e) { A.pendingInit = null; setMsg('err', authMsg(e)); }
+    });
+  };
+  $('#fGoogle').onclick = e => {
+    if (reg && !$('#fOk').checked) return setMsg('err', 'Tienes que aceptar la privacidad para crear la cuenta.');
+    busy(e.target, async () => {
+      if (reg) { try { await prepareInit(); } catch (er) { return setMsg('err', er.message); } }
+      try { await A.backend.google(); acctMsg = { type: 'ok', text: 'Sesión iniciada con Google.' }; } catch (er) { A.pendingInit = null; setMsg('err', authMsg(er)); }
+    });
+  };
+  if (!reg) $('#fForgot').onclick = () => {
+    const mail = $('#fMail').value.trim(); if (!mail) return setMsg('err', 'Escribe tu correo y vuelve a pulsar.');
+    A.backend.reset(mail).then(() => setMsg('ok', 'Te hemos enviado un correo para cambiar la contraseña.'), e => setMsg('err', authMsg(e)));
   };
 }
-$('#bAcct').onclick = () => { acctMsg = null; go('account'); };
-$('#acctBadge').onclick = () => { acctMsg = null; go('account'); };
+$('#bAcct').onclick = () => { acctMsg = null; acctTab = Account.backend ? 'mail' : 'code'; go('account'); };
+$('#acctBadge').onclick = () => { acctMsg = null; acctTab = Account.backend ? 'mail' : 'code'; go('account'); };
 Account.init();
 window.DF.account = Account;
 </script>
