@@ -6,6 +6,11 @@
 <title>Dragon Fall</title>
 <meta name="description" content="Dragon Fall: survivor pixel art del universo Dragon Ball. Juega gratis en el navegador.">
 <meta name="theme-color" content="#0b0f24">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dragon Fall">
 <meta property="og:title" content="Dragon Fall">
 <meta property="og:description" content="Survivor pixel art del universo Dragon Ball. Juega gratis en el navegador.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Ccircle cx='8' cy='8' r='7.5' fill='%237a3a00'/%3E%3Ccircle cx='8' cy='8' r='6.6' fill='%23ff9a1c'/%3E%3Ccircle cx='6' cy='6' r='2.4' fill='%23ffcf6a'/%3E%3Crect x='5' y='7' width='2' height='2' fill='%23d8261a'/%3E%3Crect x='9' y='5' width='2' height='2' fill='%23d8261a'/%3E%3Crect x='9' y='9' width='2' height='2' fill='%23d8261a'/%3E%3C/svg%3E">
@@ -407,6 +412,73 @@ html.fr .acct-badge:hover{filter:brightness(1.2)}
 .bi-c .n{font-family:'Press Start 2P';font-size:7px;color:var(--gold);line-height:1.5}
 .bi-c .p{font-size:18px;color:#fff}.bi-c .st{font-size:14px;color:#8a90b8}.bi-c.own .st{color:var(--gold)}.bi-c .sp{font-size:13px;color:#9fd8ff;line-height:1.1}
 @media (max-width:560px){.bi-grid{grid-template-columns:repeat(3,1fr)}.bi-head canvas{width:64px;height:43px}.bi-panel{padding:12px}}
+/* ---- modos, dificultad, misiones, ranking, compañero ---- */
+.langs{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.langs .btn.on{background:var(--orange);color:#2a1300}
+.padfocus{outline:3px solid #ffd23f!important;outline-offset:3px;filter:brightness(1.15)}
+.instbtn{position:absolute!important;top:14px;left:16px;padding:8px 12px}
+.optbtn{position:absolute!important;top:14px;right:16px;display:flex;align-items:center;gap:8px;padding:8px 12px}.optbtn .mi canvas{width:20px;height:20px;image-rendering:pixelated;display:block}
+@media (max-width:560px){.optbtn .ol{display:none}}
+.modebar{margin-top:56px;display:flex;flex-direction:column;align-items:center;gap:10px;width:min(1080px,100%)}
+.modebar+.stages{margin-top:14px}
+.diffbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.diffbar .btn{--dc:#59d66b}.diffbar .btn.on{background:var(--dc);color:#1a0d00}
+.diffbar .btn:disabled{opacity:.45}
+.modeinfo{text-align:center;font-size:18px;max-width:640px;margin:0}
+.stage .dd{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.stage .dd span{font-size:15px;padding:1px 6px;background:#0b0f24;box-shadow:0 0 0 2px var(--c);color:var(--c)}
+.stage .dd span.no{opacity:.35}
+.mis-wrap{width:min(900px,100%);display:flex;flex-direction:column;gap:14px}
+.misrow{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center;background:#0f1430;box-shadow:0 0 0 2px var(--line);padding:10px 12px}
+.misrow.done{box-shadow:0 0 0 2px var(--green)}
+.misrow.claimed{opacity:.55}
+.misrow .mt{font-size:19px;color:#e6e9ff}.misrow .mt small{display:block;font-size:16px;color:var(--muted)}
+.misrow .rw{font-size:16px;color:var(--gold);text-align:right}
+.bar{grid-column:1/-1;height:10px;background:#0b0f24;box-shadow:0 0 0 2px #2a3572;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#a8f0b0,#59d66b 45%,#2a8a3a)}
+.bar{height:14px}.bar b{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;font-weight:400;color:#fff;text-shadow:0 1px 0 #000,0 0 3px #000}
+.misrow .btn{grid-row:span 1;white-space:nowrap}
+.achgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.prof{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
+.prof canvas.pedestal{width:108px;height:126px}
+.prof .lv{font-family:'Press Start 2P';font-size:14px;color:var(--gold);line-height:1.6}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.statgrid div{background:#0f1430;box-shadow:0 0 0 2px var(--line);padding:8px 10px;font-size:16px;color:var(--muted)}
+.statgrid b{display:block;font-family:'Press Start 2P';font-size:11px;color:#fff;font-weight:400;margin-top:4px;line-height:1.5}
+.titles{display:flex;flex-wrap:wrap;gap:8px}
+.titles .btn.on{background:var(--gold);color:#2a1300}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f2e18;color:#a8f0b0;box-shadow:0 0 0 3px var(--line);padding:10px 16px;font-size:20px;opacity:0;pointer-events:none;z-index:15;max-width:92vw;text-align:center}
+.toast.on{animation:toast 2.8s ease forwards}
+.rank-wrap{width:min(760px,100%);display:flex;flex-direction:column;gap:8px}
+.rkrow{display:grid;grid-template-columns:44px 40px 1fr auto;gap:10px;align-items:center;background:#0f1430;box-shadow:0 0 0 2px #2a3572;padding:6px 10px}
+.rkrow.me{box-shadow:0 0 0 2px var(--gold);background:#2a2410}
+.rkrow .pos{font-family:'Press Start 2P';font-size:12px;color:#cfd6f5;text-align:center}
+.rkrow:nth-child(1) .pos{color:#ffd23f}.rkrow:nth-child(2) .pos{color:#dfe6ff}.rkrow:nth-child(3) .pos{color:#e8a05a}
+.rkrow canvas{width:36px;height:38px;image-rendering:pixelated}
+.rkrow .nm{font-size:19px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rkrow .nm small{display:block;font-size:15px;color:var(--muted)}
+.rkrow .sc{font-family:'Press Start 2P';font-size:11px;color:var(--gold);text-align:right}.rkrow .sc small{display:block;font-family:inherit;font-size:15px;color:var(--muted);margin-top:3px}
+.buddy{display:flex;align-items:center;gap:10px;background:#0f1430;box-shadow:0 0 0 2px var(--line);padding:8px 10px;cursor:pointer;width:100%;border:0;color:inherit;text-align:left;font:inherit}
+.buddy:hover{box-shadow:0 0 0 2px var(--gold)}
+.buddy canvas{width:36px;height:38px;image-rendering:pixelated;background:#0b0f24;flex:none}
+.buddy .bt{font-size:18px}.buddy .bt b{font-family:'Press Start 2P';font-size:9px;color:var(--gold);font-weight:400;display:block;line-height:1.6}
+.buddy .fz{color:#ffd23f;font-size:16px}
+.bpick{position:fixed;inset:0;z-index:34;background:rgba(5,6,18,.78);display:flex;align-items:safe center;justify-content:center;padding:16px;overflow:auto}
+.bpick .panel{width:min(760px,100%);display:flex;flex-direction:column;gap:12px}
+.bpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;max-height:60vh;overflow:auto;padding:4px}
+.bpgrid button{background:var(--panel2);box-shadow:0 0 0 2px #2a3572;border:0;color:#fff;padding:6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;font:inherit;font-size:15px}
+.bpgrid button.on{box-shadow:0 0 0 3px var(--gold)}.bpgrid button.fus{box-shadow:0 0 0 2px #ffd23f,0 0 12px rgba(255,210,63,.35)}
+.bpgrid canvas{width:44px;height:68px;image-rendering:pixelated}
+.bpgrid .fz{color:#ffd23f;font-size:13px;line-height:1.1}
+.ovx{display:flex;flex-direction:column;gap:6px}
+.ovx .unlock b{color:var(--gold)}
+.accbar{height:12px;background:#0b0f24;box-shadow:0 0 0 2px #2a3572;position:relative;margin-top:6px}
+.accbar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(#9fd8ff,#3aa0ff 45%,#1e5aa8)}
+@media (max-width:480px){
+  html.fr .menu{grid-template-columns:1fr 1fr;gap:8px}
+  html.fr .menu .mbtn small{display:none}
+  html.fr .menu #bPlay{grid-column:1/-1}
+  .rkrow{grid-template-columns:34px 34px 1fr auto;gap:6px}
+  .prof{grid-template-columns:1fr;justify-items:center;text-align:center}
+}
 </style>
 </head>
 <body>
@@ -422,11 +494,14 @@ html.fr .acct-badge:hover{filter:brightness(1.2)}
   <div class="menu">
     <button class="btn primary mbtn" id="bPlay"><span class="mi"></span><span class="ml"><b>JUGAR</b><small>Elige guerrero y saga</small></span></button>
     <button class="btn gold mbtn" id="bGacha"><span class="mi"></span><span class="ml"><b>TIENDA <span class="mbadge" id="giftBadge" hidden title="Regalo diario disponible">!</span></b><small id="subShop">Ofertas y cajas</small></span></button>
+    <button class="btn mbtn" id="bMis"><span class="mi"></span><span class="ml"><b>MISIONES <span class="mbadge" id="misBadge" hidden title="Tienes premios por recoger">!</span></b><small id="subMis">Diarias, logros y perfil</small></span></button>
+    <button class="btn mbtn" id="bRank"><span class="mi"></span><span class="ml"><b>RANKING</b><small>Los mejores de la semana</small></span></button>
     <button class="btn mbtn" id="bDex"><span class="mi"></span><span class="ml"><b>DRAGONPEDIA</b><small id="subDex">Todos los guerreros</small></span></button>
     <button class="btn mbtn" id="bShop"><span class="mi"></span><span class="ml"><b>TEMPLO DE KAMI</b><small>Mejoras permanentes</small></span></button>
-    <button class="btn mbtn" id="bOpts"><span class="mi"></span><span class="ml"><b>OPCIONES</b><small>Sonido y controles</small></span></button>
     <button class="btn mbtn" id="bAcct"><span class="mi"></span><span class="ml"><b>CUENTA</b><small id="subAcct">Guarda tu partida</small></span></button>
   </div>
+  <button class="btn small instbtn" id="bInstall" hidden>📲 INSTALAR</button>
+  <button class="btn small optbtn" id="bOpts" aria-label="Opciones"><span class="mi"></span><span class="ol">OPCIONES</span></button>
   <button class="acct-badge" id="acctBadge"></button>
   <div class="title-stats" id="titleStats"></div>
   <p class="disclaimer">Hecho por <a href="https://victorsalmeron.dev/">Víctor Salmerón</a> · Fan game sin ánimo de lucro. Dragon Ball © Bird Studio / Shueisha / Toei Animation.</p>
@@ -468,7 +543,27 @@ html.fr .acct-badge:hover{filter:brightness(1.2)}
 <!-- STAGE SELECT -->
 <section id="stages" class="screen dim">
   <div class="topbar"><button class="btn small" data-back="select">◀ VOLVER</button><h2 class="px">ELIGE SAGA</h2><span></span></div>
+  <div class="modebar">
+    <div class="tabs" id="modeTabs" style="margin:0"></div>
+    <div class="diffbar" id="diffBar"></div>
+    <p class="muted modeinfo" id="modeInfo"></p>
+  </div>
   <div class="stages" id="stageGrid"></div>
+</section>
+
+<!-- MISIONES, LOGROS Y PERFIL -->
+<section id="missions" class="screen dim">
+  <div class="topbar"><button class="btn small" data-back="title">◀ VOLVER</button><h2 class="px">MISIONES</h2><span class="zeni" id="zMis"><i></i>0</span></div>
+  <div class="tabs" id="misTabs"></div>
+  <div class="mis-wrap" id="misBody"></div>
+  <div class="toast" id="misToast"></div>
+</section>
+
+<!-- RANKING -->
+<section id="rank" class="screen dim">
+  <div class="topbar"><button class="btn small" data-back="title">◀ VOLVER</button><h2 class="px">RANKING</h2><span class="muted" id="rankWeek"></span></div>
+  <div class="tabs" id="rankTabs"></div>
+  <div class="panel rank-wrap" id="rankBody"></div>
 </section>
 
 <!-- SHOP -->

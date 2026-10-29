@@ -3,7 +3,7 @@
 //   node tools/build.js --dev   -> dev.html legible, para desarrollar y probar
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..');
-const PARTS = ['1_head.html', '2_data.js', '3_engine.js', '3b_world.js', '4_game.js', '5_render_ui.js', '5b_shop.js', '6_account.js'];
+const PARTS = ['1_head.html', '2b_i18n.js', '2c_i18n_data.js', '2_data.js', '3_engine.js', '3b_world.js', '4_game.js', '4b_meta.js', '5_render_ui.js', '5b_shop.js', '5c_meta_ui.js', '6_account.js'];
 const html = PARTS.map(f => fs.readFileSync(path.join(ROOT, 'src', f), 'utf8')).join('');
 
 if (process.argv.includes('--dev')) {
@@ -25,8 +25,10 @@ const obf = process.argv.includes('--plain') ? code : JavaScriptObfuscator.obfus
   identifierNamesGenerator: 'hexadecimal',
   renameGlobals: false,
   stringArray: true,
-  stringArrayEncoding: ['base64'],
-  stringArrayThreshold: .6,
+  stringArrayEncoding: [],        // sin base64: con codificación el juego iba 2-4 veces más lento
+  stringArrayThreshold: .5,
+  reservedStrings: ['^#[0-9a-fA-F]{3,8}$', '^rgba?\\(', '^(source-over|lighter|middle|center|left|right|round|play|levelup|paused|boss|beam|ball|spark|text|ring|boom|poof|p|disc|orbital|hakai|candy|pillar|ray|slash|arc)$'],
+  stringArrayCallsTransform: false,
   stringArrayRotate: true,
   stringArrayShuffle: true,
   splitStrings: false,
@@ -44,3 +46,17 @@ out = out.replace(/<style>([\s\S]*?)<\/style>/, (m, css) => '<style>' + css.repl
   .replace('<!--JS-->', () => '<script>' + obf + '</script>\n');
 fs.writeFileSync(path.join(ROOT, 'index.html'), out);
 console.log('index.html', out.length, 'bytes (protegido)');
+
+// PWA: manifiesto y service worker (la versión cambia con cada build para que se actualice solo)
+const version = require('crypto').createHash('sha1').update(out).digest('hex').slice(0, 10);
+fs.writeFileSync(path.join(ROOT, 'manifest.webmanifest'), JSON.stringify({
+  name: 'Dragon Fall', short_name: 'Dragon Fall', lang: 'es', start_url: './', scope: './', display: 'fullscreen', orientation: 'any',
+  background_color: '#0b0f24', theme_color: '#0b0f24', description: 'Survivor pixel art del universo Dragon Ball. Fan game gratuito.',
+  icons: [
+    { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+    { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+  ],
+}, null, 2));
+fs.writeFileSync(path.join(ROOT, 'sw.js'), fs.readFileSync(path.join(__dirname, 'sw.template.js'), 'utf8').replace('__VERSION__', version));
+console.log('manifest.webmanifest + sw.js', version);

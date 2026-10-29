@@ -13,7 +13,7 @@ function hexRgb(h) { h = h.replace('#', ''); if (h.length === 3) h = h.split('')
 function rgbHex(r, g, b) { return '#' + [r, g, b].map(v => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0')).join(''); }
 function shade(h, a) { const [r, g, b] = hexRgb(h); return a < 0 ? rgbHex(r * (1 + a), g * (1 + a), b * (1 + a)) : rgbHex(r + (255 - r) * a, g + (255 - g) * a, b + (255 - b) * a); }
 function fmtTime(t) { t = Math.max(0, Math.floor(t)); return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); }
-function fmtNum(n) { return Math.floor(n).toLocaleString('es-ES'); }
+function fmtNum(n) { return Math.floor(n).toLocaleString(LANG === 'en' ? 'en-GB' : 'es-ES'); }
 
 /* ---------------- SPRITE MAPS ----------------
    16 x 26 px. Cara en filas 5-13, cuerpo en filas 14-25.
@@ -402,6 +402,7 @@ const ENEMIES = {
   puipui: { name: 'Pui Pui', saga: 'Saga de Majin Buu', desc: 'Primer guardián de la nave de Babidi.', hp: 32, spd: 42, dmg: 15, xp: 2, ai: 'ranged' },
   yakon: { name: 'Yakon', saga: 'Saga de Majin Buu', desc: 'Bestia que devora la luz.', hp: 1500, spd: 34, dmg: 24, xp: 24, elite: 1, ai: 'tank' },
   spopovich: { name: 'Spopovich', saga: 'Saga de Majin Buu', desc: 'Luchador hinchado por la magia de Babidi.', hp: 1300, spd: 40, dmg: 22, xp: 22, elite: 1 },
+  ozaru_w: { name: 'Gran Mono', saga: 'Evento: Luna llena', desc: 'Un Saiyan transformado por la luna llena. Si lo derrotas suelta una Bola de Dragón.', vars: ['ozaru'], hp: 900, spd: 30, dmg: 22, xp: 30, elite: 1, ai: 'tank' },
   pride: { name: 'Tropa del Orgullo', saga: 'Torneo del Poder', desc: 'Guerreros de élite del Universo 11.', vars: ['pride', 'pride2'], hp: 30, spd: 42, dmg: 16, xp: 2 },
   pride_e: { name: 'Tropa del Orgullo (élite)', saga: 'Torneo del Poder', desc: 'Más fuertes, más rápidos, más poses.', hp: 40, spd: 46, dmg: 18, xp: 3, ai: 'ranged' },
   kale: { name: 'Kale', saga: 'Torneo del Poder', desc: 'Saiyan legendaria del Universo 6.', hp: 2600, spd: 44, dmg: 28, xp: 30, elite: 1, ai: 'tank' },

@@ -6,19 +6,22 @@ let G = null, P = null;
 const BASE_SPD = 72;
 function xpNeed(l) { return l < 20 ? 5 + (l - 1) * 9 : l < 40 ? 176 + (l - 20) * 16 : 496 + (l - 40) * 24; }
 
-function newRun(cid, si) {
+function newRun(cid, si, opt = {}) {
   const c = CHAR[cid], st = STAGES[si];
   G = {
     t: 0, si, stage: st, cid, kills: 0, zeni: 0, lvl: 1, xp: 0, xpNext: xpNeed(1),
     enemies: [], projs: [], eprojs: [], gems: [], picks: [], fx: [], nums: [],
     bossIdx: 0, boss: null, balls: [], spawnT: .5, eliteT: 55, waveT: 95, pendingLv: 0,
     rerolls: save.shop.reroll || 0, intro: null,
+    diff: DIFFS[opt.endless ? 0 : opt.diff || 0], endless: !!opt.endless, bossCycle: 0, nextBossT: 0, hs: 0,
+    ev: null, evT: 95, moonDone: 0, fuse: 0, fuseNeed: 150, fusionPair: null, buddy: null,
+    stat: { specials: 0, events: 0, fusions: 0, evos: 0, trans: 0, shenron: 0, buddySp: 0 },
     tut: save.tut ? null : [[1, 'Muévete con WASD o las flechas. En el móvil, arrastra el dedo por la pantalla.'], [8, 'Tus ataques se lanzan solos contra el enemigo más cercano.'], [15, 'Recoge los cristales de ki para subir de nivel y elegir mejoras.'], [24, 'Los enemigos con nombre naranja sueltan Bolas de Dragón. ¡Reúne las 7!'], [31, 'Pulsa ESPACIO (o toca el botón redondo) para usar la técnica especial de tu guerrero.']], shake: 0, flash: 0, victoryT: -1, killedBosses: [], seen: {}, endT: -1, auraT: 0, pid: 0, maxCombo: 0,
   };
   P = {
     x: 0, y: 0, r: 6, dirx: 1, diry: 0, face: 1, ft: 0, frame: 0, inv: 1, moving: false,
     spr: c.id, name: c.name, aura: null, formIdx: -1, weapons: [], passives: [], hp: 1, maxHp: 1, revive: 0, immortal: 0,
-    spT: 4, rage: null, shieldT: 0,
+    spT: 4, rage: null, shieldT: 0, fused: null, moon: 0,
   };
   G.spq = []; G.spTint = null;
   P.weapons.push(newWeapon(c.weapon));
@@ -26,6 +29,8 @@ function newRun(cid, si) {
   P.revive = save.shop.revive || 0;
   P.hp = P.maxHp;
   markSeen(c.id);
+  G.buddy = newBuddy(save.buddy);
+  if (G.buddy) { G.fusionPair = fusionOf(cid, G.buddy.id); markSeen(G.buddy.id); }
   chunkCache.clear();
 }
 function newWeapon(id) { return { id, lvl: 1, evo: false, t: .3, dealt: 0, uid: ++uidC }; }
@@ -43,6 +48,8 @@ function recalc(init) {
   add({ might: .05 * (sh.might || 0), maxHp: 10 * (sh.maxHp || 0), armor: sh.armor || 0, regen: .2 * (sh.regen || 0), spd: .05 * (sh.spd || 0), magnet: .2 * (sh.magnet || 0), cd: .03 * (sh.cd || 0), growth: .06 * (sh.growth || 0), greed: .1 * (sh.greed || 0), luck: .1 * (sh.luck || 0), amount: sh.amount || 0 });
   P.passives.forEach(p => { const st = PASSIVES[p.id].st; for (const k in st) s[k] += st[k] * p.lvl; });
   c.forms.forEach((f, i) => { if (i <= P.formIdx) add(f.bonus); });
+  if (P.fused) add({ might: .6, spd: .15, cd: .15, armor: 2, maxHp: 40 });
+  if (P.moon) add({ might: .4 });
   if (P.rage) add({ might: P.rage.might || 0, spd: P.rage.spd || 0, cd: P.rage.cd || 0, crit: P.rage.crit || 0 });
   const oldMax = P.maxHp;
   P.maxHp = Math.round(s.maxHp); P.spd = BASE_SPD * s.spd; P.might = s.might; P.area = s.area; P.cdm = Math.max(.35, 1 - s.cd);
@@ -101,8 +108,8 @@ function hurtEnemy(e, dmg, w, kx = 0, ky = 0, forceCrit = false) {
 }
 
 /* =================== ENEMIGOS =================== */
-function enemyHpMul() { return 1 + Math.min(G.t, 720) / 600 * G.stage.mul; }
-function enemyDmgMul() { return 1 + Math.min(G.t, 720) / 600 * (.5 + G.si * .2); }
+function enemyHpMul() { const t = G.endless ? G.t : Math.min(G.t, 720); return (1 + t / 600 * G.stage.mul) * G.diff.hp * (G.endless ? 1 + Math.max(0, G.t - 600) / 900 : 1); }
+function enemyDmgMul() { const t = G.endless ? G.t : Math.min(G.t, 720); return (1 + t / 600 * (.5 + G.si * .2)) * G.diff.dmg; }
 function spawnPos(dist) {
   const a = Math.random() * TAU, d = dist || Math.hypot(VW, VH) / 2 + 20;
   return [P.x + Math.cos(a) * d, P.y + Math.sin(a) * d];
@@ -122,14 +129,14 @@ function spawnEnemy(id, x, y, isElite) {
 function spawnBoss(id) {
   const d = BOSSES[id], spr = d.spr || id, sc = d.scale || 2;
   const [x, y] = spawnPos(Math.max(VW, VH) * .55);
-  const hp = d.hp * (1 + (save.runs > 0 ? 0 : 0));
+  const cyc = G.endless ? 1 + G.bossCycle * .6 : 1, hp = d.hp * G.diff.hp * cyc;
   const e = {
-    id, spr, name: d.name, x, y, hp, maxHp: hp, spd: d.spd, dmg: d.dmg, xp: 60 + G.si * 40, r: 6 * sc, scale: sc, h: 28 * sc, ai: 'boss',
-    elite: true, boss: true, final: !!d.final, flash: 0, stun: 0, kx: 0, ky: 0, ft: 0, frame: 0, face: -1, hitT: {}, atkT: 2.5, dash: null, dead: false, aura: SPR[spr] && SPR[spr].aura || '#ff4a4a',
+    id, spr, name: d.name, x, y, hp, maxHp: hp, spd: d.spd, dmg: d.dmg * G.diff.dmg * (G.endless ? 1 + G.bossCycle * .25 : 1), xp: 60 + G.si * 40, r: 6 * sc, scale: sc, h: 28 * sc, ai: 'boss',
+    elite: true, boss: true, final: !!d.final && !G.endless, flash: 0, stun: 0, kx: 0, ky: 0, ft: 0, frame: 0, face: -1, hitT: {}, atkT: 2.5, dash: null, dead: false, aura: SPR[spr] && SPR[spr].aura || '#ff4a4a',
   };
   G.enemies.push(e); G.boss = e;
   if (!G.seen[id]) { G.seen[id] = 1; markSeen(id); }
-  G.intro = { kind: 'boss', t: 2, max: 2, spr, name: d.name, saga: d.saga, final: !!d.final, col: e.aura };
+  G.intro = { kind: 'boss', t: 2, max: 2, spr, name: d.name, saga: d.saga, final: e.final, col: e.aura };
   sfx('boss'); G.shake = Math.max(G.shake, .5);
   return e;
 }
@@ -141,7 +148,7 @@ function poolPick() {
 }
 function director(dt) {
   const t = G.t;
-  const target = Math.min(300, 10 + t * .38 + G.si * 10) * (G.boss ? .6 : 1);
+  const target = Math.min(330, (10 + t * .38 + G.si * 10) * G.diff.spawn) * (G.boss ? .6 : 1) * (G.ev && G.ev.k === 'tourney' ? .35 : 1);
   G.spawnT -= dt;
   if (G.spawnT <= 0) {
     G.spawnT = .45;
@@ -155,7 +162,12 @@ function director(dt) {
     banner('¡OLEADA!', 'Te están rodeando');
   }
   const nb = G.stage.bosses[G.bossIdx];
-  if (nb && t >= nb[0] && !G.boss) { spawnBoss(nb[1]); G.bossIdx++; }
+  if (nb && t >= nb[0] && !G.boss) { spawnBoss(nb[1]); G.bossIdx++; if (G.endless && !G.stage.bosses[G.bossIdx]) G.nextBossT = nb[0] + 150; }
+  else if (G.endless && !nb && !G.boss && t >= G.nextBossT) {
+    G.bossCycle++; G.nextBossT = t + 150;
+    spawnBoss(pick(STAGES.filter((s, i) => stageUnlocked(i)).flatMap(s => s.bosses.map(b => b[1]))));
+  }
+  eventTick(dt);
 }
 
 function enemyShoot(e, ang, spd = 90, dmg = e.dmg * .8, r = 4, col = '#ff5a3a') {
@@ -228,6 +240,8 @@ function updateEProjs(dt) {
 function killEnemy(e, w) {
   if (e.dead) return;
   e.dead = true; G.kills++;
+  if (G.fusionPair && !P.fused && G.fuse < G.fuseNeed && ++G.fuse >= G.fuseNeed) { floatText(FINE_PTR ? '¡FUSIÓN LISTA! PULSA F' : '¡FUSIÓN LISTA!', '#ffd23f'); sfx('ball'); }
+  if (e.elite && !e.boss) hitstop(.04);
   const luck = P.luck;
   burst(e.x, e.y - e.h / 2, e.boss ? 40 : e.elite ? 16 : 5, e.boss ? e.aura : '#ffffff', e.boss ? 3 : 1.4);
   if (G.fx.length < 280) G.fx.push({ k: 'poof', x: e.x, y: e.y - e.h * .4, r: e.r * 1.6, life: .38, max: .38 });
@@ -249,7 +263,8 @@ function killEnemy(e, w) {
     dropPick('capsule', e.x, e.y);
     dropBall(e.x + 14, e.y + 4);
     for (let i = 0; i < 10; i++) dropPick('zeni', e.x + rand(-26, 26), e.y + rand(-20, 20), Math.ceil(rand(4, 9) * (G.si + 1)));
-    banner(`¡${e.name.toUpperCase()} DERROTADO!`, e.final ? '¡Has completado la saga!' : 'Recoge la cápsula');
+    banner(`¡${e.name.toUpperCase()} DERROTADO!`, e.final ? '¡Has completado la saga!' : G.endless ? 'Recoge la cápsula y sigue aguantando' : 'Recoge la cápsula');
+    hitstop(.16); vibrate(90);
     if (e.final) G.victoryT = 3;
   }
 }
@@ -268,7 +283,7 @@ function dropBall(x, y) {
 function hurtPlayer(d) {
   if (P.inv > 0 || P.immortal > 0 || P.shieldT > 0 || G.endT >= 0) return;
   d = Math.max(1, d - P.armor);
-  P.hp -= d; P.inv = .5; G.shake = Math.max(G.shake, .18); G.hurtT = .25; sfx('hurt');
+  P.hp -= d; P.inv = .5; G.shake = Math.max(G.shake, .18); G.hurtT = .25; sfx('hurt'); vibrate(25); hitstop(.025);
   if (P.hp <= 0) {
     if (P.revive > 0) {
       P.revive--; P.hp = P.maxHp * .6; P.inv = 2.5; sfx('heal');
@@ -541,7 +556,9 @@ function checkForm() {
   const forms = CHAR[G.cid].forms;
   const f = forms[P.formIdx + 1];
   if (f && G.lvl >= f.lv) {
-    P.formIdx++; P.spr = f.spr; P.name = f.name; P.aura = f.aura || (SPR[f.spr] && SPR[f.spr].aura) || '#ffffff';
+    P.formIdx++; G.stat.trans++;
+    if (P.fused) { P.fused.prev = { spr: f.spr, name: f.name, aura: f.aura || (SPR[f.spr] && SPR[f.spr].aura) || '#ffffff' }; recalc(); markSeen(f.spr); return; }
+    P.spr = f.spr; P.name = f.name; P.aura = f.aura || (SPR[f.spr] && SPR[f.spr].aura) || '#ffffff';
     recalc(); P.hp = Math.min(P.maxHp, P.hp + P.maxHp * .3);
     markSeen(f.spr);
     G.intro = { kind: 'trans', t: 1.7, max: 1.7, spr: f.spr, name: f.name, col: P.aura };
@@ -567,11 +584,12 @@ function updateFx(dt) {
 }
 
 /* =================== TÉCNICA ESPECIAL =================== */
-function spPow() { return P.might * (1 + G.lvl * .08); }
+let SP_MUL = 1;
+function spPow() { return P.might * (1 + G.lvl * .08) * SP_MUL; }
 function useSpecial() {
   if (state !== 'play' || !G || G.intro || P.hp <= 0 || G.endT >= 0 || P.spT > 0) return;
-  const sp = SPECIALS[G.cid]; if (!sp) return;
-  P.spT = sp.cd; sfx('trans'); G.flash = Math.max(G.flash, .2);
+  const sp = curSpecial(); if (!sp) return;
+  P.spT = sp.cd; G.stat.specials++; hitstop(.05); vibrate(20); sfx('trans'); G.flash = Math.max(G.flash, .2);
   G.fx.push({ k: 'ring', x: P.x, y: P.y - 10, r0: 4, r1: 46, life: .45, max: .45, col: sp.col });
   floatText(sp.name.toUpperCase(), sp.col);
   for (const [k, o] of sp.fx) SPFX[k](o, sp.col);
@@ -580,7 +598,7 @@ function later(t, fn) { G.spq.push({ t, fn }); }
 const SPFX = {
   nova(o, col) {
     G.fx.push({ k: 'ring', x: P.x, y: P.y - 10, r0: 8, r1: o.R, life: .55, max: .55, col });
-    shockwave(o.R, o.dmg * (1 + G.lvl * .08)); G.shake = Math.max(G.shake, .5); sfx('boom');
+    shockwave(o.R, o.dmg * (1 + G.lvl * .08) * SP_MUL); G.shake = Math.max(G.shake, .5); sfx('boom');
   },
   beam(o, col) {
     const tg = nearest(320), base = tg ? aimAt(tg) : Math.atan2(P.diry, P.dirx), ts = o.target ? nearestN(o.n, 320) : [];
@@ -684,7 +702,7 @@ function buildChoices(count) {
 function applyChoice(o) {
   if (o.t === 'wnew') P.weapons.push(newWeapon(o.id));
   else if (o.t === 'wup') P.weapons.find(w => w.id === o.id).lvl++;
-  else if (o.t === 'evo') { const w = P.weapons.find(w => w.id === o.id); w.evo = true; banner('¡EVOLUCIÓN!', WEAPONS[o.id].evo.name); sfx('trans'); markSeen('evo_' + o.id); }
+  else if (o.t === 'evo') { const w = P.weapons.find(w => w.id === o.id); w.evo = true; G.stat.evos++; banner('¡EVOLUCIÓN!', WEAPONS[o.id].evo.name); sfx('trans'); markSeen('evo_' + o.id); }
   else if (o.t === 'pnew') P.passives.push({ id: o.id, lvl: 1 });
   else if (o.t === 'pup') P.passives.find(p => p.id === o.id).lvl++;
   else if (o.t === 'senzu') P.hp = Math.min(P.maxHp, P.hp + P.maxHp * .3);
@@ -716,15 +734,18 @@ function upDesc(u) {
     else if (k === 'life') t.push(`+${Math.round(v * 100)}% de duración`);
     else if (k === 'spd') t.push(`+velocidad de giro`);
   }
-  const s = t.join(', ');
+  const s = t.map(L).join(', ');
   return s.charAt(0).toUpperCase() + s.slice(1) + '.';
 }
 
 /* =================== BUCLE PRINCIPAL =================== */
 function update(dt) {
   if (G.intro) { G.intro.t -= dt; if (G.intro.t <= 0) G.intro = null; return; }
+  if (G.hs > 0) { G.hs -= dt; return; }
   G.t += dt;
   updatePlayer(dt);
+  updateFusion(dt);
+  updateBuddy(dt);
   if (G.endT < 0 && G.victoryT < 0) director(dt);
   rebuildGrid();
   if (P.hp > 0) updateWeapons(dt);
@@ -743,6 +764,7 @@ function update(dt) {
 let lastT = performance.now();
 function loop(now) {
   const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
+  if (typeof pollPad === 'function') pollPad(dt);
   if (state === 'play' && G) update(dt);
   render(dt);
   requestAnimationFrame(loop);
