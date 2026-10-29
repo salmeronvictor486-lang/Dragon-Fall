@@ -39,7 +39,7 @@ El juego publicado es un solo archivo, **`index.html`**, con el código **proteg
   - **Estatuas de Babidi**: al tocarlas activas una maldición. Hay más enemigos y más duros, pero ganas más experiencia y zenis.
   - Además, cada vez que subes de nivel recuperas un 6% de vida.
 - **Eventos en partida:** horda sorpresa, cápsula de suministros que hay que defender, Torneo de Artes Marciales (3 luchadores sin salir del ring) y Luna llena con un Gran Mono (los Saiyan ganan poder).
-- **Misiones diarias** (3 al día, distintas para cada jugador), **25 logros** con zenis, cajas y **títulos**, **nivel de cuenta** con premios y un **perfil** con estadísticas.
+- **Misiones diarias** (3 al día, distintas para cada jugador), **25 logros** con zenis, cajas y **títulos**, **nivel de cuenta** con premios y un **perfil** con estadísticas, entre ellas las **horas jugadas** (cuentan con el juego abierto: siempre en partida y, en los menús, mientras haya actividad).
 - **Ranking semanal** (Supervivencia y bajas), para jugadores con cuenta. Se reinicia cada lunes.
 - **Idiomas:** castellano, català e English (se elige en Opciones; la primera vez usa el idioma del navegador).
 - **Instalable (PWA):** se puede añadir a la pantalla de inicio y funciona sin conexión.

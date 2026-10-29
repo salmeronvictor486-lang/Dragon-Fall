@@ -63,7 +63,7 @@ function renderMissions() {
     const locked = Object.keys(TITLES).length - Object.keys(TITLES).filter(k => save.titles[k]).length;
     if (locked) tl.insertAdjacentHTML('beforeend', `<span class="muted" style="font-size:16px;align-self:center">+${locked} por desbloquear con logros y niveles de cuenta</span>`);
     const h = Math.floor(S.time / 3600), mi = Math.floor(S.time / 60) % 60;
-    [['Partidas', fmtNum(save.runs)], ['Victorias', fmtNum(S.wins)], ['Tiempo jugado', `${h} h ${mi} min`], ['Enemigos derrotados', fmtNum(save.kills)],
+    [['Partidas', fmtNum(save.runs)], ['Victorias', fmtNum(S.wins)], ['Horas jugadas', fmtPlay(S.play)], ['Tiempo en partida', `${h} h ${mi} min`], ['Enemigos derrotados', fmtNum(save.kills)],
      ['Jefes derrotados', fmtNum(S.bosses)], ['Técnicas especiales', fmtNum(S.specials)], ['Fusiones', fmtNum(S.fusions)], ['Eventos superados', fmtNum(S.events)],
      ['Cajas abiertas', fmtNum(S.boxes)], ['Altares activados', fmtNum(S.shrines)], ['Cofres del mapa', fmtNum(S.chests)], ['Vida recuperada', fmtNum(S.healed)], ['Cartas', `${CARD_SET.filter(cardOwned).length}/${CARD_SET.length}`], ['Sobres abiertos', fmtNum(S.packs)], ['Shenron invocado', fmtNum(S.shenron)], ['Récord de bajas', fmtNum(S.bestKills)], ['Récord Supervivencia', fmtNum(S.bestInf) + ' pts'],
      ['Guerreros', `${CHARS.filter(isUnlocked).length}/${CHARS.length}`], ['Logros', `${ACHIEVEMENTS.filter(a => save.ach[a.id]).length}/${ACHIEVEMENTS.length}`], ['Misiones completadas', fmtNum(S.daily)], ['Favorito', fav ? `${favC.name} (${fav[1]})` : '—']]
@@ -302,6 +302,21 @@ function optsExtra(box) {
   else row.innerHTML = `<span style="font-size:17px">📲 Instálalo como app: ${isIOS ? 'en iPhone/iPad, pulsa <b>Compartir</b> y luego <b>Añadir a pantalla de inicio</b>.' : 'en el menú del navegador, elige <b>Instalar app</b> o <b>Añadir a pantalla de inicio</b>.'} Funciona sin conexión.</span>`;
   box.appendChild(row);
 }
+
+/* =================== HORAS JUGADAS ===================
+   Cuenta el tiempo con el juego abierto y visible: siempre en partida y, en los menús, mientras haya actividad
+   (sin tocar nada durante 2 minutos deja de contar). Se guarda cada 15 s en el navegador y se sube a la nube al salir. */
+let lastInput = performance.now(), playTick = 0;
+['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev => addEventListener(ev, () => { lastInput = performance.now(); }, { passive: true, capture: true }));
+function fmtPlay(sec) { sec = Math.floor(sec || 0); const h = Math.floor(sec / 3600), m = Math.floor(sec / 60) % 60; return h ? `${fmtNum(h)} h ${m} min` : `${m} min`; }
+setInterval(() => {
+  if (document.hidden) return;
+  const playing = ['play', 'levelup', 'shrine', 'capsule', 'shenron'].includes(state) || (pad && pad.on && Math.hypot(pad.x, pad.y) > .3);
+  if (!playing && performance.now() - lastInput > 120000) return;
+  save.stats.play = (save.stats.play || 0) + 1;
+  if (++playTick % 15 === 0) { writeLocal(); if (ACCT && ACCT.user) ACCT.dirty = true; }
+  if (playTick % 60 === 0 && state === 'title') renderTitle();
+}, 1000);
 
 /* =================== FIN DE PARTIDA: extras =================== */
 function overExtras(res, rankable) {

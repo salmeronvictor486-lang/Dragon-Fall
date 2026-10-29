@@ -179,7 +179,7 @@ const TITLES = {
   novato: 'Aprendiz de Kame', guerrero_z: 'Guerrero Z', elite: 'Élite Saiyan', ssgod: 'Super Saiyan Dios', angel: 'Ángel del Universo 7',
   exterminador: 'Exterminador', calamidad: 'Calamidad galáctica', discipulo: 'Discípulo constante', heroe: 'Héroe del multiverso',
   leyenda: 'Leyenda de Pesadilla', cazadioses: 'Cazador de dioses', capsulas: 'Maestro de las cápsulas', fusionado: 'Fusión perfecta',
-  inmortal: 'Inmortal', cartas: 'Maestro de las cartas', devoto: 'Devoto del ki', saqueador: 'Saqueador', millonario: 'Millonario', explorador: 'Explorador curioso', deseo: 'Amigo de Shenron',
+  inmortal: 'Inmortal', fan: 'Fan incondicional', cartas: 'Maestro de las cartas', devoto: 'Devoto del ki', saqueador: 'Saqueador', millonario: 'Millonario', explorador: 'Explorador curioso', deseo: 'Amigo de Shenron',
 };
 const ACHIEVEMENTS = [
   { id: 'k1', name: 'Primeros pasos', desc: 'Derrota a 1.000 enemigos', v: () => save.kills, g: 1000, rw: { z: 500 } },
@@ -210,6 +210,7 @@ const ACHIEVEMENTS = [
   { id: 'ch', name: 'Saqueador', desc: 'Abre 50 cofres del mapa', v: () => save.stats.chests, g: 50, rw: { z: 2000, title: 'saqueador' } },
   { id: 'cd1', name: 'Coleccionista de cartas', desc: 'Consigue 40 cartas en tu álbum', v: () => CARD_SET.filter(cardOwned).length, g: 40, rw: { z: 2000, title: 'cartas' } },
   { id: 'cd2', name: 'Brillo arcoíris', desc: 'Consigue una carta Arcoíris', v: () => CARD_SET.some(k => cardHas(k, 'r')) ? 1 : 0, g: 1, rw: { z: 1000 } },
+  { id: 'pl', name: 'Fan incondicional', desc: 'Juega 10 horas', v: () => Math.floor((save.stats.play || 0) / 3600), g: 10, rw: { z: 3000, title: 'fan' } },
   { id: 'eg', name: 'Curioso', desc: 'Encuentra el secreto de la tienda', v: () => save.eggWasd ? 1 : 0, g: 1, rw: { title: 'explorador' }, secret: 1 },
 ];
 // Plantillas de misiones diarias. max = cuenta el mejor valor de una sola partida.
