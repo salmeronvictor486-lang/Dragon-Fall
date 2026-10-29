@@ -1,5 +1,5 @@
 // Service worker de Dragon Fall: permite instalar el juego y jugar sin conexión.
-const CACHE = 'dragonfall-62a04908ae';
+const CACHE = 'dragonfall-0fa766f854';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {

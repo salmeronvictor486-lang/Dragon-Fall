@@ -9,14 +9,14 @@ El juego publicado es un solo archivo, **`index.html`**, con el código **proteg
 ## Cómo se juega
 
 - **Moverse:** WASD o flechas. En móvil, arrastra el dedo por la pantalla.
-- **Técnica especial:** cada guerrero tiene la suya (Final Flash, Taiyoken, Hakai, Parar el tiempo…). Se lanza con **Espacio** (también E o Q) o con el botón redondo de abajo a la derecha, y luego tiene que recargarse.
+- **Técnica especial:** cada guerrero tiene la suya (Final Flash, Taiyoken, Hakai, Parar el tiempo…). Se lanza con la **tecla 1** (también Espacio, E o Q) o con el botón redondo de abajo a la derecha, y luego tiene que recargarse.
 - Los ataques se lanzan solos y apuntan al enemigo más cercano. Recoge los **orbes de ki** que sueltan los enemigos para subir de nivel.
 - En cada nivel eliges una mejora: un ataque nuevo, subir uno que ya tienes o una pasiva (máximo 6 de cada).
 - **Evoluciones:** un ataque al nivel 7 más su pasiva se convierte en su técnica definitiva (por ejemplo, Kamehameha + Kaio-ken → Kamehameha x10).
 - **Transformaciones:** algunos guerreros se transforman al llegar a ciertos niveles (Goku: SSJ → SSJ3 → SSJ Blue → Ultra Instinto).
 - Las **7 Bolas de Dragón** caen de élites y jefes. Al reunirlas aparece **Shenron** y te concede un deseo.
 - Cada saga dura 10 minutos: hay 3 jefes intermedios y un jefe final.
-- **Compañero y fusiones:** antes de jugar puedes elegir un segundo guerrero que te sigue, dispara solo y usa su técnica especial. Goku + Vegeta, Goten + Trunks y Kale + Caulifla llenan un medidor y se **fusionan** durante 25 s (Gogeta, Gotenks, Kefla) con la tecla F o el botón de fusión.
+- **Compañero y fusiones:** antes de jugar puedes elegir un segundo guerrero que te sigue, dispara solo y usa su técnica especial. Goku + Vegeta, Goten + Trunks y Kale + Caulifla llenan un medidor y se **fusionan** durante 25 s (Gogeta, Gotenks, Kefla) con la **tecla 2** (o F) o el botón de fusión.
 - **Mando:** stick o cruceta para moverse, A = técnica especial, X/Y = fusión, Start = pausa. En los menús, la cruceta mueve el foco, A pulsa y B vuelve atrás.
 - **Pausa:** Esc, P o el botón `II`. Las presentaciones de jefe y las transformaciones se saltan con Espacio, Enter o tocando la pantalla.
 - Las flechas en el borde de la pantalla señalan Bolas de Dragón, cápsulas y jefes que están fuera de vista.

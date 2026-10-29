@@ -184,7 +184,7 @@ function drawFusionBtn(small) {
   ctx.strokeStyle = '#2a3572'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.stroke();
   ctx.strokeStyle = ready || on ? '#ffd23f' : '#b06bff'; ctx.beginPath(); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + fr * TAU); ctx.stroke();
   txt(on ? Math.ceil(P.fused.t) + ' s' : ready ? '¡FUSIÓN!' : 'FUSIÓN', x, y - r - 12, small ? 6 : 7, ready || on ? '#ffd23f' : '#8a90b8', 'center');
-  if (FINE_PTR && !on) txt('F', x, y + r + 11, 6, '#8a90b8', 'center');
+  if (FINE_PTR && !on) keycap('2', x - r * .78, y - r * .78);
 }
 function drawRunInfo(small, y) {
   // dificultad / Supervivencia y evento activo, centrados bajo el tiempo (o la barra del jefe)

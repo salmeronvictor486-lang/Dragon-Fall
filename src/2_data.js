@@ -303,7 +303,7 @@ CHARS.forEach(c => { if (c.unlock && !c.unlock.cost) c.unlock.txt += ' o consíg
   ['jiren', 'Jiren', 'Universo 11', 'L', 'shockwave', 'El guerrero más fuerte del Universo 11.', { armor: 3, maxHp: 30 }],
 ].forEach(([id, name, saga, rar, weapon, desc, mods, forms]) => CHARS.push({ id, name, saga, rar, weapon, desc, hp: RAR[rar].hp, mods: mods || {}, forms: forms || [], unlock: { gacha: 1, txt: 'Consíguelo en la Tienda: cajas u ofertas del día' } }));
 const CHAR = Object.fromEntries(CHARS.map(c => [c.id, c]));
-/* ---------------- TÉCNICAS ESPECIALES (una por guerrero, tecla ESPACIO o botón) ---------------- */
+/* ---------------- TÉCNICAS ESPECIALES (una por guerrero, tecla 1 o botón) ---------------- */
 // fx: lista de efectos [tipo, parámetros] que se encadenan. dmg escala con nivel y poder.
 const SPECIALS = {
   goku: { name: 'Teletransporte + Kamehameha', cd: 18, col: '#5fd0ff', desc: 'Aparece junto al enemigo más cercano y suelta un Kamehameha enorme.', fx: [['dash', { dist: 80, dmg: 30 }], ['beam', { len: 280, wd: 30, dmg: 30, life: .9 }]] },

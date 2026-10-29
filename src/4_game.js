@@ -17,7 +17,7 @@ function newRun(cid, si, opt = {}) {
     ev: null, evT: 95, moonDone: 0, fuse: 0, fuseNeed: 150, fusionPair: null, buddy: null,
     stat: { specials: 0, events: 0, fusions: 0, evos: 0, trans: 0, shenron: 0, buddySp: 0, crates: 0, chests: 0, shrines: 0, healed: 0 },
     objs: [], objT: 0, curse: 0,
-    tut: save.tut ? null : [[1, 'Muévete con WASD o las flechas. En el móvil, arrastra el dedo por la pantalla.'], [8, 'Tus ataques se lanzan solos contra el enemigo más cercano.'], [15, 'Recoge los cristales de ki para subir de nivel y elegir mejoras.'], [24, 'Los enemigos con nombre naranja sueltan Bolas de Dragón. ¡Reúne las 7!'], [31, 'Pulsa ESPACIO (o toca el botón redondo) para usar la técnica especial de tu guerrero.'], [42, 'Rompe cajas y jarrones: sueltan comida que cura. Las fuentes azules también te curan.'], [52, 'Quédate en un altar de ki para cargarlo y ganar una bendición. Los cofres se abren con zenis.']], shake: 0, flash: 0, victoryT: -1, killedBosses: [], seen: {}, endT: -1, auraT: 0, pid: 0, maxCombo: 0,
+    tut: save.tut ? null : [[1, 'Muévete con WASD o las flechas. En el móvil, arrastra el dedo por la pantalla.'], [8, 'Tus ataques se lanzan solos contra el enemigo más cercano.'], [15, 'Recoge los cristales de ki para subir de nivel y elegir mejoras.'], [24, 'Los enemigos con nombre naranja sueltan Bolas de Dragón. ¡Reúne las 7!'], [31, 'Pulsa 1 (o toca el botón redondo) para usar la técnica especial de tu guerrero.'], [42, 'Rompe cajas y jarrones: sueltan comida que cura. Las fuentes azules también te curan.'], [52, 'Quédate en un altar de ki para cargarlo y ganar una bendición. Los cofres se abren con zenis.']], shake: 0, flash: 0, victoryT: -1, killedBosses: [], seen: {}, endT: -1, auraT: 0, pid: 0, maxCombo: 0,
   };
   P = {
     x: 0, y: 0, r: 6, dirx: 1, diry: 0, face: 1, ft: 0, frame: 0, inv: 1, moving: false,
@@ -243,7 +243,7 @@ function updateEProjs(dt) {
 function killEnemy(e, w) {
   if (e.dead) return;
   e.dead = true; G.kills++;
-  if (G.fusionPair && !P.fused && G.fuse < G.fuseNeed && ++G.fuse >= G.fuseNeed) { floatText(FINE_PTR ? '¡FUSIÓN LISTA! PULSA F' : '¡FUSIÓN LISTA!', '#ffd23f'); sfx('ball'); }
+  if (G.fusionPair && !P.fused && G.fuse < G.fuseNeed && ++G.fuse >= G.fuseNeed) { floatText(FINE_PTR ? '¡FUSIÓN LISTA! PULSA 2' : '¡FUSIÓN LISTA!', '#ffd23f'); sfx('ball'); }
   if (e.elite && !e.boss) hitstop(.04);
   const luck = P.luck;
   burst(e.x, e.y - e.h / 2, e.boss ? 40 : e.elite ? 16 : 5, e.boss ? e.aura : '#ffffff', e.boss ? 3 : 1.4);
