@@ -13,7 +13,7 @@
 ![PWA](https://img.shields.io/badge/PWA-instalable%20y%20offline-59d66b?style=for-the-badge)
 ![Idiomas](https://img.shields.io/badge/idiomas-ES%20%C2%B7%20CA%20%C2%B7%20EN-b06bff?style=for-the-badge)
 
-**54 guerreros · 28 transformaciones · 5 sagas · 21 técnicas con evolución · 78 cartas coleccionables**
+**110 guerreros · 48 transformaciones · 10 sagas · 21 técnicas con evolución · 154 cartas coleccionables**
 
 </div>
 
@@ -40,7 +40,7 @@ Reúne las **7 Bolas de Dragón** y Shenron te concederá un deseo. Y si el jefe
 <td width="50%" valign="top">
 
 ### ⚡ Cada guerrero, su técnica
-**54 técnicas especiales distintas**: el Final Flash de Vegeta, el Taiyoken de Krilin, la Bola de la Muerte de Freezer, el Hakai de Beerus, el «¡Conviértete en caramelo!» de Buu o el «¡Soy el campeón!» de Mr. Satan.
+**110 técnicas especiales distintas**: el Final Flash de Vegeta, el Taiyoken de Krilin, la Bola de la Muerte de Freezer, el Hakai de Beerus, el «¡Conviértete en caramelo!» de Buu o el «¡Soy el campeón!» de Mr. Satan.
 
 </td>
 <td width="50%" valign="top">
@@ -66,32 +66,37 @@ Hordas sorpresa, cápsulas que defender, un **Torneo de Artes Marciales** en mit
 </tr>
 </table>
 
-## 🧬 54 guerreros de Dragon Ball Z y Super
+## 🧬 110 guerreros de todo Dragon Ball
 
 <div align="center">
-<img src="docs/media/guerreros.png" alt="Los 54 guerreros del juego en 3D" width="100%">
+<img src="docs/media/guerreros.png" alt="Los 110 guerreros del juego en 3D" width="100%">
 </div>
 
-De **Krilin y Chaoz** a **Vegito, Gogeta, Beerus, Whis o Jiren**. Cada uno tiene su ataque inicial, su técnica especial y sus estadísticas, y muchos se transforman durante la partida.
+Del **Goku niño, el Maestro Roshi y Tao Pai Pai** de Dragon Ball a **Broly, Janemba y Bojack** de las películas, los **Super Saiyan 4 y los Dragones Oscuros** de GT, **Champa, Vados, Moro, Granolah y los Gamma** de Super y **Gomah y los Majin** de Daima. Cada uno tiene su ataque inicial, su técnica especial y sus estadísticas, y muchos se transforman durante la partida (Goku llega al **Super Saiyan 4** en GT y en Daima).
 
 | Rareza | Guerreros | Ejemplos |
 |:--|:--:|:--|
-| 🟡 **Legendario** | 7 | Broly, Vegito, Gogeta, Beerus, Jiren |
-| 🟣 **Épico** | 21 | Goku, Vegeta, Freezer, Cell, Majin Buu, Hit |
-| 🔵 **Raro** | 15 | Trunks, Ten Shin Han, Androide 17, Cabba |
-| ⚪ **Común** | 11 | Krilin, Yamcha, Videl, Mr. Satán |
+| 🟡 **Legendario** | 16 | Gogeta SSJ4, Janemba, Omega Shenron, Champa, Gomah |
+| 🟣 **Épico** | 37 | Goku, Vegeta, Piccolo Daimaō, Bojack, Baby, Moro |
+| 🔵 **Raro** | 37 | Maestro Roshi, Gohan (niño), Tapion, Gamma 1, Majin Kuu |
+| ⚪ **Común** | 20 | Goku (niño), Bulma, Chi-Chi, Yajirobe, Mr. Satán |
 
-## 🌍 5 sagas, 20 jefes
+## 🌍 10 sagas, 40 jefes
 
 | Saga | Escenario | Jefe final |
 |:--|:--|:--|
+| 🐉 **Dragon Ball** | Bosque de la Torre Karin | Piccolo Daimaō |
 | 🪨 **Saga Saiyan** | Páramo rocoso | Vegeta Ozaru |
 | 🟢 **Saga de Namek** | Planeta Namek | Freezer (forma final) |
 | 🏟️ **Juegos de Cell** | Ring de Cell | Cell Perfecto |
+| 🎬 **Películas de Dragon Ball Z** | Otro Mundo | Super Janemba |
 | 🩷 **Saga de Majin Buu** | Planeta Supremo | Kid Buu |
+| 😈 **Dragon Ball Daima** | Reino Demoníaco | Gomah |
 | 🌌 **Torneo del Poder** | Mundo del Vacío | Jiren |
+| 🦸 **Super: Moro, Granolah y Super Hero** | Base de la nueva Patrulla Roja | Cell Max |
+| 🔥 **Dragon Ball GT** | Tierra devastada | Omega Shenron |
 
-Cada saga dura 10 minutos, tiene su música y sus enemigos, 3 jefes intermedios y un jefe final.
+Cada saga dura 10 minutos, tiene su música y sus enemigos, 3 jefes intermedios y un jefe final. Dragon Ball y la Saga Saiyan están abiertas desde el principio; las demás se desbloquean completando la anterior de su época.
 
 ## 🗺️ Un mapa lleno de secretos
 
@@ -111,7 +116,7 @@ Cada saga dura 10 minutos, tiene su música y sus enemigos, 3 jefes intermedios 
 <img src="docs/media/cajas.webp" alt="Apertura de la Caja Divina: la ruleta frena y toca Jiren, legendario" width="720">
 </div>
 
-**9 cajas temáticas** (Guerreros Z, Imperio, Patrulla Roja, Majin, Saiyan, Fusión, Divina…). Ábrelas con una ruleta estilo Counter-Strike: mientras frena se carga un **«Ka… me… ha… me…»** y al pararse suena **«¡HA!»**. Haz clic en una caja para ver todo lo que puede tocar y con qué probabilidad.
+**14 cajas temáticas** (Dragon Ball, Guerreros Z, Imperio, Patrulla Roja, Majin, Películas, GT, Super, Daima, Saiyan, Fusión, Divina…). Ábrelas con una ruleta estilo Counter-Strike: mientras frena se carga un **«Ka… me… ha… me…»** y al pararse suena **«¡HA!»**. Haz clic en una caja para ver todo lo que puede tocar y con qué probabilidad.
 
 La **tienda** también tiene regalo diario con racha, ofertas pensadas **solo para ti** y descuentos que cambian cada día. Todo con zenis del juego: **nunca con dinero real**.
 
@@ -121,7 +126,7 @@ La **tienda** también tiene regalo diario con racha, ofertas pensadas **solo pa
 <img src="docs/media/cartas.png" alt="Cinco cartas en abanico: Vegeta, Piccolo, Goku, Freezer y Broly" width="100%">
 </div>
 
-Cada guerrero y cada transformación que consigues tiene su carta: **78 en total**. En cada una, el guerrero aparece **en 3D** lanzando su técnica contra un enemigo, en el escenario de su saga.
+Cada guerrero y cada transformación que consigues tiene su carta: **154 en total**. En cada una, el guerrero aparece **en 3D** lanzando su técnica contra un enemigo, en el escenario de su saga.
 
 - 🎨 **Dos estilos:** **3D en acción** (el guerrero lanzando su técnica) o **Clásica** (solo el guerrero, con su aura). Se cambia en el álbum o en la propia carta.
 - 🌈 **Cuatro acabados:** Normal, Holo, Oro y Arcoíris, con brillo que se mueve al inclinar la carta con el ratón o el dedo.
@@ -136,7 +141,7 @@ Cada guerrero y cada transformación que consigues tiene su carta: **78 en total
 ## 🏆 Siempre hay algo que hacer
 
 - 📋 **3 misiones diarias**, distintas para cada jugador.
-- 🎖️ **30 logros** con premios y **títulos** para presumir.
+- 🎖️ **31 logros** con premios y **títulos** para presumir.
 - ⭐ **Nivel de cuenta** con recompensas y un **perfil** con tus estadísticas y tus **horas jugadas**.
 - 🥇 **Ranking semanal** de Supervivencia y de bajas. Se reinicia cada lunes.
 - 🏛️ **Templo de Kami**: mejoras permanentes para tu guerrero.

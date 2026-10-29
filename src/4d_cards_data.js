@@ -21,16 +21,20 @@ const CTYPES = {
   saiyan: { n: 'Saiyan', col: '#ff8a1c' }, earth: { n: 'Terrícola', col: '#ffd23f' }, namek: { n: 'Namekiano', col: '#59d66b' },
   android: { n: 'Androide', col: '#3aa0ff' }, majin: { n: 'Majin', col: '#ff8ac8' }, empire: { n: 'Imperio', col: '#b06bff' },
   god: { n: 'Divino', col: '#cfc6ff' }, uni: { n: 'Otro universo', col: '#e8433a' },
+  demon: { n: 'Demonio', col: '#c84a6a' }, dragon: { n: 'Dragón oscuro', col: '#7a7a9a' }, space: { n: 'Galáctico', col: '#3ad8c8' },
 };
 function cardType(c) {
   const id = c.id, s = (c.saga || '') + ' ' + c.name;
-  if (['beerus', 'whis', 'zamasu', 'goku_black'].includes(id)) return 'god';
+  if (['beerus', 'whis', 'zamasu', 'goku_black', 'champa', 'vados', 'belmod', 'zamasu_f', 'kaioshin', 'kibitokai', 'kaiosama', 'popo'].includes(id)) return 'god';
+  if (['omega', 'eis', 'nuova'].includes(id)) return 'dragon';
+  if (['janemba', 'gomah', 'degesu', 'arinsu', 'garlic'].includes(id)) return 'demon';
+  if (['bojack', 'zangya', 'moro', 'granolah', 'gas', 'baby'].includes(id)) return 'space';
   if (SAIYANS.has(id)) return 'saiyan';
-  if (['jiren', 'toppo', 'dyspo', 'hit'].includes(id)) return 'uni';
-  if (id === 'piccolo') return 'namek';
-  if (['a16', 'a17', 'a18', 'a19', 'gero', 'cell', 'celljr'].includes(id)) return 'android';
-  if (['buu', 'superbuu', 'kidbuu', 'dabura', 'uub'].includes(id) || /Majin/.test(s)) return 'majin';
-  if (['freezer', 'cooler', 'zarbon', 'dodoria', 'ginyu', 'recoome', 'jeice', 'burter', 'guldo'].includes(id)) return 'empire';
+  if (['jiren', 'toppo', 'dyspo', 'hit', 'ribrianne'].includes(id)) return 'uni';
+  if (['piccolo', 'daimao', 'kami', 'nail', 'dende', 'slug'].includes(id)) return 'namek';
+  if (['a16', 'a17', 'a18', 'a19', 'gero', 'cell', 'celljr', 'a13', 'a14', 'a15', 'a21', 'super17', 'gamma1', 'gamma2'].includes(id)) return 'android';
+  if (['buu', 'superbuu', 'kidbuu', 'dabura', 'uub', 'babidi'].includes(id) || /Majin/.test(s)) return 'majin';
+  if (['freezer', 'cooler', 'zarbon', 'dodoria', 'ginyu', 'recoome', 'jeice', 'burter', 'guldo', 'frost'].includes(id)) return 'empire';
   return 'earth';
 }
 const RAR_UP = { C: 'R', R: 'E', E: 'L', L: 'L' };

@@ -19,7 +19,7 @@ const FUSIONS = [
 ];
 function fusionOf(a, b) { return FUSIONS.find(f => (f.a === a && f.b === b) || (f.a === b && f.b === a)) || null; }
 const FUSION_TIME = 25;
-const SAIYANS = new Set(['goku', 'vegeta', 'gohan', 'goten', 'trunks', 'raditz', 'nappa', 'bardock', 'turles', 'cabba', 'caulifla', 'kale', 'broly', 'pan', 'gotenks', 'vegito', 'gogeta', 'kefla']);
+const SAIYANS = new Set(['goku', 'vegeta', 'gohan', 'goten', 'trunks', 'raditz', 'nappa', 'bardock', 'turles', 'cabba', 'caulifla', 'kale', 'broly', 'pan', 'gotenks', 'vegito', 'gogeta', 'kefla', 'goku_nino', 'gohan_nino', 'trunks_nino', 'goku_gt', 'vegeta_gt', 'gogeta_ssj4', 'broly_dbs', 'goku_daima']);
 
 function newBuddy(id) {
   if (!id || !CHAR[id] || id === G.cid || !isUnlocked(CHAR[id])) return null;
@@ -188,14 +188,15 @@ const ACHIEVEMENTS = [
   { id: 'r1', name: 'Guerrero constante', desc: 'Juega 10 partidas', v: () => save.runs, g: 10, rw: { z: 400 } },
   { id: 'r2', name: 'Entrenamiento diario', desc: 'Juega 50 partidas', v: () => save.runs, g: 50, rw: { z: 1500, title: 'discipulo' } },
   { id: 's1', name: 'El primer Saiyan', desc: 'Completa la Saga Saiyan', v: () => save.cleared.saiyan ? 1 : 0, g: 1, rw: { t: 'g' } },
-  { id: 's5', name: 'Héroe del multiverso', desc: 'Completa las 5 sagas', v: () => STAGES.filter(s => save.cleared[s.id]).length, g: 5, rw: { z: 3000, title: 'heroe' } },
+  { id: 's5', name: 'Héroe del multiverso', desc: 'Completa 5 sagas', v: () => STAGES.filter(s => save.cleared[s.id]).length, g: 5, rw: { z: 3000, title: 'heroe' } },
+  { id: 's10', name: 'Toda la historia', desc: 'Completa las 10 sagas', v: () => STAGES.filter(s => save.cleared[s.id]).length, g: 10, rw: { z: 8000, t: 'gods' } },
   { id: 'd1', name: 'Sin miedo', desc: 'Completa una saga en Difícil', v: () => Object.keys(save.clearedD).filter(k => k.endsWith(':1')).length, g: 1, rw: { z: 1500 } },
   { id: 'd2', name: 'Pesadilla superada', desc: 'Completa una saga en Pesadilla', v: () => Object.keys(save.clearedD).filter(k => k.endsWith(':2')).length, g: 1, rw: { t: 'gods', title: 'leyenda' } },
   { id: 'b1', name: 'Cazajefes', desc: 'Derrota a 25 jefes', v: () => save.stats.bosses, g: 25, rw: { z: 1000 } },
   { id: 'b2', name: 'Cazador de dioses', desc: 'Derrota a 100 jefes', v: () => save.stats.bosses, g: 100, rw: { z: 3000, title: 'cazadioses' } },
   { id: 'c1', name: 'Coleccionista', desc: 'Consigue 10 guerreros', v: () => CHARS.filter(isUnlocked).length, g: 10, rw: { z: 600 } },
   { id: 'c2', name: '¡Hazte con todos!', desc: 'Consigue 25 guerreros', v: () => CHARS.filter(isUnlocked).length, g: 25, rw: { z: 2000, t: 'g' } },
-  { id: 'c3', name: 'Álbum completo', desc: 'Consigue los 54 guerreros', v: () => CHARS.filter(isUnlocked).length, g: CHARS.length, rw: { z: 10000, title: 'capsulas' } },
+  { id: 'c3', name: 'Álbum completo', desc: 'Consigue todos los guerreros', v: () => CHARS.filter(isUnlocked).length, g: CHARS.length, rw: { z: 10000, title: 'capsulas' } },
   { id: 'st', name: 'Poder al máximo', desc: 'Sube un guerrero a 5★', v: () => Math.max(0, ...CHARS.map(c => starsOf(c.id))), g: MAX_STARS, rw: { z: 1500 } },
   { id: 'sp', name: 'Técnica secreta', desc: 'Usa 100 técnicas especiales', v: () => save.stats.specials, g: 100, rw: { z: 1000 } },
   { id: 'fu', name: 'Danza de la fusión', desc: 'Fusiónate 10 veces', v: () => save.stats.fusions, g: 10, rw: { z: 1500, title: 'fusionado' } },

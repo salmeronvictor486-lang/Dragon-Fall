@@ -9,7 +9,7 @@ function xpNeed(l) { return l < 20 ? 5 + (l - 1) * 9 : l < 40 ? 176 + (l - 20) *
 function newRun(cid, si, opt = {}) {
   const c = CHAR[cid], st = STAGES[si];
   G = {
-    t: 0, si, stage: st, cid, kills: 0, zeni: 0, lvl: 1, xp: 0, xpNext: xpNeed(1),
+    t: 0, si: st.tier, idx: si, stage: st, cid, kills: 0, zeni: 0, lvl: 1, xp: 0, xpNext: xpNeed(1),
     enemies: [], projs: [], eprojs: [], gems: [], picks: [], fx: [], nums: [],
     bossIdx: 0, boss: null, balls: [], spawnT: .5, eliteT: 55, waveT: 95, pendingLv: 0,
     rerolls: save.shop.reroll || 0, intro: null,

@@ -920,7 +920,7 @@ $('#bCapOk').onclick = () => resumeGame();
 function endRun(win, quit) {
   if (state === 'over') return;
   const before = new Set(CHARS.filter(isUnlocked).map(c => c.id));
-  const nextWas = STAGES[G.si + 1] ? stageUnlocked(G.si + 1) : true;
+  const lockedBefore = STAGES.filter((s, i) => !stageUnlocked(i));
   const st = G.stage, D = G.diff;
   let bonus = win ? Math.round(500 * (G.si + 1) * [1, 2, 4][D.id]) : 0;
   const earned = Math.floor(G.zeni * D.zeni + bonus);
@@ -939,7 +939,7 @@ function endRun(win, quit) {
   if (win) { if (!save.gifts[st.id]) { save.gifts[st.id] = 1; save.tickets.g++; tk.push('Cápsula Dorada'); } save.tickets.n++; tk.push('Cápsula Normal'); }
   const newly = CHARS.filter(c => isUnlocked(c) && !before.has(c.id));
   newly.forEach(c => markSeen(c.id));
-  const nextStage = win && !nextWas ? STAGES[G.si + 1] : null;
+  const nextStage = win ? lockedBefore.find(s => stageUnlocked(STAGES.indexOf(s))) || null : null;
   const res = recordRun(win, earned);
   persist();
   const rkA = G.endless ? rankSubmit('inf', runScore(), G.t, G.cid) : Promise.resolve('same'), rkB = rankSubmit('kill', G.kills, G.t, G.cid);
