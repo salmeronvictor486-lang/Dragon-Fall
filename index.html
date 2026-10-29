@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <style>
 :root{
+  color-scheme:dark;
   --bg:#0b0f24;--panel:#141a3c;--panel2:#1f2858;--panel3:#2a3572;--ink:#f6efdc;--muted:#9aa3c9;
   --orange:#ff8a1c;--orange2:#ffb347;--gold:#ffd23f;--red:#e8433a;--blue:#3aa0ff;--green:#59d66b;--purple:#a46bff;--line:#04050d;
 }
@@ -148,6 +149,9 @@ h2.px{font-size:18px;color:var(--gold);text-shadow:3px 3px 0 var(--line);text-al
 .howto{font-size:20px;color:#cfd6f5;max-width:460px}
 .howto b{color:var(--gold)}
 .back{position:absolute;top:12px;left:12px}
+#ask{z-index:30}
+#ask .panel{width:min(440px,92vw);text-align:center}
+#askText{font-size:22px}
 
 /* ---------- Cuenta ---------- */
 .acct-badge{margin-top:min(14px,1.6vh);font-size:19px;color:#cfd6f5;text-align:center;background:rgba(5,6,15,.55);padding:6px 12px;box-shadow:0 0 0 2px var(--line);cursor:pointer;border:0}
@@ -281,6 +285,14 @@ details.priv summary{cursor:pointer;color:#cfd6f5}
     <h2 class="px">CÁPSULA HOI-POI</h2>
     <div class="col" id="capList"></div>
     <button class="btn primary" id="bCapOk">¡GENIAL!</button>
+  </div>
+</section>
+
+<!-- CONFIRMACIÓN -->
+<section id="ask" class="screen dim">
+  <div class="panel col">
+    <p id="askText"></p>
+    <div class="row center wrap"><button class="btn" id="askNo">CANCELAR</button><button class="btn primary" id="askYes">SÍ</button></div>
   </div>
 </section>
 
@@ -2034,7 +2046,16 @@ function renderPause() {
 $('#pausebtn').onclick = () => pauseGame();
 $('#bResume').onclick = () => resumeGame();
 $('#bPauseOpts').onclick = () => { optsReturn = 'pause'; state = 'opts'; showScreen('opts'); renderOpts(); };
-$('#bQuit').onclick = () => { if (confirm('¿Abandonar la partida? Conservarás los zenis conseguidos.')) endRun(false, true); };
+/* Diálogo de confirmación propio (los confirm() del navegador no siempre funcionan) */
+function ask(text, yes = 'SÍ') {
+  return new Promise(res => {
+    const el = $('#ask'); $('#askText').textContent = text; $('#askYes').textContent = yes;
+    el.classList.add('on'); $('#askNo').focus();
+    const done = v => { el.classList.remove('on'); $('#askYes').onclick = $('#askNo').onclick = null; sfx('click'); res(v); };
+    $('#askYes').onclick = () => done(true); $('#askNo').onclick = () => done(false);
+  });
+}
+$('#bQuit').onclick = async () => { if (await ask('¿Abandonar la partida? Conservarás los zenis conseguidos.', 'ABANDONAR')) endRun(false, true); };
 
 /* ---------- subir de nivel ---------- */
 function openLevelUp() {
@@ -2193,7 +2214,7 @@ function renderShop() {
   const el = document.createElement('div'); el.className = 'item';
   const spent = SHOP.reduce((a, it) => { let s = 0; for (let l = 0; l < (save.shop[it.id] || 0); l++) s += Math.round(it.cost * (1 + l * .9)); return a + s; }, 0);
   el.innerHTML = `<div class="t">Devolver mejoras</div><div class="muted">Recupera todos los zenis invertidos (${fmtNum(spent)}).</div><button class="btn small" ${spent ? '' : 'disabled'}>REEMBOLSAR</button>`;
-  el.querySelector('button').onclick = () => { if (confirm('¿Devolver todas las mejoras y recuperar los zenis?')) { save.zeni += spent; save.shop = {}; persist(); renderShop(); } };
+  el.querySelector('button').onclick = async () => { if (await ask('¿Devolver todas las mejoras y recuperar los zenis?', 'REEMBOLSAR')) { save.zeni += spent; save.shop = {}; persist(); renderShop(); } };
   g.appendChild(el);
 }
 
@@ -2235,7 +2256,7 @@ function renderOpts() {
     box.appendChild(row);
   });
 }
-$('#bResetSave').onclick = () => { if (confirm('¿Seguro? Se borrarán zenis, mejoras y personajes desbloqueados.')) { const o = save.opts; save = defSave(); save.opts = o; persist(); renderOpts(); } };
+$('#bResetSave').onclick = async () => { if (await ask('¿Seguro? Se borrarán zenis, mejoras y personajes desbloqueados.', 'BORRAR')) { const o = save.opts; save = defSave(); save.opts = o; persist(); renderOpts(); } };
 
 /* ---------- Banner ---------- */
 let banTimer = null;
@@ -2424,7 +2445,7 @@ function renderAccount() {
     $('#acSync').onclick = e => busy(e.target, async () => { await A.push(); setMsg(A.status === 'ok' ? 'ok' : 'err', A.status === 'ok' ? 'Progreso guardado en la nube.' : 'No hay conexión. Lo intentaremos más tarde.'); });
     $('#acOut').onclick = e => busy(e.target, async () => { await A.flush(); await A.backend.logout(); setMsg('ok', 'Has cerrado sesión. Ahora juegas como invitado.'); });
     $('#acDel').onclick = async () => {
-      if (!confirm('¿Borrar tu cuenta? Se eliminarán tu email, tu nombre y todo tu progreso en la nube. No se puede deshacer.')) return;
+      if (!(await ask('¿Borrar tu cuenta? Se eliminarán tu email, tu nombre y todo tu progreso en la nube. No se puede deshacer.', 'BORRAR CUENTA'))) return;
       const uid = A.user.uid;
       try { await A.backend.remove(uid); try { localStorage.removeItem(SAVE_KEY + '_' + uid); } catch (e) { } setMsg('ok', 'Cuenta borrada.'); }
       catch (e) { setMsg('err', authMsg(e)); }
@@ -2467,9 +2488,9 @@ function renderAccount() {
   }
   const ex = $('#bkExport'), im = $('#bkImport');
   ex.onclick = async () => { const c = exportCode(); $('#bkCode').value = c; try { await navigator.clipboard.writeText(c); setMsg('ok', 'Código copiado. Guárdalo en un sitio seguro.'); } catch (e) { $('#bkCode').select(); setMsg('ok', 'Código listo: cópialo del cuadro.'); } };
-  im.onclick = () => {
+  im.onclick = async () => {
     const c = $('#bkCode').value; if (!c.trim()) return setMsg('err', 'Pega primero un código.');
-    if (!confirm('Cargar este código sustituirá tu progreso actual. ¿Continuar?')) return;
+    if (!(await ask('Cargar este código sustituirá tu progreso actual. ¿Continuar?', 'CARGAR'))) return;
     try { importCode(c); setMsg('ok', 'Progreso cargado.'); renderAccount(); } catch (e) { setMsg('err', e.message); }
   };
 }
