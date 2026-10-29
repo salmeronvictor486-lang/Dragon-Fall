@@ -239,7 +239,7 @@ function reelCard(c) {
 function openBox(b, pay) {
   if (pay === 'ticket') { if (!(save.tickets[b.id] > 0)) return; save.tickets[b.id]--; }
   else if (pay === 'zeni') { if (save.zeni < b.price) return; save.zeni -= b.price; }
-  const win = rollBox(b), res = grantChar(win); persist();
+  const win = rollBox(b), res = grantChar(win); save.stats.boxes++; trackMis('boxes', 1); persist();
   state = 'gacha'; showScreen('reveal');
   $('#rvTitle').textContent = b.name.toUpperCase(); $('#rvBox').hidden = true; $('#rvSkip').hidden = false;
   const track = $('#rvTrack'), reel = $('#rvReel'); track.innerHTML = ''; track.style.transition = 'none'; track.style.transform = 'translateX(0)';

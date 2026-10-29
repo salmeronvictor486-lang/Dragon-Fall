@@ -1,6 +1,4 @@
 <script>
-// Ganchos de depuración/tests solo en local (file:// o localhost), nunca en la web publicada
-const DEV = location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 'use strict';
 /* =================== SPRITES =================== */
 const SW_ = 16, SH_ = 26, OUTLINE = '#0d0716';
@@ -280,19 +278,28 @@ function sfx(n) {
 }
 /* Música chiptune original (bucle sencillo) */
 const MUS = { on: false, step: 0, next: 0, timer: null };
-const MUS_BASS = [45, 45, 57, 45, 43, 43, 55, 43, 41, 41, 53, 41, 43, 43, 55, 47];
-const MUS_LEAD = [69, 0, 72, 74, 76, 0, 74, 72, 74, 0, 72, 69, 67, 0, 69, 0, 69, 0, 72, 74, 76, 0, 79, 76, 77, 0, 76, 74, 76, 0, 0, 0];
+// Una pista por saga y otra para los jefes: bajo (16 notas, cada 2 pasos) + melodía (32 pasos). 0 = silencio.
+const TRACKS = {
+  saiyan: { spb: .15, bass: [45, 45, 57, 45, 43, 43, 55, 43, 41, 41, 53, 41, 43, 43, 55, 47], lead: [69, 0, 72, 74, 76, 0, 74, 72, 74, 0, 72, 69, 67, 0, 69, 0, 69, 0, 72, 74, 76, 0, 79, 76, 77, 0, 76, 74, 76, 0, 0, 0] },
+  namek: { spb: .14, wave: 'square', bass: [38, 38, 50, 38, 41, 41, 53, 41, 43, 43, 55, 43, 45, 45, 57, 45], lead: [62, 0, 65, 0, 69, 67, 65, 0, 64, 0, 65, 67, 69, 0, 0, 0, 70, 0, 69, 67, 65, 0, 62, 0, 64, 65, 67, 0, 62, 0, 0, 0] },
+  cell: { spb: .13, bass: [40, 40, 40, 52, 40, 40, 43, 44, 40, 40, 40, 52, 47, 47, 46, 45], lead: [64, 0, 0, 67, 0, 0, 70, 0, 69, 0, 67, 0, 64, 0, 63, 0, 64, 0, 0, 67, 0, 0, 71, 0, 72, 0, 71, 0, 67, 0, 0, 0] },
+  buu: { spb: .14, bass: [48, 48, 55, 48, 53, 53, 57, 53, 50, 50, 57, 50, 55, 55, 59, 55], lead: [72, 74, 76, 0, 79, 0, 76, 74, 72, 0, 69, 0, 72, 0, 0, 0, 74, 76, 77, 0, 81, 0, 79, 77, 76, 0, 74, 0, 72, 0, 0, 0] },
+  top: { spb: .125, bass: [45, 45, 57, 45, 41, 41, 53, 41, 43, 43, 55, 43, 40, 40, 52, 44], lead: [69, 0, 72, 0, 76, 0, 81, 0, 79, 0, 77, 76, 74, 0, 72, 0, 71, 0, 74, 0, 77, 0, 83, 0, 81, 0, 79, 77, 76, 0, 0, 0] },
+  boss: { spb: .115, bass: [40, 52, 40, 52, 41, 53, 41, 53, 43, 55, 43, 55, 44, 56, 44, 56], lead: [76, 0, 75, 76, 0, 79, 0, 76, 74, 0, 72, 74, 0, 76, 0, 0, 76, 0, 75, 76, 0, 79, 0, 83, 81, 0, 79, 77, 76, 0, 0, 0] },
+};
 const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
 function musicTick() {
   if (!AU.ctx || !MUS.on) return;
-  const a = AU.ctx, spb = .15;
+  const a = AU.ctx, tr = G && G.boss && !G.boss.dead ? TRACKS.boss : TRACKS[G ? G.stage.id : 'saiyan'] || TRACKS.saiyan;
+  if (MUS.tr !== tr) { MUS.tr = tr; MUS.step = 0; MUS.next = Math.max(MUS.next, a.currentTime + .05); }
   while (MUS.next < a.currentTime + .25) {
     const s = MUS.step, t = MUS.next - a.currentTime;
-    const b = MUS_BASS[Math.floor(s / 2) % 16];
+    const b = tr.bass[Math.floor(s / 2) % 16];
     if (s % 2 === 0) tone(mtof(b), .14, 'triangle', .09, 0, Math.max(0, t));
-    const ld = MUS_LEAD[s % 32]; if (ld && G && G.t > 0) tone(mtof(ld), .12, 'square', .025, 0, Math.max(0, t));
-    if (s % 4 === 2) noise(.04, .03, 5000, Math.max(0, t));
-    MUS.step++; MUS.next += spb;
+    const ld = tr.lead[s % 32]; if (ld && G && G.t > 0) tone(mtof(ld), .12, tr.wave || 'square', .025, 0, Math.max(0, t));
+    if (s % 4 === 2) noise(.04, .03, tr === TRACKS.boss ? 7000 : 5000, Math.max(0, t));
+    if (tr === TRACKS.boss && s % 8 === 0) noise(.08, .06, 400, Math.max(0, t));
+    MUS.step++; MUS.next += tr.spb;
   }
 }
 function musicSet(on) {
@@ -304,7 +311,8 @@ function musicSet(on) {
 /* =================== GUARDADO =================== */
 const SAVE_KEY = 'dragonfall_save_v1';
 let saveKey = SAVE_KEY;   // invitado; con cuenta: SAVE_KEY + '_' + uid
-function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, pid: '', streak: { last: '', n: 0 }, daily: { day: '', bought: {} }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true } }; }
+function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, pid: '', streak: { last: '', n: 0 }, daily: { day: '', bought: {} }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true, vib: true }, clearedD: {}, stats: defStats(), acc: { lvl: 1, xp: 0 }, missions: { day: '', list: [], bonus: 0 }, ach: {}, titles: { novato: 1 }, title: 'novato', buddy: '', diff: 0, mode: 'saga', rankSent: {}, lang: '' }; }
+function defStats() { return { wins: 0, time: 0, specials: 0, bosses: 0, boxes: 0, events: 0, fusions: 0, shenron: 0, evos: 0, trans: 0, zeniRun: 0, daily: 0, bestKills: 0, bestInf: 0, bestInfT: 0, chars: {} }; }
 function normalizeSave(o) {
   const s = Object.assign(defSave(), o || {});
   s.opts = Object.assign(defSave().opts, (o && o.opts) || {});
@@ -314,8 +322,18 @@ function normalizeSave(o) {
   if (!s.streak || typeof s.streak !== 'object') s.streak = { last: '', n: 0 };
   if (!s.daily || typeof s.daily !== 'object' || !s.daily.bought) s.daily = { day: '', bought: {} };
   ['zeni', 'kills', 'maxTime', 'runs', 'ts'].forEach(k => { s[k] = Number(s[k]) || 0; });
+  ['clearedD', 'ach', 'titles', 'rankSent'].forEach(k => { if (!s[k] || typeof s[k] !== 'object') s[k] = {}; });
+  s.titles.novato = 1; if (!TITLES_OK(s.title, s)) s.title = 'novato';
+  const st = defStats(), so = s.stats && typeof s.stats === 'object' ? s.stats : {};
+  for (const k in st) st[k] = k === 'chars' ? (so.chars && typeof so.chars === 'object' ? so.chars : {}) : Number(so[k]) || 0;
+  s.stats = st;
+  s.acc = { lvl: Math.max(1, Number(s.acc && s.acc.lvl) || 1), xp: Math.max(0, Number(s.acc && s.acc.xp) || 0) };
+  if (!s.missions || typeof s.missions !== 'object' || !Array.isArray(s.missions.list)) s.missions = { day: '', list: [], bonus: 0 };
+  s.diff = Math.max(0, Math.min(2, Number(s.diff) || 0)); if (s.mode !== 'inf') s.mode = 'saga';
+  if (typeof s.buddy !== 'string') s.buddy = '';
   return s;
 }
+function TITLES_OK(t, s) { return typeof t === 'string' && s.titles[t]; }
 function readSave(key) { try { const raw = localStorage.getItem(key); return raw ? normalizeSave(JSON.parse(raw)) : null; } catch (e) { return null; } }
 function loadSave(key = saveKey) { return readSave(key) || normalizeSave(defSave()); }
 function writeLocal() { try { localStorage.setItem(saveKey, JSON.stringify(save)); } catch (e) { } }
@@ -339,6 +357,7 @@ function stageUnlocked(i) { return i === 0 || !!save.cleared[STAGES[i - 1].id]; 
 /* =================== INPUT =================== */
 const keys = {};
 const joy = { on: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
+const pad = { on: false, x: 0, y: 0, prev: [], rep: 0, dir: '' };
 addEventListener('keydown', e => {
   keys[e.code] = true;
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code) && state === 'play') e.preventDefault();
@@ -352,6 +371,7 @@ function moveVec() {
   if (keys.KeyA || keys.ArrowLeft) x -= 1; if (keys.KeyD || keys.ArrowRight) x += 1;
   if (keys.KeyW || keys.ArrowUp) y -= 1; if (keys.KeyS || keys.ArrowDown) y += 1;
   if (joy.on) { const dx = joy.x - joy.ox, dy = joy.y - joy.oy, d = Math.hypot(dx, dy); if (d > 6) { const m = Math.min(1, d / 48); x = dx / d * m; y = dy / d * m; } }
+  if (pad.on && (Math.abs(pad.x) > .25 || Math.abs(pad.y) > .25)) { x = pad.x; y = pad.y; }
   const d = Math.hypot(x, y); if (d > 1) { x /= d; y /= d; }
   return [x, y];
 }
@@ -373,6 +393,7 @@ cv.addEventListener('pointerdown', e => {
   audioInit();
   if (state === 'play' && G && G.intro) G.intro.t = Math.min(G.intro.t, .15);
   if (state === 'play' && G && spBtn && (e.clientX - spBtn.x) ** 2 + (e.clientY - spBtn.y) ** 2 < spBtn.r ** 2) { useSpecial(); return; }
+  if (state === 'play' && G && fuBtn && (e.clientX - fuBtn.x) ** 2 + (e.clientY - fuBtn.y) ** 2 < fuBtn.r ** 2) { startFusion(); return; }
   if (state !== 'play' || e.pointerType === 'mouse') return;
   joy.on = true; joy.id = e.pointerId; joy.ox = joy.x = e.clientX; joy.oy = joy.y = e.clientY;
 });

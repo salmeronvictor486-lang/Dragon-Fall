@@ -41,6 +41,9 @@ async function firebaseBackend(cfg) {
     load: async uid => { const d = await fs.getDoc(ref(uid)); return d.exists() ? d.data() : null; },
     store: (uid, data) => fs.setDoc(ref(uid), { name: data.name, save: data.save, updatedAt: fs.serverTimestamp() }),
     remove: async uid => { await fs.deleteDoc(ref(uid)); await auth.deleteUser(au.currentUser); },
+    rankTop: async col => { const r = await fs.getDocs(fs.query(fs.collection(db, col), fs.orderBy('score', 'desc'), fs.limit(50))); return r.docs.map(d => Object.assign({ uid: d.id }, d.data())); },
+    rankPut: (col, uid, data) => fs.setDoc(fs.doc(db, col, uid), data),
+    rankDel: (col, uid) => fs.deleteDoc(fs.doc(db, col, uid)),
   };
 }
 
@@ -250,6 +253,7 @@ function renderAccount() {
     $('#acDel').onclick = async () => {
       if (!(await ask('¿Borrar tu cuenta? Se eliminarán tu email, tu nombre y todo tu progreso en la nube. No se puede deshacer.', 'BORRAR CUENTA'))) return;
       const uid = A.user.uid;
+      if (A.backend.rankDel) for (const col in save.rankSent) { try { await A.backend.rankDel(col, uid); } catch (e) { } }
       try { await A.backend.remove(uid); try { localStorage.removeItem(SAVE_KEY + '_' + uid); } catch (e) { } acctMsg = { type: 'ok', text: 'Cuenta borrada.' }; renderAccount(); }
       catch (e) { setMsg('err', authMsg(e)); }
     };

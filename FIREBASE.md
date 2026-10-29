@@ -44,6 +44,21 @@ const FIREBASE_CONFIG = {
 
 > La `apiKey` de Firebase **no es secreta**: está pensada para ir en el código de la web. Lo que protege los datos son las reglas de Firestore y los dominios autorizados.
 
+## 5. Ranking semanal (nuevo)
+
+El ranking usa la misma base de datos. Solo hay que **actualizar las reglas**:
+
+1. En la consola de Firebase, ve a **Firestore Database → Reglas**.
+2. Borra todo, pega el contenido nuevo de [`firestore.rules`](firestore.rules) y pulsa **Publicar**.
+
+Mientras no se publiquen, el juego funciona igual, pero la pantalla RANKING dice que no está disponible.
+
+Cómo funciona:
+- Hay dos clasificaciones que se reinician cada lunes: **Supervivencia** (puntos) y **Bajas** (más enemigos en una partida).
+- Cualquiera puede ver el ranking. Para aparecer hay que tener cuenta (correo o Google).
+- Cada jugador solo puede escribir **su propia marca**, solo para mejorarla y con valores razonables según el tiempo jugado. Así se frenan las trampas más fáciles. Una persona que sepa programar todavía podría enviar una marca falsa, pero no puede tocar las de los demás.
+- Se guarda: nombre de la cuenta, título, guerrero, puntuación y tiempo. Al borrar la cuenta, también se borran sus marcas de la semana.
+
 ## Cómo funciona el guardado
 
 - **Invitado:** la partida se guarda en el navegador y se puede copiar como **código** (`DF2.…`).

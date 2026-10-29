@@ -97,11 +97,15 @@ function renderWorld(dt) {
     lx.globalAlpha = .18 + Math.sin(t * 6) * .04; circ(P.x, P.y - 6, R, col); lx.globalAlpha = .6;
     lx.strokeStyle = col; lx.lineWidth = 1; lx.beginPath(); lx.arc(Math.round(P.x - camX), Math.round(P.y - 6 - camY), Math.max(.5, R), 0, TAU); lx.stroke(); lx.globalAlpha = 1;
   }
+  drawEventWorld(t);
+  const B = G.buddy && !P.fused && P.hp > 0 ? G.buddy : null;
+  if (B) drawShadow(B.x, B.y, 6);
   // entidades por profundidad
-  const ents = G.enemies.slice(); if (P.hp > 0) ents.push(P);
+  const ents = G.enemies.slice(); if (P.hp > 0) ents.push(P); if (B) ents.push({ bud: B, y: B.y });
   for (const pr of visibleProps(G.stage.id, camX, camY)) ents.push({ prop: pr, y: pr.y });
   ents.sort((a, b) => a.y - b.y);
   for (const e of ents) {
+    if (e.bud) { drawEnt(e.bud.id, e.bud.x, e.bud.y, sprScale(e.bud.id) * .85, e.bud.face, e.bud.frame, '', false); continue; }
     if (e.prop) {
       const pr = e.prop, ps = getPropSprite(pr.type, G.stage.id, pr.v);
       const behind = P.y < pr.y && P.y > pr.y - ps.c.height && Math.abs(P.x - pr.x) < ps.c.width / 2 + 4;
@@ -219,6 +223,7 @@ function tri(x, y, r) { lx.beginPath(); lx.moveTo(x, y - r); lx.lineTo(x + r * .
 /* ---------- pantalla (HUD, nombres, números) ---------- */
 const FONT = '"Press Start 2P", monospace';
 function txt(s, x, y, size, col, align = 'center', stroke = '#05060f') {
+  s = L(s);
   ctx.font = `${size}px ${FONT}`; ctx.textAlign = align; ctx.textBaseline = 'middle';
   ctx.lineWidth = Math.max(2, size / 3); ctx.strokeStyle = stroke; ctx.lineJoin = 'round'; ctx.strokeText(s, x, y);
   ctx.fillStyle = col; ctx.fillText(s, x, y);
@@ -242,6 +247,7 @@ function renderScreen() {
     ctx.fillStyle = '#3a0d14'; ctx.fillRect(px - w / 2, py + 6, w, 3);
     ctx.fillStyle = fr > .5 ? '#59d66b' : fr > .25 ? '#ffd23f' : '#e8433a'; ctx.fillRect(px - w / 2, py + 6, w * fr, 3);
   }
+  if (G.buddy && !P.fused && P.hp > 0) { const [bx, by] = toS(G.buddy.x, G.buddy.y); txt(CHAR[G.buddy.id].name, bx, by - 30 * ZOOM * sprScale(G.buddy.id) * .85 - 2, fs - 1, '#9fd8ff'); }
   // números de daño
   for (const n of G.nums) {
     const [x, y] = toS(n.x, n.y); ctx.globalAlpha = Math.min(1, n.life * 3);
@@ -255,9 +261,11 @@ function renderScreen() {
     const gr = ctx.createRadialGradient(SWd / 2, SHd / 2, Math.min(SWd, SHd) * .3, SWd / 2, SHd / 2, Math.max(SWd, SHd) * .7);
     gr.addColorStop(0, 'rgba(232,67,58,0)'); gr.addColorStop(1, `rgba(232,67,58,${a})`); ctx.fillStyle = gr; ctx.fillRect(0, 0, SWd, SHd);
   }
+  drawMoon();
   if (G.spTint) { ctx.globalAlpha = .22 * Math.min(1, G.spTint.t / .4); ctx.fillStyle = G.spTint.col; ctx.fillRect(0, 0, SWd, SHd); ctx.globalAlpha = 1; }
   drawHUD(small);
   drawSpecialBtn(small);
+  drawFusionBtn(small);
   drawPointers();
   if (G.tut) { const cur = G.tut.filter(([t]) => G.t >= t && G.t < t + 6).pop(); if (cur) drawTip(cur[1], G.t - cur[0]); }
   if (G.intro) drawIntro(G.intro);
@@ -312,6 +320,7 @@ function drawPointers() {
 }
 /* Consejos de la primera partida */
 function drawTip(text, age) {
+  text = L(text);
   const a = Math.min(1, age * 3, (6 - age) * 2); if (a <= 0) return;
   ctx.globalAlpha = a; ctx.font = '21px VT323, monospace';
   const w = Math.min(SWd - 24, ctx.measureText(text).width + 50), lines = ctx.measureText(text).width > w - 40 ? 2 : 1, h = 34 + lines * 20, x = (SWd - w) / 2, y = SHd - h - 74;
@@ -352,7 +361,7 @@ function drawIntro(it) {
     if (p < .18) { ctx.globalAlpha = 1 - p / .18; ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, SWd, SHd); ctx.globalAlpha = fade; }
     ctx.drawImage(s, Math.round(cx - s.width * sc / 2), Math.round(cy - s.height * sc / 2 - 20), Math.round(s.width * sc), Math.round(s.height * sc));
     txt(it.name.toUpperCase(), cx, cy + s.height * big / 2 + 20, SWd < 560 ? 10 : 16, '#ffd23f', 'center');
-    txt('¡TRANSFORMACIÓN!', cx, cy - s.height * big / 2 - 40, SWd < 560 ? 8 : 10, '#ffffff', 'center');
+    txt(it.top || '¡TRANSFORMACIÓN!', cx, cy - s.height * big / 2 - 40, SWd < 560 ? 8 : 10, '#ffffff', 'center');
   }
   ctx.restore(); ctx.globalAlpha = 1;
 }
@@ -437,6 +446,7 @@ function drawHUD(small) {
     const gb = ctx.createLinearGradient(0, by2, 0, by2 + bh2); gb.addColorStop(0, '#ff9a8a'); gb.addColorStop(.4, '#e8433a'); gb.addColorStop(1, '#8a1a14');
     ctx.fillStyle = gb; ctx.fillRect(bx, by2, bw * fr2, bh2);
   } else if (nb && nb[0] - G.t < 10 && nb[0] - G.t > 0) txt(`¡${BOSSES[nb[1]].name.toUpperCase()} SE ACERCA!`, SWd / 2, byy + 12, small ? 8 : 10, '#ff7a6a', 'center');
+  drawRunInfo(small, G.boss ? byy + Math.round(46 * f) + 6 : nb && nb[0] - G.t < 10 && nb[0] - G.t > 0 ? byy + 24 : byy);
 }
 
 /* ---------- fondo de menús: paisaje con parallax ---------- */
@@ -554,7 +564,7 @@ function render(dt) {
 }
 
 /* =================== INTERFAZ =================== */
-const SCREENS = ['title', 'select', 'stages', 'shop', 'dex', 'opts', 'account', 'gacha', 'reveal', 'levelup', 'pause', 'over', 'shenron', 'capsule'];
+const SCREENS = ['title', 'select', 'stages', 'shop', 'dex', 'opts', 'account', 'gacha', 'reveal', 'levelup', 'pause', 'over', 'shenron', 'capsule', 'missions', 'rank'];
 function showScreen(id) {
   SCREENS.forEach(s => $('#' + s).classList.toggle('on', s === id));
   $('#pausebtn').style.display = id ? 'none' : 'block';
@@ -571,6 +581,8 @@ function go(id) {
   if (id === 'opts') renderOpts();
   if (id === 'account') renderAccount();
   if (id === 'gacha') renderShop2();
+  if (id === 'missions') renderMissions();
+  if (id === 'rank') renderRank();
 }
 document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => {
   const to = b.dataset.back;
@@ -582,10 +594,11 @@ document.addEventListener('pointerdown', () => audioInit(), { once: false, captu
 function renderTitle() {
   const n = CHARS.filter(isUnlocked).length;
   const sagas = Object.keys(save.cleared).filter(k => STAGES.some(s => s.id === k)).length, ts = $('#titleStats'); ts.innerHTML = '';
-  [['zeni', '#ffd23f', fmtNum(save.zeni), 'zenis'], ['user', '#59d66b', `${n}/${CHARS.length}`, 'guerreros'], ['book', '#3aa0ff', `${sagas}/${STAGES.length}`, 'sagas'], ['skull', '#fff', fmtNum(save.kills), 'bajas']].forEach(([ic, col, v, l]) => {
+  [['zeni', '#ffd23f', fmtNum(save.zeni), 'zenis'], ['user', '#59d66b', `${n}/${CHARS.length}`, 'guerreros'], ['book', '#3aa0ff', `${sagas}/${STAGES.length}`, 'sagas'], ['skull', '#fff', fmtNum(save.kills), 'bajas'], ['lvl', '#9fd8ff', 'Nv ' + save.acc.lvl, 'cuenta']].forEach(([ic, col, v, l]) => {
     const ch = document.createElement('span'); ch.className = 'chip'; ch.appendChild(iconCanvas(ic, col, 18)); ch.insertAdjacentHTML('beforeend', `<span><b>${v}</b> ${l}</span>`); ts.appendChild(ch);
   });
   $('#subDex').textContent = `${n}/${CHARS.length} guerreros conseguidos`;
+  if (typeof dayKey === 'function') { const c = claimable(); $('#misBadge').hidden = !c; $('#subMis').textContent = c ? `¡${c} premio${c > 1 ? 's' : ''} por recoger!` : `Nivel de cuenta ${save.acc.lvl} · logros`; }
   if (typeof giftState === 'function') { const g = giftState().can; $('#giftBadge').hidden = !g; $('#subShop').textContent = g ? 'Tu regalo diario te espera' : 'Ofertas de hoy y cajas'; }
   $('#subAcct').textContent = ACCT && ACCT.user ? ACCT.user.name : 'Guarda tu partida';
   menu.stage = 'saiyan';
@@ -593,6 +606,8 @@ function renderTitle() {
 }
 $('#bPlay').onclick = () => { audioInit(); go('select'); };
 $('#bDex').onclick = () => go('dex');
+$('#bMis').onclick = () => { audioInit(); go('missions'); };
+$('#bRank').onclick = () => { audioInit(); go('rank'); };
 $('#bGacha').onclick = () => { audioInit(); go('gacha'); };
 $('#bShop').onclick = () => go('shop');
 $('#bOpts').onclick = () => { optsReturn = 'title'; go('opts'); };
@@ -657,11 +672,13 @@ function renderSelect() {
     <div class="tags" hidden></div>
     <div class="row" style="background:#0f1430;padding:8px;box-shadow:0 0 0 2px var(--line)"><span id="wIcon"></span><div><b class="gold px" style="font-size:10px">${w.name}</b><div class="muted">${w.desc}</div></div></div>
     ${spInfo(c.id)}
+    ${un ? buddyBox(c.id) : ''}
     ${c.forms.length ? `<div class="muted">Transformaciones</div><div class="forms" id="formsBox"></div>` : ''}
     <div id="selAction"></div>`;
   paintPedestal($('#bigSpr'), c, un);
   d.querySelector('.tags').insertAdjacentHTML('afterend', statBars(c));
   $('#wIcon').appendChild(iconCanvas(w.icon, w.col, 36));
+  if (un) wireBuddy(c.id);
   if (c.forms.length) {
     const fb = $('#formsBox');
     c.forms.forEach(f => { const el = document.createElement('div'); el.className = 'form'; const cc = document.createElement('canvas'); cc.width = 18; cc.height = 28; paintSprite(cc, f.spr); el.appendChild(cc); el.insertAdjacentHTML('beforeend', `<div>Nv ${f.lv}</div>`); el.title = f.name; if (!un) cc.style.filter = 'grayscale(.8) brightness(.7)'; fb.appendChild(el); });
@@ -692,28 +709,50 @@ function stagePreview(cv2, st) {
   const h = getSprite(selChar, 0, false); x.drawImage(h, 22, 30, h.width, h.height);
 }
 function renderStages() {
+  const mode = save.mode === 'inf' && endlessUnlocked() ? 'inf' : 'saga';
+  if (mode === 'saga' && !STAGES.some((s, i) => diffUnlocked(i, save.diff))) save.diff = 0;
+  const mt = $('#modeTabs'); mt.innerHTML = '';
+  [['saga', 'SAGAS'], ['inf', '∞ SUPERVIVENCIA']].forEach(([k, n]) => {
+    const b = document.createElement('button'); b.className = 'btn small' + (mode === k ? ' on' : ''); b.textContent = n;
+    if (k === 'inf' && !endlessUnlocked()) { b.disabled = true; b.textContent += ' 🔒'; b.title = 'Completa la Saga Saiyan para desbloquearlo'; }
+    b.onclick = () => { save.mode = k; persist(); sfx('click'); renderStages(); }; mt.appendChild(b);
+  });
+  const db = $('#diffBar'); db.innerHTML = ''; db.hidden = mode !== 'saga';
+  if (mode === 'saga') DIFFS.forEach(d => {
+    const b = document.createElement('button'); b.className = 'btn small' + (save.diff === d.id ? ' on' : ''); b.style.setProperty('--dc', d.col);
+    const ok = STAGES.some((s, i) => diffUnlocked(i, d.id)); b.disabled = !ok; b.textContent = d.name.toUpperCase() + (ok ? '' : ' 🔒');
+    if (!ok) b.title = d.id === 1 ? 'Completa una saga en Normal' : 'Completa una saga en Difícil';
+    b.onclick = () => { save.diff = d.id; persist(); sfx('click'); renderStages(); }; db.appendChild(b);
+  });
+  $('#modeInfo').innerHTML = mode === 'inf'
+    ? `Aguanta todo lo que puedas: los enemigos no paran de hacerse más fuertes y los jefes vuelven una y otra vez. Tu récord: <b class="gold">${fmtNum(save.stats.bestInf)}</b> puntos. Elige el escenario.`
+    : DIFFS[save.diff].desc + (save.diff ? ` Primera victoria en cada saga: <b class="gold">${DIFF_PRIZE[save.diff].txt}</b>.` : ' Al completar una saga se desbloquea en Difícil.');
   const g = $('#stageGrid'); g.innerHTML = '';
   STAGES.forEach((st, i) => {
-    const un = stageUnlocked(i), b = document.createElement('button');
-    b.className = 'stage' + (un ? '' : ' locked') + (save.cleared[st.id] ? ' done' : '');
+    const un = mode === 'inf' ? stageUnlocked(i) : diffUnlocked(i, save.diff), b = document.createElement('button');
+    b.className = 'stage' + (un ? '' : ' locked') + (mode === 'saga' && (save.diff ? save.clearedD[st.id + ':' + save.diff] : save.cleared[st.id]) ? ' done' : '');
     const cv2 = document.createElement('canvas'); cv2.width = 240; cv2.height = 66; stagePreview(cv2, st);
     if (!un) cv2.style.filter = 'grayscale(1) brightness(.5)';
     b.appendChild(cv2);
     const best = save.best[st.id];
-    b.insertAdjacentHTML('beforeend', `<div class="in"><div class="t">${i + 1}. ${st.name}</div><div class="s">${st.place}</div><div class="s" style="color:#cfd6f5">${un ? st.desc : '🔒 Completa la saga anterior'}</div>
-      <div class="s">Jefes: ${st.bosses.map(b => save.seen[b[1]] ? BOSSES[b[1]].name : '???').join(' · ')}</div>${best ? `<div class="s gold">Récord: ${fmtTime(best.t)} · Nv ${best.lvl}</div>` : ''}</div>`);
-    b.onclick = () => { if (un) startRun(selChar, i); };
+    const lockTxt = mode === 'inf' || save.diff === 0 ? '🔒 Completa la saga anterior' : `🔒 Complétala antes en ${DIFFS[save.diff - 1].name}`;
+    const dd = DIFFS.map(d => `<span style="--c:${d.col}" class="${(d.id ? save.clearedD[st.id + ':' + d.id] : save.cleared[st.id]) ? '' : 'no'}">${d.name}</span>`).join('');
+    b.insertAdjacentHTML('beforeend', `<div class="in"><div class="t">${i + 1}. ${st.name}</div><div class="s">${st.place}</div><div class="s" style="color:#cfd6f5">${un ? st.desc : lockTxt}</div>
+      <div class="s">Jefes: ${st.bosses.map(b => save.seen[b[1]] ? BOSSES[b[1]].name : '???').join(' · ')}</div>${best && mode === 'saga' ? `<div class="s gold">Récord: ${fmtTime(best.t)} · Nv ${best.lvl}</div>` : ''}${mode === 'saga' ? `<div class="dd">${dd}</div>` : ''}</div>`);
+    b.onclick = () => { if (un) startRun(selChar, i, mode === 'inf' ? { endless: true } : { diff: save.diff }); };
     b.onmouseenter = () => { if (un) menu.stage = st.id; };
     g.appendChild(b);
   });
 }
 
 /* ---------- partida ---------- */
-function startRun(cid, si) {
-  audioInit();
-  newRun(cid, si);
+let lastOpt = {};
+function startRun(cid, si, opt = {}) {
+  audioInit(); lastOpt = opt;
+  newRun(cid, si, opt);
   state = 'play'; showScreen(null);
-  banner(G.stage.name.toUpperCase(), `${G.stage.place} · Sobrevive 10 minutos y derrota al jefe final`);
+  if (G.endless) banner('∞ SUPERVIVENCIA', `${G.stage.place} · Aguanta todo lo que puedas`);
+  else banner(G.stage.name.toUpperCase() + (G.diff.id ? ' · ' + G.diff.name.toUpperCase() : ''), `${G.stage.place} · Sobrevive 10 minutos y derrota al jefe final`);
   musicSet(true); lastT = performance.now();
 }
 function pauseGame() { if (state !== 'play') return; state = 'paused'; showScreen('pause'); renderPause(); }
@@ -783,7 +822,7 @@ const WISHES = [
   { t: 'Una segunda oportunidad', d: 'Recuperas toda la vida y ganas una resurrección extra.', f: () => { P.hp = P.maxHp; P.revive++; } },
 ];
 function openShenron() {
-  state = 'shenron'; showScreen('shenron'); sfx('trans');
+  state = 'shenron'; showScreen('shenron'); sfx('trans'); G.stat.shenron++;
   const box = $('#wishes'); box.innerHTML = '';
   WISHES.forEach(w => { const b = document.createElement('button'); b.className = 'btn wish'; b.innerHTML = `<b>${w.t}</b>${w.d}`; b.onclick = () => { w.f(); G.balls = []; sfx('ball'); banner('¡TU DESEO HA SIDO CONCEDIDO!', 'Las Bolas de Dragón se dispersan por la galaxia'); resumeGame(); }; box.appendChild(b); });
 }
@@ -853,36 +892,46 @@ function endRun(win, quit) {
   if (state === 'over') return;
   const before = new Set(CHARS.filter(isUnlocked).map(c => c.id));
   const nextWas = STAGES[G.si + 1] ? stageUnlocked(G.si + 1) : true;
-  const st = G.stage;
-  let bonus = win ? 500 * (G.si + 1) : 0;
-  const earned = Math.floor(G.zeni + bonus);
+  const st = G.stage, D = G.diff;
+  let bonus = win ? Math.round(500 * (G.si + 1) * [1, 2, 4][D.id]) : 0;
+  const earned = Math.floor(G.zeni * D.zeni + bonus);
   save.zeni += earned; save.kills += G.kills; save.runs++; save.maxTime = Math.max(save.maxTime, G.t);
   G.killedBosses.forEach(b => save.bosses[b] = 1);
-  if (win) {
+  const tk = [];
+  if (win && D.id === 0) {
     save.cleared[st.id] = 1;
     const b = save.best[st.id]; if (!b || G.t < b.t) save.best[st.id] = { t: G.t, lvl: G.lvl, c: G.cid };
+  } else if (win) {
+    const key = st.id + ':' + D.id;
+    if (!save.clearedD[key]) { const pz = DIFF_PRIZE[D.id]; save.tickets[pz.t] = (save.tickets[pz.t] || 0) + pz.n; tk.push(pz.txt + ' (primera victoria en ' + D.name + ')'); }
+    save.clearedD[key] = 1;
   }
   save.tut = 1;
-  const tk = []; if (win) { if (!save.gifts[st.id]) { save.gifts[st.id] = 1; save.tickets.g++; tk.push('Cápsula Dorada'); } save.tickets.n++; tk.push('Cápsula Normal'); }
+  if (win) { if (!save.gifts[st.id]) { save.gifts[st.id] = 1; save.tickets.g++; tk.push('Cápsula Dorada'); } save.tickets.n++; tk.push('Cápsula Normal'); }
   const newly = CHARS.filter(c => isUnlocked(c) && !before.has(c.id));
   newly.forEach(c => markSeen(c.id));
   const nextStage = win && !nextWas ? STAGES[G.si + 1] : null;
+  const res = recordRun(win, earned);
   persist();
+  const rkA = G.endless ? rankSubmit('inf', runScore(), G.t, G.cid) : Promise.resolve('same'), rkB = rankSubmit('kill', G.kills, G.t, G.cid);
+  Promise.all([rkA, rkB]).then(r => { const el = $('#overRank'); if (!el) return; el.innerHTML = r.includes('ok') ? '📊 Ranking semanal: <b>¡marca enviada!</b> Mírala en RANKING.' : r.includes('err') ? '📊 Ranking semanal: no se ha podido enviar ahora.' : r.includes('guest') ? '📊 Ranking semanal: inicia sesión con tu correo para aparecer.' : '📊 Ranking semanal: no has superado tu mejor marca de esta semana.'; });
   state = 'over'; showScreen('over'); musicSet(false);
   sfx(win ? 'win' : 'lose');
   const tot = P.weapons.reduce((a, w) => a + w.dealt, 0) || 1;
-  $('#overPanel').innerHTML = `<h2 class="px" style="font-size:22px;color:${win ? 'var(--gold)' : 'var(--red)'}">${win ? '¡VICTORIA!' : quit ? 'RETIRADA' : 'HAS CAÍDO'}</h2>
+  $('#overPanel').innerHTML = `<h2 class="px" style="font-size:22px;color:${win ? 'var(--gold)' : 'var(--red)'}">${G.endless ? 'FIN DE LA SUPERVIVENCIA' : win ? '¡VICTORIA!' : quit ? 'RETIRADA' : 'HAS CAÍDO'}</h2>
    <canvas id="overPed" class="pedestal" width="72" height="84" style="align-self:center;width:108px;height:126px"></canvas>
-   <p style="text-align:center" class="muted">${P.name} · ${st.name}</p>
-   <div class="stats"><span>Tiempo</span><b>${fmtTime(G.t)}</b><span>Nivel</span><b>${G.lvl}</b><span>Bajas</span><b>${fmtNum(G.kills)}</b><span>Jefes derrotados</span><b>${G.killedBosses.length}</b><span>Zenis</span><b class="gold">+${fmtNum(earned)}${bonus ? ` (bonus ${fmtNum(bonus)})` : ''}</b></div>
+   <p style="text-align:center" class="muted">${P.name} · ${G.endless ? '∞ Supervivencia · ' + st.place : st.name}${D.id ? ' · ' + D.name : ''}</p>
+   <div class="stats">${G.endless ? `<span>Puntuación</span><b class="gold">${fmtNum(runScore())}</b>` : ''}<span>Tiempo</span><b>${fmtTime(G.t)}</b><span>Nivel</span><b>${G.lvl}</b><span>Bajas</span><b>${fmtNum(G.kills)}</b><span>Jefes derrotados</span><b>${G.killedBosses.length}</b><span>Zenis</span><b class="gold">+${fmtNum(earned)}${bonus ? ` (bonus ${fmtNum(bonus)})` : ''}</b></div>
    <table class="dmgtable">${P.weapons.slice().sort((a, b) => b.dealt - a.dealt).map(w => `<tr><td>${wname(w)} ${w.evo ? '★' : 'Nv ' + w.lvl} <span class="muted">${Math.round(w.dealt / tot * 100)}%</span></td><td>${fmtNum(w.dealt)}</td></tr>`).join('')}</table>
    ${newly.map(c => `<div class="unlock">🔓 ¡Nuevo guerrero desbloqueado: <b class="gold">${c.name}</b>!</div>`).join('')}
    ${tk.map(n => `<div class="unlock">🎁 Premio: <b class="gold">${n}</b> gratis (ábrela en TIENDA → CAJAS)</div>`).join('')}
    ${nextStage ? `<div class="unlock">🗺️ ¡Nueva saga desbloqueada: <b class="gold">${nextStage.name}</b>!</div>` : ''}
+   ${win && D.id < 2 && !save.clearedD[st.id + ':' + (D.id + 1)] ? `<div class="unlock">🔥 ¡Dificultad ${DIFFS[D.id + 1].name} desbloqueada en esta saga!</div>` : ''}
+   ${overExtras(res, true)}
    <div class="row wrap center" style="margin-top:6px"><button class="btn primary" id="bRetry">REINTENTAR</button><button class="btn" id="bOther">OTRO GUERRERO</button><button class="btn" id="bMenu">MENÚ</button></div>`;
   paintPedestal($('#overPed'), Object.assign({}, CHAR[G.cid], { id: P.spr }), true);
   const cid = G.cid, si = G.si;
-  $('#bRetry').onclick = () => startRun(cid, si);
+  const opt = lastOpt; $('#bRetry').onclick = () => startRun(cid, si, opt);
   $('#bOther').onclick = () => { G = null; go('select'); };
   $('#bMenu').onclick = () => { G = null; go('title'); };
 }
@@ -953,7 +1002,7 @@ function renderDex() {
 /* ---------- Cápsulas ---------- */
 /* ---------- Opciones ---------- */
 function renderOpts() {
-  const L = [['sfx', 'Efectos de sonido'], ['music', 'Música'], ['names', 'Nombre de todos los enemigos'], ['dmg', 'Números de daño'], ['shake', 'Temblor de pantalla']];
+  const L = [['sfx', 'Efectos de sonido'], ['music', 'Música'], ['names', 'Nombre de todos los enemigos'], ['dmg', 'Números de daño'], ['shake', 'Temblor de pantalla'], ['vib', 'Vibración (móvil)']];
   const box = $('#optList'); box.innerHTML = '';
   L.forEach(([k, n]) => {
     const row = document.createElement('div'); row.className = 'opt';
@@ -961,6 +1010,7 @@ function renderOpts() {
     row.querySelector('button').onclick = () => { save.opts[k] = !save.opts[k]; persist(); if (k === 'music') musicSet(state === 'play' || optsReturn === 'pause'); renderOpts(); };
     box.appendChild(row);
   });
+  if (typeof optsExtra === 'function') optsExtra(box);
 }
 $('#bResetSave').onclick = async () => { if (await ask('¿Seguro? Se borrarán zenis, mejoras y personajes desbloqueados.', 'BORRAR')) { const o = save.opts; save = defSave(); save.opts = o; persist(); renderOpts(); } };
 
@@ -982,6 +1032,7 @@ function onKey(e) {
   if (state === 'play' && G && G.intro && ['Space', 'Enter', 'Escape'].includes(e.code)) { G.intro.t = Math.min(G.intro.t, .15); return; }
   if (state === 'play' && (e.code === 'Escape' || e.code === 'KeyP')) { pauseGame(); return; }
   if (state === 'play' && ['Space', 'KeyE', 'KeyQ'].includes(e.code)) { e.preventDefault(); useSpecial(); return; }
+  if (state === 'play' && e.code === 'KeyF') { startFusion(); return; }
   if (state === 'paused' && (e.code === 'Escape' || e.code === 'KeyP')) { resumeGame(); return; }
   if (state === 'levelup') {
     const m = e.code.match(/^(?:Digit|Numpad)([1-4])$/); if (m) { pickChoice(+m[1] - 1); return; }
@@ -992,11 +1043,11 @@ function onKey(e) {
 
 /* ---------- Arranque ---------- */
 (function boot() {
-  [['bPlay', 'dball', '#ff9a1c'], ['bGacha', 'cap', '#fff'], ['bDex', 'book', '#3aa0ff'], ['bShop', 'temple', '#e8d8b0'], ['bOpts', 'gear', '#b8c0dc'], ['bAcct', 'user', '#59d66b']].forEach(([id, ic, col]) => { const b = $('#' + id + ' .mi'); if (b) b.appendChild(iconCanvas(ic, col, 24)); });
+  [['bPlay', 'dball', '#ff9a1c'], ['bGacha', 'cap', '#fff'], ['bMis', 'win', '#ffd23f'], ['bRank', 'lvl', '#ff8a1c'], ['bDex', 'book', '#3aa0ff'], ['bShop', 'temple', '#e8d8b0'], ['bOpts', 'gear', '#b8c0dc'], ['bAcct', 'user', '#59d66b']].forEach(([id, ic, col]) => { const b = $('#' + id + ' .mi'); if (b) b.appendChild(iconCanvas(ic, col, 24)); });
   const lb = $('#logoBall'), x = lb.getContext('2d'); x.imageSmoothingEnabled = false; drawDragonBall(x, 10, 10, 8.5, 4);
   renderTitle();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { });
-  if (DEV) window.DF = { CHARS, STAGES, get G() { return G; }, get P() { return P; }, get state() { return state; }, startRun, go, save: () => save, persist, update, render, pickChoice, resumeGame, useSpecial };
+  if (DEV) window.DF = { CHARS, STAGES, get G() { return G; }, get P() { return P; }, get state() { return state; }, startRun, go, save: () => save, persist, update, render, pickChoice, resumeGame, useSpecial, miss: () => [...trMiss] };
   requestAnimationFrame(loop);
 })();
 </script>
