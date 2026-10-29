@@ -14,7 +14,7 @@ Firebase es gratis con el plan **Spark**, que no pide tarjeta. Permite 50.000 le
 1. Menú **Compilación → Authentication → Comenzar**.
 2. En **Método de inicio de sesión**, activa **Correo electrónico/contraseña**.
 3. (Opcional) Activa también **Google** para el botón "Entrar con Google".
-4. En **Configuración → Dominios autorizados**, añade `salmeronvictor486-lang.github.io`.
+4. En **Configuración → Dominios autorizados**, añade `victorsalmeron.dev` (el dominio donde está publicado el juego).
 
 ## 3. Crear la base de datos
 
@@ -27,7 +27,7 @@ Firebase es gratis con el plan **Spark**, que no pide tarjeta. Permite 50.000 le
 
 1. En la rueda ⚙️ → **Configuración del proyecto → Tus apps**, pulsa el icono **`</>`** (Web) y registra la app. No marques Hosting.
 2. Copia el objeto `firebaseConfig` que aparece.
-3. Abre `index.html`, busca `const FIREBASE_CONFIG = null;` (está cerca del final) y sustitúyelo:
+3. Abre `index.html` (aquí y en `dragon-fall/index.html` del repo de tu web), busca `const FIREBASE_CONFIG = null;` (está cerca del final) y sustitúyelo:
 
 ```js
 const FIREBASE_CONFIG = {
