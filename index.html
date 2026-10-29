@@ -267,6 +267,63 @@ html.fr .menu .btn:last-child:nth-child(even){grid-column:1 / -1}
 .srcbox legend{font-family:'Press Start 2P';font-size:10px;color:var(--gold);padding:0 0 6px;float:left;width:100%}
 .check input[type=radio]{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--orange)}
 #account .msg{margin:2px 0}
+/* ---------- Tienda ---------- */
+.gacha-wrap{width:min(1100px,100%)}
+.shopsec{display:flex;flex-direction:column;gap:10px}
+.shopsec.mine{border-image-source:var(--fr-rE)!important;filter:drop-shadow(0 0 14px rgba(176,107,255,.35)) drop-shadow(6px 7px 0 rgba(0,0,0,.45))}
+.sechd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sechd .px{font-size:12px}
+.sechd .muted{font-size:18px}
+.gifts{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.gift{background:#0f1430;box-shadow:0 0 0 2px var(--line);padding:6px 4px;text-align:center;font-size:15px;display:flex;flex-direction:column;gap:4px;position:relative;min-height:70px;justify-content:center}
+.gift .px{font-size:8px;color:var(--muted)}
+.gift.done{opacity:.55}.gift.done b{position:absolute;top:2px;right:6px;color:var(--green);font-size:18px}
+.gift.today{box-shadow:0 0 0 2px var(--orange),0 0 14px rgba(255,138,28,.5);background:#2a1c10}
+.gift.today .px{color:var(--gold)}
+.offers{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.offer{position:relative;border:9px solid transparent;border-image:var(--fr-card) 4 fill / 9px stretch;image-rendering:pixelated;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.offer[data-r=C]{border-image-source:var(--fr-rC)}.offer[data-r=R]{border-image-source:var(--fr-rR)}.offer[data-r=E]{border-image-source:var(--fr-rE)}.offer[data-r=L]{border-image-source:var(--fr-rL)}
+.offer .oart{height:104px;display:flex;align-items:flex-end;justify-content:center}
+.offer .oart .pedestal{width:90px;height:105px}
+.offer .oart canvas:not(.pedestal){width:120px;height:80px;image-rendering:pixelated;margin-bottom:8px}
+.offer .oname{font-family:'Press Start 2P';font-size:10px;line-height:1.4;color:var(--ink)}
+.offer .osub{font-size:16px;color:var(--muted);min-height:32px}
+.offer .oprice{display:flex;gap:8px;align-items:center;font-size:18px}
+.offer .oprice s{color:#8a90b0}
+.offer .btn{width:100%}
+.offer .otag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#a46bff;color:#fff;font-family:'Press Start 2P';font-size:7px;padding:4px 6px;box-shadow:0 0 0 2px var(--line);z-index:1}
+.offer .odisc{position:absolute;top:2px;right:2px;background:var(--red);color:#fff;font-family:'Press Start 2P';font-size:9px;padding:4px 5px;box-shadow:0 0 0 2px var(--line);transform:rotate(6deg);z-index:1}
+.offer .olim{font-size:15px;color:var(--muted)}
+.boxgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.boxc{--bc:#ff8a1c}
+html.fr .boxc{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--bc) 35%,transparent))}
+.bpool{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.bpool canvas{width:30px;height:32px;image-rendering:pixelated;background:#0b0f24;border:2px solid #2a3572}
+.bpool canvas.notown{filter:grayscale(.85) brightness(.75)}
+#shopToast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f2e18;color:#a8f0b0;box-shadow:0 0 0 3px var(--line);padding:10px 16px;font-size:20px;opacity:0;pointer-events:none;z-index:15;max-width:92vw;text-align:center}
+#shopToast.on{animation:toast 2.8s ease forwards}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,10px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+/* ---------- Ruleta de apertura ---------- */
+.case-wrap{width:min(900px,100%);display:flex;flex-direction:column;align-items:center;gap:14px}
+.reel{position:relative;width:100%;height:150px;overflow:hidden;border:12px solid transparent;border-image:var(--fr-panel) 4 fill / 12px stretch;image-rendering:pixelated}
+.reel::before,.reel::after{content:"";position:absolute;top:0;bottom:0;width:18%;z-index:2;pointer-events:none}
+.reel::before{left:0;background:linear-gradient(90deg,#18204a,transparent)}.reel::after{right:0;background:linear-gradient(-90deg,#18204a,transparent)}
+.reel-track{display:flex;gap:6px;height:100%;align-items:center;padding-left:0;will-change:transform}
+.rc{flex:none;width:98px;height:118px;background:#0f1430;box-shadow:0 0 0 2px var(--line),inset 0 -6px 0 var(--rc,#8a93b8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:14px;text-align:center;line-height:1}
+.rc[data-r=C]{--rc:#8a93b8}.rc[data-r=R]{--rc:#3aa0ff;background:#12203e}.rc[data-r=E]{--rc:#b06bff;background:#1e1640}.rc[data-r=L]{--rc:#ffd23f;background:#2a2214}
+.rc canvas{width:72px;height:76px;image-rendering:pixelated}
+.rc span{padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:94px}
+.rc.win{box-shadow:0 0 0 3px var(--rc),0 0 22px var(--rc),inset 0 -6px 0 var(--rc);transform:scale(1.06)}
+.reel-mark{position:absolute;left:50%;top:-4px;bottom:-4px;width:4px;margin-left:-2px;background:var(--gold);box-shadow:0 0 0 2px var(--line),0 0 12px rgba(255,210,63,.8);z-index:3}
+.reel-mark::before,.reel-mark::after{content:"";position:absolute;left:50%;margin-left:-8px;border:8px solid transparent}
+.reel-mark::before{top:0;border-top-color:var(--gold)}.reel-mark::after{bottom:0;border-bottom-color:var(--gold)}
+.dexc .own{font-family:'Press Start 2P';font-size:7px;padding:3px 5px;display:inline-block;margin-top:4px}
+.dexc .own.yes{background:var(--green);color:#03200a}.dexc .own.no{background:#3a4270;color:#cfd6f5}
+.dexc.notown canvas{filter:grayscale(.6) brightness(.8)}
+.card.locked canvas{filter:grayscale(.75) brightness(.6)!important}
+.card.locked .nm{color:#9aa3c9}
+@media (max-width:560px){.gifts{grid-template-columns:repeat(4,minmax(0,1fr))}.reel{height:130px}.rc{width:98px}}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -281,7 +338,7 @@ html.fr .menu .btn:last-child:nth-child(even){grid-column:1 / -1}
   <p class="tagline">Sobrevive a las sagas, reúne las 7 Bolas de Dragón y despierta tu verdadero poder.</p>
   <div class="menu">
     <button class="btn primary" id="bPlay">JUGAR</button>
-    <button class="btn gold" id="bGacha">CÁPSULAS</button>
+    <button class="btn gold" id="bGacha">TIENDA</button>
     <button class="btn" id="bDex">DRAGONPEDIA</button>
     <button class="btn" id="bShop">TEMPLO DE KAMI</button>
     <button class="btn" id="bOpts">OPCIONES</button>
@@ -301,22 +358,27 @@ html.fr .menu .btn:last-child:nth-child(even){grid-column:1 / -1}
   </div>
 </section>
 
-<!-- CÁPSULAS -->
+<!-- TIENDA -->
 <section id="gacha" class="screen dim">
-  <div class="topbar"><button class="btn small" data-back="title">◀ VOLVER</button><h2 class="px">CÁPSULAS</h2><span class="zeni" id="zGacha"><i></i>0</span></div>
+  <div class="topbar"><button class="btn small" data-back="title">◀ VOLVER</button><h2 class="px">TIENDA</h2><span class="zeni" id="zGacha"><i></i>0</span></div>
   <div class="gacha-wrap">
-    <p class="muted" style="text-align:center;font-size:20px">Abre cápsulas con tus zenis y consigue guerreros de Dragon Ball Z y Super. Cuanto más rara la rareza, más fuerte el guerrero.</p>
-    <div class="caps" id="capGrid"></div>
-    <div class="panel col" id="gachaInfo"></div>
+    <div class="tabs" id="shopTabs" style="margin:0"></div>
+    <div class="col" id="shopBody"></div>
+    <p class="muted" style="text-align:center;font-size:17px">Todo se compra con zenis que ganas jugando. Nunca con dinero real.</p>
   </div>
+  <div id="shopToast"></div>
 </section>
 <section id="reveal" class="screen dim">
-  <div class="reveal-box" id="rvBox">
-    <div class="rays"></div>
-    <canvas id="rvCap" width="48" height="32"></canvas>
-    <canvas id="rvCv" width="36" height="56"></canvas>
-    <div id="rvText"></div>
-    <div class="row center wrap" id="rvBtns"></div>
+  <div class="case-wrap">
+    <h2 class="px" id="rvTitle">CAJA</h2>
+    <div class="reel" id="rvReel"><div class="reel-track" id="rvTrack"></div><div class="reel-mark"></div></div>
+    <button class="btn small" id="rvSkip">SALTAR</button>
+    <div class="reveal-box" id="rvBox" hidden>
+      <div class="rays"></div>
+      <canvas id="rvCv" width="36" height="56"></canvas>
+      <div id="rvText"></div>
+      <div class="row center wrap" id="rvBtns"></div>
+    </div>
   </div>
 </section>
 
@@ -674,7 +736,7 @@ const RAR = {
 const RAR_ORDER = ['L', 'E', 'R', 'C'];
 const CHAR_BY_ID = id => CHARS.find(c => c.id === id);
 Object.entries({ goku: 'E', krilin: 'C', yamcha: 'C', vegeta: 'E', gohan: 'E', piccolo: 'E', tien: 'R', trunks: 'R', goten: 'R', a18: 'R', freezer: 'E', cell: 'E', buu: 'E', broly: 'L', satan: 'C' }).forEach(([id, r]) => { CHAR_BY_ID(id).rar = r; });
-CHARS.forEach(c => { if (c.unlock && !c.unlock.cost) c.unlock.txt += ' o consíguelo en las Cápsulas'; });
+CHARS.forEach(c => { if (c.unlock && !c.unlock.cost) c.unlock.txt += ' o consíguelo en la Tienda'; });
 // Guerreros que solo salen en las Cápsulas: [id, nombre, saga, rareza, ataque, descripción, mejoras, transformaciones]
 [
   ['chaoz', 'Chaoz', 'Escuela Grulla', 'C', 'taiyoken', 'Pequeño y valiente. Paraliza a los enemigos con su telequinesis.', { cd: .08 }],
@@ -716,12 +778,25 @@ CHARS.forEach(c => { if (c.unlock && !c.unlock.cost) c.unlock.txt += ' o consíg
   ['whis', 'Whis', 'Ángel del Universo 7', 'L', 'orbital', 'Maestro de Beerus. Nadie le ha visto pelear en serio.', { spd: .15, armor: 2 }],
   ['kefla', 'Kefla', 'Fusión Potara', 'L', 'eraser', 'Kale y Caulifla fusionadas: Gigantic Ray.', { might: .1 }],
   ['jiren', 'Jiren', 'Universo 11', 'L', 'shockwave', 'El guerrero más fuerte del Universo 11.', { armor: 3, maxHp: 30 }],
-].forEach(([id, name, saga, rar, weapon, desc, mods, forms]) => CHARS.push({ id, name, saga, rar, weapon, desc, hp: RAR[rar].hp, mods: mods || {}, forms: forms || [], unlock: { gacha: 1, txt: 'Consíguelo abriendo Cápsulas' } }));
+].forEach(([id, name, saga, rar, weapon, desc, mods, forms]) => CHARS.push({ id, name, saga, rar, weapon, desc, hp: RAR[rar].hp, mods: mods || {}, forms: forms || [], unlock: { gacha: 1, txt: 'Consíguelo en la Tienda: cajas u ofertas del día' } }));
 const CHAR = Object.fromEntries(CHARS.map(c => [c.id, c]));
-const CAPSULES = [
-  { id: 'n', name: 'Cápsula Normal', price: 400, odds: { C: 60, R: 28, E: 10, L: 2 } },
-  { id: 'g', name: 'Cápsula Dorada', price: 1500, odds: { C: 15, R: 42, E: 32, L: 11 } },
+/* Cajas de la tienda: pool = ids posibles (sin pool = todos los guerreros) */
+const BOXES = [
+  { id: 'n', name: 'Cápsula Normal', desc: 'Puede salir cualquier guerrero.', price: 400, col: '#ff8a1c', odds: { C: 60, R: 28, E: 10, L: 2 } },
+  { id: 'g', name: 'Cápsula Dorada', desc: 'Mucha más suerte con épicos y legendarios.', price: 1500, col: '#ffd23f', odds: { C: 15, R: 42, E: 32, L: 11 } },
+  { id: 'z', name: 'Caja Guerreros Z', desc: 'Los defensores de la Tierra.', price: 600, col: '#3aa0ff', odds: { C: 50, R: 35, E: 15, L: 0 }, pool: ['krilin', 'yamcha', 'tien', 'chaoz', 'videl', 'satan', 'uub', 'pan', 'goten', 'trunks', 'gohan', 'piccolo', 'goku', 'a18'] },
+  { id: 'empire', name: 'Caja del Imperio', desc: 'Freezer, su hermano y las Fuerzas Ginyu.', price: 800, col: '#b06bff', odds: { C: 45, R: 30, E: 25, L: 0 }, pool: ['freezer', 'cooler', 'zarbon', 'dodoria', 'ginyu', 'recoome', 'jeice', 'burter', 'guldo'] },
+  { id: 'android', name: 'Caja Patrulla Roja', desc: 'Androides y creaciones del Dr. Gero.', price: 800, col: '#e8433a', odds: { C: 40, R: 40, E: 20, L: 0 }, pool: ['a16', 'a17', 'a18', 'a19', 'gero', 'cell', 'celljr'] },
+  { id: 'majin', name: 'Caja Majin', desc: 'Buu, Babidi y la saga de Majin Buu.', price: 900, col: '#ff8ac8', odds: { C: 35, R: 35, E: 30, L: 0 }, pool: ['buu', 'superbuu', 'kidbuu', 'dabura', 'videl', 'satan', 'uub', 'goten', 'gotenks'] },
+  { id: 'saiyan', name: 'Caja Saiyan', desc: 'Solo guerreros con sangre saiyan.', price: 1200, col: '#ffd43a', odds: { C: 0, R: 45, E: 40, L: 15 }, pool: ['goku', 'vegeta', 'gohan', 'goten', 'trunks', 'raditz', 'nappa', 'bardock', 'turles', 'cabba', 'caulifla', 'kale', 'broly', 'pan', 'gotenks', 'vegito', 'gogeta', 'kefla'] },
+  { id: 'fusion', name: 'Caja Fusión', desc: 'Las fusiones más poderosas del universo.', price: 2500, col: '#59d66b', odds: { C: 0, R: 0, E: 70, L: 30 }, pool: ['gotenks', 'vegito', 'gogeta', 'kefla'] },
+  { id: 'gods', name: 'Caja Divina', desc: 'Dioses, ángeles y el Torneo del Poder.', price: 3500, col: '#e8e2ff', odds: { C: 0, R: 20, E: 50, L: 30 }, pool: ['beerus', 'whis', 'zamasu', 'goku_black', 'jiren', 'toppo', 'hit', 'dyspo', 'kefla', 'caulifla', 'kale', 'cabba'] },
 ];
+const BOX = Object.fromEntries(BOXES.map(b => [b.id, b]));
+const CHAR_PRICE = { C: 700, R: 1800, E: 4500, L: 12000 };
+const REFUND = { C: 100, R: 250, E: 600, L: 1500 };
+/* Regalo diario: racha de 7 días */
+const DAILY_GIFTS = [{ z: 200 }, { t: 'n' }, { z: 400 }, { t: 'z' }, { z: 700 }, { t: 'g' }, { z: 1200, t: 'g' }];
 const MAX_STARS = 5;
 
 /* ---------------- ENEMIGOS ---------------- */
@@ -1165,20 +1240,24 @@ function musicSet(on) {
 /* =================== GUARDADO =================== */
 const SAVE_KEY = 'dragonfall_save_v1';
 let saveKey = SAVE_KEY;   // invitado; con cuenta: SAVE_KEY + '_' + uid
-function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true } }; }
+function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, pid: '', streak: { last: '', n: 0 }, daily: { day: '', bought: {} }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true } }; }
 function normalizeSave(o) {
   const s = Object.assign(defSave(), o || {});
   s.opts = Object.assign(defSave().opts, (o && o.opts) || {});
   ['shop', 'cleared', 'best', 'bosses', 'seen', 'bought', 'owned', 'gifts'].forEach(k => { if (!s[k] || typeof s[k] !== 'object') s[k] = {}; });
-  s.tickets = { n: Number(s.tickets && s.tickets.n) || 0, g: Number(s.tickets && s.tickets.g) || 0 };
+  const tk = {}; for (const k in (s.tickets || {})) tk[k] = Math.max(0, Number(s.tickets[k]) || 0); s.tickets = Object.assign({ n: 0, g: 0 }, tk);
+  if (!s.pid) s.pid = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+  if (!s.streak || typeof s.streak !== 'object') s.streak = { last: '', n: 0 };
+  if (!s.daily || typeof s.daily !== 'object' || !s.daily.bought) s.daily = { day: '', bought: {} };
   ['zeni', 'kills', 'maxTime', 'runs', 'ts'].forEach(k => { s[k] = Number(s[k]) || 0; });
   return s;
 }
 function readSave(key) { try { const raw = localStorage.getItem(key); return raw ? normalizeSave(JSON.parse(raw)) : null; } catch (e) { return null; } }
-function loadSave(key = saveKey) { return readSave(key) || defSave(); }
+function loadSave(key = saveKey) { return readSave(key) || normalizeSave(defSave()); }
 function writeLocal() { try { localStorage.setItem(saveKey, JSON.stringify(save)); } catch (e) { } }
 function persist() { save.ts = Date.now(); writeLocal(); if (typeof Account !== 'undefined') Account.queue(); }
 let save = loadSave();
+try { if (!localStorage.getItem(saveKey)) writeLocal(); } catch (e) { }
 function isUnlocked(c) {
   if (save.owned[c.id]) return true;
   const u = c.unlock; if (!u) return true;
@@ -2708,7 +2787,7 @@ function go(id) {
   if (id === 'dex') renderDex();
   if (id === 'opts') renderOpts();
   if (id === 'account') renderAccount();
-  if (id === 'gacha') renderGacha();
+  if (id === 'gacha') renderShop2();
 }
 document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => {
   const to = b.dataset.back;
@@ -2750,7 +2829,7 @@ function paintPedestal(cv, c, un) {
   for (let i = 0; i < 10; i++) { const a = i / 10 * TAU; x.fillStyle = col + '44'; x.fillRect(Math.round(W / 2 + Math.cos(a) * W * .42), Math.round(H * .5 + Math.sin(a) * H * .35), 1, 3); }
   const pb = H - 8; pxEllipse(x, W / 2, pb, 26, 6, '#0d0716'); pxEllipse(x, W / 2, pb - 1, 25, 5, '#5a4a7a'); pxEllipse(x, W / 2, pb - 2, 24, 4, '#8a7ab0'); pxEllipse(x, W / 2, pb - 2, 20, 3, '#a898d0');
   x.fillStyle = col; x.fillRect(W / 2 - 22, pb, 44, 1);
-  const s = getSprite(c.id, 0, false), sc = 2; x.save(); if (!un) x.filter = 'brightness(0) opacity(.65)';
+  const s = getSprite(c.id, 0, false), sc = 2; x.save(); if (!un) x.filter = 'grayscale(.8) brightness(.7)';
   x.drawImage(s, Math.round(W / 2 - s.width * sc / 2), Math.round(pb - 2 - s.height * sc), s.width * sc, s.height * sc); x.restore();
 }
 function statBars(c) {
@@ -2777,14 +2856,14 @@ function renderSelect() {
     b.className = 'card' + (un ? '' : ' locked') + (c.id === selChar ? ' sel' : ''); b.dataset.r = c.rar;
     const cv2 = document.createElement('canvas'); cv2.width = 36; cv2.height = 56; paintSprite(cv2, c.id);
     b.appendChild(cv2);
-    b.insertAdjacentHTML('beforeend', `<div class="nm">${un || save.seen[c.id] ? c.name : '???'}</div><div class="st">${un ? '★'.repeat(st) : ''}</div>${un ? '' : '<span class="lock">🔒</span>'}`);
+    b.insertAdjacentHTML('beforeend', `<div class="nm">${c.name}</div><div class="st">${un ? '★'.repeat(st) : ''}</div>${un ? '' : '<span class="lock">🔒</span>'}`);
     b.onclick = () => { selChar = c.id; sfx('click'); renderSelect(); };
     b.ondblclick = () => { if (isUnlocked(c)) { save.lastChar = c.id; go('stages'); } };
     g.appendChild(b);
   });
   const c = CHAR[selChar], un = isUnlocked(c), w = WEAPONS[c.weapon], st = starsOf(c.id);
   const d = $('#charDetail');
-  d.innerHTML = `<div class="big"><canvas width="72" height="84" id="bigSpr" class="pedestal"></canvas><div><div class="name">${un || save.seen[c.id] ? c.name : '???'}</div><div class="saga">${c.saga}</div><div class="row" style="gap:8px;margin-top:6px">${rarTag(c.rar)}<span class="gold" style="font-size:18px">${un ? starTxt(st) : ''}</span></div><p style="margin-top:6px">${c.desc}</p></div></div>
+  d.innerHTML = `<div class="big"><canvas width="72" height="84" id="bigSpr" class="pedestal"></canvas><div><div class="name">${c.name}</div><div class="saga">${c.saga}</div><div class="row" style="gap:8px;margin-top:6px">${rarTag(c.rar)}<span class="gold" style="font-size:18px">${un ? starTxt(st) : ''}</span></div><p style="margin-top:6px">${c.desc}</p></div></div>
     <div class="tags" hidden></div>
     <div class="row" style="background:#0f1430;padding:8px;box-shadow:0 0 0 2px var(--line)"><span id="wIcon"></span><div><b class="gold px" style="font-size:10px">${w.name}</b><div class="muted">${w.desc}</div></div></div>
     ${c.forms.length ? `<div class="muted">Transformaciones</div><div class="forms" id="formsBox"></div>` : ''}
@@ -2794,7 +2873,7 @@ function renderSelect() {
   $('#wIcon').appendChild(iconCanvas(w.icon, w.col, 36));
   if (c.forms.length) {
     const fb = $('#formsBox');
-    c.forms.forEach(f => { const el = document.createElement('div'); el.className = 'form'; const cc = document.createElement('canvas'); cc.width = 18; cc.height = 28; paintSprite(cc, f.spr); el.appendChild(cc); el.insertAdjacentHTML('beforeend', `<div>Nv ${f.lv}</div>`); el.title = f.name; if (!un) cc.style.filter = 'brightness(0) opacity(.6)'; fb.appendChild(el); });
+    c.forms.forEach(f => { const el = document.createElement('div'); el.className = 'form'; const cc = document.createElement('canvas'); cc.width = 18; cc.height = 28; paintSprite(cc, f.spr); el.appendChild(cc); el.insertAdjacentHTML('beforeend', `<div>Nv ${f.lv}</div>`); el.title = f.name; if (!un) cc.style.filter = 'grayscale(.8) brightness(.7)'; fb.appendChild(el); });
   }
   const act = $('#selAction');
   if (un) { act.innerHTML = `<button class="btn primary" style="width:100%">ELEGIR SAGA ▶</button>`; act.firstChild.onclick = () => { save.lastChar = selChar; persist(); go('stages'); }; }
@@ -2803,7 +2882,7 @@ function renderSelect() {
     act.innerHTML = `<p class="muted">🔒 ${c.unlock.txt}</p><button class="btn gold" style="width:100%;margin-top:8px" ${can ? '' : 'disabled'}>COMPRAR · ${fmtNum(c.unlock.cost)} ZENIS</button>`;
     act.querySelector('button').onclick = () => { if (save.zeni >= c.unlock.cost) { save.zeni -= c.unlock.cost; save.bought[c.id] = 1; markSeen(c.id); persist(); sfx('ball'); renderSelect(); } };
   } else {
-    act.innerHTML = `<p class="muted">🔒 ${c.unlock.txt}</p><button class="btn gold" style="width:100%;margin-top:8px">IR A CÁPSULAS</button>`;
+    act.innerHTML = `<p class="muted">🔒 ${c.unlock.txt}</p><button class="btn gold" style="width:100%;margin-top:8px">IR A LA TIENDA</button>`;
     act.querySelector('button').onclick = () => go('gacha');
   }
 }
@@ -3007,7 +3086,7 @@ function endRun(win, quit) {
    <div class="stats"><span>Tiempo</span><b>${fmtTime(G.t)}</b><span>Nivel</span><b>${G.lvl}</b><span>Bajas</span><b>${fmtNum(G.kills)}</b><span>Jefes derrotados</span><b>${G.killedBosses.length}</b><span>Zenis</span><b class="gold">+${fmtNum(earned)}${bonus ? ` (bonus ${fmtNum(bonus)})` : ''}</b></div>
    <table class="dmgtable">${P.weapons.slice().sort((a, b) => b.dealt - a.dealt).map(w => `<tr><td>${wname(w)} ${w.evo ? '★' : 'Nv ' + w.lvl} <span class="muted">${Math.round(w.dealt / tot * 100)}%</span></td><td>${fmtNum(w.dealt)}</td></tr>`).join('')}</table>
    ${newly.map(c => `<div class="unlock">🔓 ¡Nuevo guerrero desbloqueado: <b class="gold">${c.name}</b>!</div>`).join('')}
-   ${tk.map(n => `<div class="unlock">🎁 Premio: <b class="gold">${n}</b> gratis (ábrela en CÁPSULAS)</div>`).join('')}
+   ${tk.map(n => `<div class="unlock">🎁 Premio: <b class="gold">${n}</b> gratis (ábrela en TIENDA → CAJAS)</div>`).join('')}
    ${nextStage ? `<div class="unlock">🗺️ ¡Nueva saga desbloqueada: <b class="gold">${nextStage.name}</b>!</div>` : ''}
    <div class="row wrap center" style="margin-top:6px"><button class="btn primary" id="bRetry">REINTENTAR</button><button class="btn" id="bOther">OTRO GUERRERO</button><button class="btn" id="bMenu">MENÚ</button></div>`;
   paintPedestal($('#overPed'), Object.assign({}, CHAR[G.cid], { id: P.spr }), true);
@@ -3040,86 +3119,47 @@ function renderShop() {
 /* ---------- Dragonpedia ---------- */
 let dexTab = 'chars';
 function dexEntries(tab) {
-  if (tab === 'chars') { const out = []; CHARS.slice().sort((a, b) => RAR_ORDER.indexOf(a.rar) - RAR_ORDER.indexOf(b.rar)).forEach(c => { out.push({ id: c.id, spr: c.id, name: c.name, saga: c.saga + ' · ' + RAR[c.rar].name, desc: c.desc, seen: isUnlocked(c) || save.seen[c.id] }); c.forms.forEach(f => { if (f.spr !== c.id) out.push({ id: f.spr, spr: f.spr, name: f.name, saga: 'Transformación (Nv ' + f.lv + ')', desc: `Forma de ${c.name}.`, seen: save.seen[f.spr] }); }); }); return out; }
-  if (tab === 'enemies') return Object.entries(ENEMIES).map(([id, d]) => ({ id, spr: id, name: d.name, saga: d.saga + (d.elite ? ' · Élite' : ''), desc: d.desc, seen: save.seen[id] }));
-  if (tab === 'bosses') return Object.entries(BOSSES).map(([id, d]) => ({ id, spr: d.spr || id, name: d.name, saga: d.saga + (d.final ? ' · Jefe final' : ' · Jefe'), desc: d.desc, seen: save.seen[id] }));
-  return Object.entries(WEAPONS).map(([id, d]) => ({ id, icon: [d.icon, d.col], name: d.name, saga: 'Evoluciona con ' + PASSIVES[d.evo.with].name + ' → ' + d.evo.name, desc: d.desc, seen: true }))
-    .concat(Object.entries(PASSIVES).map(([id, d]) => ({ id, icon: [d.icon, d.col], name: d.name, saga: 'Pasiva', desc: d.desc, seen: true })));
+  if (tab === 'chars') {
+    const out = [];
+    CHARS.slice().sort((a, b) => RAR_ORDER.indexOf(a.rar) - RAR_ORDER.indexOf(b.rar)).forEach(c => {
+      const own = isUnlocked(c);
+      out.push({ id: c.id, spr: c.id, name: c.name, saga: c.saga + ' · ' + RAR[c.rar].name, desc: c.desc, own, how: own ? '' : c.unlock.txt, rar: c.rar, stars: own ? starsOf(c.id) : 0 });
+      c.forms.forEach(f => { if (f.spr !== c.id) out.push({ id: f.spr, spr: f.spr, name: f.name, saga: 'Transformación de ' + c.name + ' (Nv ' + f.lv + ')', desc: `Se desbloquea al llegar al nivel ${f.lv} con ${c.name}.`, own, how: own ? '' : `Consigue a ${c.name}.`, rar: c.rar }); });
+    });
+    return out;
+  }
+  if (tab === 'enemies') return Object.entries(ENEMIES).map(([id, d]) => ({ id, spr: id, name: d.name, saga: d.saga + (d.elite ? ' · Élite' : ''), desc: d.desc, met: !!save.seen[id] }));
+  if (tab === 'bosses') return Object.entries(BOSSES).map(([id, d]) => ({ id, spr: d.spr || id, name: d.name, saga: d.saga + (d.final ? ' · Jefe final' : ' · Jefe'), desc: d.desc, met: !!save.seen[id], beat: !!save.bosses[id] }));
+  return Object.entries(WEAPONS).map(([id, d]) => ({ id, icon: [d.icon, d.col], name: d.name, saga: 'Evoluciona con ' + PASSIVES[d.evo.with].name + ' → ' + d.evo.name, desc: d.desc }))
+    .concat(Object.entries(PASSIVES).map(([id, d]) => ({ id, icon: [d.icon, d.col], name: d.name, saga: 'Pasiva', desc: d.desc })));
 }
+let dexFilter = 'all';
 function renderDex() {
   const tabs = [['chars', 'GUERREROS'], ['enemies', 'ENEMIGOS'], ['bosses', 'JEFES'], ['tech', 'TÉCNICAS']];
   $('#dexTabs').innerHTML = '';
   tabs.forEach(([k, n]) => { const b = document.createElement('button'); b.className = 'btn small' + (dexTab === k ? ' on' : ''); b.textContent = n; b.onclick = () => { dexTab = k; sfx('click'); renderDex(); }; $('#dexTabs').appendChild(b); });
-  const all = ['chars', 'enemies', 'bosses'].flatMap(dexEntries);
-  $('#dexCount').textContent = `Vistos ${all.filter(e => e.seen).length}/${all.length}`;
+  if (dexTab === 'chars') [['all', 'TODOS'], ['own', 'CONSEGUIDOS'], ['no', 'TE FALTAN']].forEach(([k, n]) => { const b = document.createElement('button'); b.className = 'btn small' + (dexFilter === k ? ' on' : ''); b.textContent = n; b.style.opacity = dexFilter === k ? 1 : .8; b.onclick = () => { dexFilter = k; sfx('click'); renderDex(); }; $('#dexTabs').appendChild(b); });
+  const own = CHARS.filter(isUnlocked).length;
+  $('#dexCount').textContent = `Guerreros ${own}/${CHARS.length}`;
   const g = $('#dexGrid'); g.innerHTML = '';
-  dexEntries(dexTab).forEach(e => {
-    const el = document.createElement('div'); el.className = 'dexc' + (e.seen ? '' : ' no');
+  let list = dexEntries(dexTab);
+  if (dexTab === 'chars' && dexFilter !== 'all') list = list.filter(e => dexFilter === 'own' ? e.own : !e.own);
+  list.forEach(e => {
+    const el = document.createElement('div'); el.className = 'dexc' + (e.own === false ? ' notown' : '');
     let cv2;
     if (e.icon) { cv2 = iconCanvas(e.icon[0], e.icon[1], 48); cv2.style.height = '48px'; }
     else { cv2 = document.createElement('canvas'); cv2.width = 36; cv2.height = 56; paintSprite(cv2, e.spr); cv2.style.width = '62px'; }
     el.appendChild(cv2);
-    el.insertAdjacentHTML('beforeend', `<div class="n">${e.seen ? e.name : '???'}</div><div class="s">${e.seen ? e.saga : '—'}</div><div class="d">${e.seen ? e.desc : 'Aún no lo has encontrado.'}</div>`);
+    let badge = '';
+    if ('own' in e) badge = e.own ? `<span class="own yes">CONSEGUIDO${e.stars ? ' ' + '★'.repeat(e.stars) : ''}</span>` : `<span class="own no">NO CONSEGUIDO</span>`;
+    else if ('beat' in e) badge = e.beat ? `<span class="own yes">DERROTADO</span>` : e.met ? `<span class="own no">VISTO</span>` : `<span class="own no">SIN ENCONTRAR</span>`;
+    else if ('met' in e) badge = e.met ? `<span class="own yes">ENCONTRADO</span>` : `<span class="own no">SIN ENCONTRAR</span>`;
+    el.insertAdjacentHTML('beforeend', `<div class="n">${e.name}</div>${e.rar ? rarTag(e.rar) : ''}<div class="s">${e.saga}</div><div class="d">${e.desc}</div>${badge}${e.how ? `<div class="d" style="color:#ffc27a">🔒 ${e.how}</div>` : ''}`);
     g.appendChild(el);
   });
 }
 
 /* ---------- Cápsulas ---------- */
-function drawCapsule(cv, gold) {
-  const x = cv.getContext('2d'), W = cv.width, H = cv.height, s = W / 48; x.imageSmoothingEnabled = false; x.clearRect(0, 0, W, H);
-  const c1 = gold ? '#ffd23f' : '#ff8a1c', c2 = gold ? '#fff2a8' : '#ffc27a';
-  const r = (a, b, w, h, c) => { x.fillStyle = c; x.fillRect(a * s, b * s, w * s, h * s); };
-  r(6, 6, 36, 20, OUTLINE); r(4, 8, 40, 16, OUTLINE);
-  r(7, 7, 17, 18, c1); r(5, 9, 19, 14, c1); r(24, 7, 17, 18, '#f4f1e8'); r(24, 9, 19, 14, '#f4f1e8');
-  r(8, 8, 14, 3, c2); r(26, 8, 14, 3, '#ffffff'); r(24, 23, 18, 2, '#c9c4b8'); r(6, 21, 17, 3, shade(c1, -.25));
-  r(23, 7, 2, 18, '#3a4270'); r(29, 13, 6, 6, OUTLINE); r(30, 14, 4, 4, '#3aa0ff'); r(31, 15, 1, 1, '#ffffff');
-  r(12, 14, 6, 4, gold ? '#b8860b' : '#c25a00'); r(13, 15, 4, 2, c2);
-}
-function rollRarity(odds) { let r = Math.random() * 100; for (const k of ['L', 'E', 'R', 'C']) { r -= odds[k]; if (r <= 0) return k; } return 'C'; }
-function renderGacha() {
-  $('#zGacha').innerHTML = `<i></i>${fmtNum(save.zeni)}`;
-  const g = $('#capGrid'); g.innerHTML = '';
-  CAPSULES.forEach(cap => {
-    const el = document.createElement('div'); el.className = 'cap' + (cap.id === 'g' ? ' gold' : '');
-    const cv2 = document.createElement('canvas'); cv2.width = 48; cv2.height = 32; drawCapsule(cv2, cap.id === 'g');
-    el.appendChild(cv2);
-    const tk = save.tickets[cap.id] || 0;
-    el.insertAdjacentHTML('beforeend', `<div class="t">${cap.name.toUpperCase()}</div>
-      <div class="odds">${RAR_ORDER.map(r => `<span style="color:${RAR[r].col}">${RAR[r].name}</span><i><b style="width:${cap.odds[r]}%;background:${RAR[r].col}"></b></i><span>${cap.odds[r]}%</span>`).join('')}</div>
-      <button class="btn ${cap.id === 'g' ? 'gold' : 'primary'}" data-pay="z" ${save.zeni >= cap.price ? '' : 'disabled'}>ABRIR · ${fmtNum(cap.price)} ZENIS</button>
-      ${tk ? `<button class="btn" data-pay="t">USAR CÁPSULA GRATIS (${tk})</button>` : ''}`);
-    el.querySelectorAll('button').forEach(b => b.onclick = () => openGacha(cap, b.dataset.pay === 't'));
-    g.appendChild(el);
-  });
-  const own = c => isUnlocked(c);
-  $('#gachaInfo').innerHTML = `<div class="coll">${RAR_ORDER.map(r => { const all = CHARS.filter(c => c.rar === r); return `<span style="color:${RAR[r].col}">${RAR[r].name}: ${all.filter(own).length}/${all.length}</span>`; }).join('')}</div>
-    <p class="muted" style="font-size:19px;text-align:center">Si te toca un guerrero repetido, gana una estrella (máximo ${MAX_STARS}★): cada estrella da +6% de daño y +5% de vida. Con ${MAX_STARS}★ te devolvemos zenis. Ganar una saga te regala cápsulas.</p>`;
-}
-function openGacha(cap, ticket) {
-  if (ticket) { if (!save.tickets[cap.id]) return; save.tickets[cap.id]--; }
-  else { if (save.zeni < cap.price) return; save.zeni -= cap.price; }
-  const r = rollRarity(cap.odds), c = pick(CHARS.filter(x => x.rar === r)), st = starsOf(c.id);
-  let res;
-  if (st === 0) { save.owned[c.id] = 1; res = `<div class="new">¡NUEVO GUERRERO!</div>`; }
-  else if (st < MAX_STARS) { save.owned[c.id] = st + 1; res = `<div class="gold" style="font-size:20px;margin-top:6px">Repetido: ${starTxt(st + 1)} (+poder)</div>`; }
-  else { const z = { C: 100, R: 250, E: 600, L: 1500 }[r]; save.zeni += z; res = `<div class="gold" style="font-size:20px;margin-top:6px">Ya está al máximo: +${fmtNum(z)} zenis</div>`; }
-  markSeen(c.id); persist();
-  state = 'gacha'; showScreen('reveal');
-  const box = $('#rvBox'); box.classList.remove('show'); box.style.setProperty('--rc', RAR[r].col);
-  drawCapsule($('#rvCap'), cap.id === 'g'); $('#rvCap').classList.add('shake'); paintSprite($('#rvCv'), c.id);
-  $('#rvText').innerHTML = '<p class="muted" style="font-size:20px">Abriendo cápsula…</p>'; $('#rvBtns').innerHTML = '';
-  sfx('pick');
-  setTimeout(() => {
-    $('#rvCap').classList.remove('shake'); box.classList.add('show'); sfx(r === 'L' ? 'trans' : r === 'E' ? 'ball' : 'lvl');
-    $('#rvText').innerHTML = `${rarTag(r)}<div class="nm">${c.name}</div>${res}`;
-    const again = ticket ? (save.tickets[cap.id] > 0) : save.zeni >= cap.price;
-    $('#rvBtns').innerHTML = `${again ? `<button class="btn ${cap.id === 'g' ? 'gold' : 'primary'}" id="rvAgain">OTRA${ticket ? '' : ' · ' + fmtNum(cap.price)}</button>` : ''}<button class="btn" id="rvPlay">JUGAR CON ${c.name.toUpperCase()}</button><button class="btn" id="rvBack">VOLVER</button>`;
-    if (again) $('#rvAgain').onclick = () => openGacha(cap, ticket);
-    $('#rvPlay').onclick = () => { selChar = c.id; save.lastChar = c.id; persist(); go('select'); };
-    $('#rvBack').onclick = () => go('gacha');
-  }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 300 : 1300);
-}
-
 /* ---------- Opciones ---------- */
 function renderOpts() {
   const L = [['sfx', 'Efectos de sonido'], ['music', 'Música'], ['names', 'Nombre de todos los enemigos'], ['dmg', 'Números de daño'], ['shake', 'Temblor de pantalla']];
@@ -3162,6 +3202,233 @@ function onKey(e) {
   window.DF = { CHARS, STAGES, get G() { return G; }, get P() { return P; }, startRun, go, save: () => save, persist };
   requestAnimationFrame(loop);
 })();
+</script>
+<script>
+'use strict';
+/* =========================================================
+   TIENDA: cajas, tienda diaria, ofertas personales y regalo diario.
+   Todo se paga con zenis del juego (nunca con dinero real).
+   ========================================================= */
+function drawCapsule(cv, col) {
+  const x = cv.getContext('2d'), W = cv.width, s = W / 48; x.imageSmoothingEnabled = false; x.clearRect(0, 0, W, cv.height);
+  const c1 = col, c2 = shade(col, .45);
+  const r = (a, b, w, h, c) => { x.fillStyle = c; x.fillRect(a * s, b * s, w * s, h * s); };
+  r(6, 6, 36, 20, OUTLINE); r(4, 8, 40, 16, OUTLINE);
+  r(7, 7, 17, 18, c1); r(5, 9, 19, 14, c1); r(24, 7, 17, 18, '#f4f1e8'); r(24, 9, 19, 14, '#f4f1e8');
+  r(8, 8, 14, 3, c2); r(26, 8, 14, 3, '#ffffff'); r(24, 23, 18, 2, '#c9c4b8'); r(6, 21, 17, 3, shade(c1, -.25));
+  r(23, 7, 2, 18, '#3a4270'); r(29, 13, 6, 6, OUTLINE); r(30, 14, 4, 4, '#3aa0ff'); r(31, 15, 1, 1, '#ffffff');
+  r(12, 14, 6, 4, shade(c1, -.4)); r(13, 15, 4, 2, c2);
+}
+function boxPool(b) { return b.pool ? b.pool.map(id => CHAR[id]).filter(Boolean) : CHARS; }
+/* Probabilidades normalizadas a las rarezas que existen en la caja */
+function boxOdds(b) {
+  const pool = boxPool(b), has = r => pool.some(c => c.rar === r), o = {};
+  let tot = 0; for (const r of RAR_ORDER) if (has(r)) tot += b.odds[r] || 0;
+  for (const r of RAR_ORDER) o[r] = has(r) && tot ? (b.odds[r] || 0) / tot * 100 : 0;
+  return o;
+}
+function rollBox(b) {
+  const o = boxOdds(b), pool = boxPool(b); let q = Math.random() * 100, rar = 'C';
+  for (const r of RAR_ORDER) { if (!o[r]) continue; q -= o[r]; if (q <= 0) { rar = r; break; } rar = r; }
+  const opts = pool.filter(c => c.rar === rar); return pick(opts.length ? opts : pool);
+}
+/* Entrega un guerrero: nuevo, estrella extra o zenis si ya está al máximo */
+function grantChar(c) {
+  const st = starsOf(c.id);
+  if (st === 0) { save.owned[c.id] = 1; markSeen(c.id); return { kind: 'new' }; }
+  if (st < MAX_STARS) { save.owned[c.id] = st + 1; return { kind: 'star', stars: st + 1 }; }
+  save.zeni += REFUND[c.rar]; return { kind: 'refund', z: REFUND[c.rar] };
+}
+
+/* ---------- días y semillas ---------- */
+function dayKey(d = new Date()) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function yesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return dayKey(d); }
+function seeded(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619); return rng((h >>> 0) || 1); }
+function untilMidnight() { const n = new Date(), m = new Date(n); m.setHours(24, 0, 0, 0); const s = Math.max(0, Math.floor((m - n) / 1000)); return [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60].map(v => String(v).padStart(2, '0')).join(':'); }
+function dailyState() { const d = dayKey(); if (save.daily.day !== d) save.daily = { day: d, bought: {} }; return save.daily; }
+const round10 = v => Math.max(10, Math.round(v / 10) * 10);
+
+/* Tienda diaria: igual para todos los jugadores ese día */
+function dailyOffers() {
+  const day = dayKey(), r = seeded('df-daily-' + day), out = [];
+  ['C', 'R', 'E', 'L'].forEach((rar, i) => {
+    const pool = CHARS.filter(c => c.rar === rar), c = pool[Math.floor(r() * pool.length)], disc = [0, 10, 15, 20, 25, 30][Math.floor(r() * 6)];
+    out.push({ id: 'd' + i, kind: 'char', char: c.id, base: CHAR_PRICE[rar], price: round10(CHAR_PRICE[rar] * (1 - disc / 100)), disc, limit: 1 });
+  });
+  const bx = BOXES.slice(); for (let i = bx.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [bx[i], bx[j]] = [bx[j], bx[i]]; }
+  bx.slice(0, 2).forEach((b, i) => { const disc = [20, 25, 30, 40][Math.floor(r() * 4)]; out.push({ id: 'db' + i, kind: 'box', box: b.id, base: b.price, price: round10(b.price * (1 - disc / 100)), disc, limit: 3 }); });
+  return out;
+}
+/* Ofertas personales: distintas para cada jugador y cada día, según lo que le falta */
+function personalOffers() {
+  const day = dayKey(), r = seeded('df-me-' + save.pid + '-' + day), out = [];
+  const unowned = CHARS.filter(c => !isUnlocked(c));
+  if (unowned.length) {
+    const w = unowned.map(c => ({ c, w: { C: 3, R: 3, E: 2, L: 1.2 }[c.rar] })), tot = w.reduce((a, x) => a + x.w, 0);
+    let q = r() * tot, c = unowned[0]; for (const x of w) { q -= x.w; if (q <= 0) { c = x.c; break; } }
+    const disc = 35 + Math.floor(r() * 4) * 5;
+    out.push({ id: 'p0', kind: 'char', char: c.id, base: CHAR_PRICE[c.rar], price: round10(CHAR_PRICE[c.rar] * (1 - disc / 100)), disc, limit: 1, tag: 'Aún no lo tienes' });
+  } else {
+    const c = CHARS.filter(c => starsOf(c.id) < MAX_STARS)[0] || CHAR.goku;
+    out.push({ id: 'p0', kind: 'star', char: c.id, base: round10(CHAR_PRICE[c.rar] * .6), price: round10(CHAR_PRICE[c.rar] * .35), disc: 40, limit: 1, tag: '¡Lo tienes todo!' });
+  }
+  const scored = BOXES.filter(b => b.pool).map(b => ({ b, miss: boxPool(b).filter(c => !isUnlocked(c)).length })).filter(x => x.miss > 0).sort((a, b) => b.miss - a.miss);
+  const pb = scored.length ? scored[Math.floor(r() * Math.min(3, scored.length))] : { b: BOX.g, miss: 0 }, d2 = 30 + Math.floor(r() * 4) * 5;
+  out.push({ id: 'p1', kind: 'box', box: pb.b.id, base: pb.b.price, price: round10(pb.b.price * (1 - d2 / 100)), disc: d2, limit: 2, tag: pb.miss ? `Te faltan ${pb.miss} de esta caja` : 'Para ti' });
+  const fav = save.lastChar && CHAR[save.lastChar] && isUnlocked(CHAR[save.lastChar]) ? save.lastChar : null;
+  if (fav && starsOf(fav) < MAX_STARS && r() < .65) {
+    const c = CHAR[fav]; out.push({ id: 'p2', kind: 'star', char: fav, base: round10(CHAR_PRICE[c.rar] * .6), price: round10(CHAR_PRICE[c.rar] * .38), disc: 37, limit: 1, tag: 'Tu guerrero favorito' });
+  } else {
+    const q2 = 2 + Math.floor(r() * 2), d3 = 25 + Math.floor(r() * 3) * 5;
+    out.push({ id: 'p2', kind: 'bundle', box: 'g', qty: q2, base: BOX.g.price * q2, price: round10(BOX.g.price * q2 * (1 - d3 / 100)), disc: d3, limit: 1, tag: 'Pack del día' });
+  }
+  return out;
+}
+
+/* ---------- regalo diario ---------- */
+function giftState() { const t = dayKey(), s = save.streak, can = s.last !== t, next = can ? (s.last === yesterdayKey() ? s.n % 7 + 1 : 1) : s.n; return { can, day: next }; }
+function claimGift() {
+  const g = giftState(); if (!g.can) return;
+  const rw = DAILY_GIFTS[g.day - 1];
+  if (rw.z) save.zeni += rw.z; if (rw.t) save.tickets[rw.t] = (save.tickets[rw.t] || 0) + 1;
+  save.streak = { last: dayKey(), n: g.day }; persist(); sfx('ball');
+  toastShop(`Regalo del día ${g.day}: ${giftLabel(rw)}`);
+  renderShop2();
+}
+function giftLabel(rw) { return [rw.z ? `${fmtNum(rw.z)} zenis` : '', rw.t ? BOX[rw.t].name : ''].filter(Boolean).join(' + '); }
+
+/* ---------- interfaz ---------- */
+let shopTab = 'today', shopTimer = null;
+function toastShop(t) { const el = $('#shopToast'); if (!el) return; el.textContent = t; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
+function portraitCanvas(id, cls = '') { const c = document.createElement('canvas'); c.width = 18; c.height = 19; c.className = cls; c.getContext('2d').drawImage(getPortrait(id), 0, 0); return c; }
+function offerCard(o, personal) {
+  const ds = dailyState(), n = ds.bought[o.id] || 0, left = o.limit - n, el = document.createElement('div');
+  el.className = 'offer' + (personal ? ' mine' : '');
+  let art = '', title = '', sub = '', soldOut = left <= 0;
+  if (o.kind === 'char' || o.kind === 'star') {
+    const c = CHAR[o.char], st = starsOf(c.id);
+    title = c.name; sub = o.kind === 'star' ? `+1 estrella (${st}★ → ${Math.min(MAX_STARS, st + 1)}★)` : st ? `Ya lo tienes: +1 estrella (${st}★)` : '¡Nuevo guerrero!';
+    if (st >= MAX_STARS) { soldOut = true; sub = 'Al máximo (5★)'; }
+    el.dataset.r = c.rar; art = 'char';
+  } else if (o.kind === 'box') { const b = BOX[o.box]; title = b.name; sub = 'Se abre al comprarla'; art = 'box'; }
+  else { const b = BOX[o.box]; title = `${o.qty} × ${b.name}`; sub = 'Se guardan para abrirlas cuando quieras'; art = 'box'; }
+  el.innerHTML = `${o.tag ? `<span class="otag">${o.tag}</span>` : ''}${o.disc ? `<span class="odisc">-${o.disc}%</span>` : ''}<div class="oart"></div>
+    <div class="oname">${title}</div>${o.kind === 'char' || o.kind === 'star' ? rarTag(CHAR[o.char].rar) : ''}<div class="osub">${sub}</div>
+    <div class="oprice">${o.disc ? `<s>${fmtNum(o.base)}</s>` : ''}<span class="zeni"><i></i>${fmtNum(o.price)}</span></div>
+    <button class="btn small ${soldOut ? '' : 'gold'}" ${soldOut || save.zeni < o.price ? 'disabled' : ''}>${soldOut ? (left <= 0 ? 'COMPRADO' : 'AL MÁXIMO') : 'COMPRAR'}</button>
+    ${o.limit > 1 && !soldOut ? `<div class="olim">Quedan ${left}</div>` : ''}`;
+  const a = el.querySelector('.oart');
+  if (art === 'char') { const cv = document.createElement('canvas'); cv.width = 72; cv.height = 84; cv.className = 'pedestal'; paintPedestal(cv, CHAR[o.char], true); a.appendChild(cv); }
+  else { const cv = document.createElement('canvas'); cv.width = 48; cv.height = 32; drawCapsule(cv, BOX[o.box].col); a.appendChild(cv); }
+  el.querySelector('button').onclick = () => buyOffer(o);
+  return el;
+}
+async function buyOffer(o) {
+  const ds = dailyState(); if ((ds.bought[o.id] || 0) >= o.limit || save.zeni < o.price) return;
+  const what = o.kind === 'box' ? BOX[o.box].name : o.kind === 'bundle' ? `${o.qty} × ${BOX[o.box].name}` : CHAR[o.char].name;
+  if (!(await ask(`¿Comprar ${what} por ${fmtNum(o.price)} zenis?`, 'COMPRAR'))) return;
+  save.zeni -= o.price; ds.bought[o.id] = (ds.bought[o.id] || 0) + 1;
+  if (o.kind === 'box') { persist(); openBox(BOX[o.box], 'paid'); return; }
+  if (o.kind === 'bundle') { save.tickets[o.box] = (save.tickets[o.box] || 0) + o.qty; persist(); sfx('ball'); toastShop(`¡${o.qty} × ${BOX[o.box].name} guardadas! Ábrelas en CAJAS.`); renderShop2(); return; }
+  const c = CHAR[o.char], res = grantChar(c); persist();
+  showResult(c, res, null, false);
+}
+function renderShop2() {
+  $('#zGacha').innerHTML = `<i></i>${fmtNum(save.zeni)}`;
+  const tabs = $('#shopTabs'); tabs.innerHTML = '';
+  [['today', 'HOY'], ['boxes', 'CAJAS']].forEach(([k, n]) => { const b = document.createElement('button'); b.className = 'btn small' + (shopTab === k ? ' on' : ''); b.textContent = n; b.onclick = () => { shopTab = k; sfx('click'); renderShop2(); }; tabs.appendChild(b); });
+  const body = $('#shopBody'); body.innerHTML = '';
+  if (shopTab === 'today') {
+    // regalo diario
+    const g = giftState(), gift = document.createElement('div'); gift.className = 'panel shopsec';
+    gift.innerHTML = `<div class="sechd"><b class="px gold">REGALO DIARIO</b><span class="muted">Entra cada día: la racha sube el premio</span></div><div class="gifts">${DAILY_GIFTS.map((rw, i) => {
+      const d = i + 1, done = g.can ? d < g.day : d <= g.day, today = g.can && d === g.day;
+      return `<div class="gift${done ? ' done' : ''}${today ? ' today' : ''}"><span class="px">DÍA ${d}</span><span>${giftLabel(rw)}</span>${done ? '<b>✓</b>' : ''}</div>`; }).join('')}</div>
+      <button class="btn ${g.can ? 'primary' : ''}" id="bGift" ${g.can ? '' : 'disabled'}>${g.can ? 'RECOGER REGALO' : 'VUELVE MAÑANA · ' + untilMidnight()}</button>`;
+    body.appendChild(gift); if (g.can) gift.querySelector('#bGift').onclick = claimGift;
+    // ofertas personales
+    const me = document.createElement('div'); me.className = 'panel shopsec mine';
+    me.innerHTML = `<div class="sechd"><b class="px gold">★ SOLO PARA TI ★</b><span class="muted">Ofertas exclusivas de tu cuenta · cambian en <b class="cd">${untilMidnight()}</b></span></div><div class="offers"></div>`;
+    personalOffers().forEach(o => me.querySelector('.offers').appendChild(offerCard(o, true)));
+    body.appendChild(me);
+    // tienda diaria
+    const dd = document.createElement('div'); dd.className = 'panel shopsec';
+    dd.innerHTML = `<div class="sechd"><b class="px gold">TIENDA DIARIA</b><span class="muted">Se renueva en <b class="cd">${untilMidnight()}</b></span></div><div class="offers"></div>`;
+    dailyOffers().forEach(o => dd.querySelector('.offers').appendChild(offerCard(o, false)));
+    body.appendChild(dd);
+  } else {
+    const grid = document.createElement('div'); grid.className = 'boxgrid';
+    BOXES.forEach(b => {
+      const el = document.createElement('div'); el.className = 'cap boxc'; el.style.setProperty('--bc', b.col);
+      const cv = document.createElement('canvas'); cv.width = 48; cv.height = 32; drawCapsule(cv, b.col);
+      const o = boxOdds(b), pool = boxPool(b), tk = save.tickets[b.id] || 0, own = pool.filter(isUnlocked).length;
+      el.appendChild(cv);
+      el.insertAdjacentHTML('beforeend', `<div class="t">${b.name.toUpperCase()}</div><div class="muted" style="text-align:center;font-size:18px">${b.desc}</div>
+        <div class="bpool"></div><div class="muted" style="text-align:center;font-size:17px">Tienes ${own}/${pool.length} de esta caja</div>
+        <div class="odds">${RAR_ORDER.filter(r => o[r] > 0).map(r => `<span style="color:${RAR[r].col}">${RAR[r].name}</span><i><b style="width:${o[r]}%;background:${RAR[r].col}"></b></i><span>${Math.round(o[r])}%</span>`).join('')}</div>
+        <button class="btn primary" data-pay="z" ${save.zeni >= b.price ? '' : 'disabled'}>ABRIR · ${fmtNum(b.price)}</button>
+        ${tk ? `<button class="btn gold" data-pay="t">ABRIR GRATIS (${tk})</button>` : ''}`);
+      const bp = el.querySelector('.bpool');
+      const show = b.pool ? pool : CHARS.filter(c => c.rar === 'L').concat(CHARS.filter(c => c.rar === 'E').slice(0, 5));
+      show.slice(0, 14).forEach(c => { const pc = portraitCanvas(c.id, isUnlocked(c) ? '' : 'notown'); pc.title = c.name + ' · ' + RAR[c.rar].name; pc.style.borderColor = RAR[c.rar].col; bp.appendChild(pc); });
+      el.querySelectorAll('button').forEach(btn => btn.onclick = () => openBox(b, btn.dataset.pay === 't' ? 'ticket' : 'zeni'));
+      grid.appendChild(el);
+    });
+    body.appendChild(grid);
+  }
+  clearInterval(shopTimer);
+  shopTimer = setInterval(() => { if (state !== 'gacha') { clearInterval(shopTimer); return; } if (dailyState().day !== dayKey()) renderShop2(); document.querySelectorAll('#shopBody .cd').forEach(e => e.textContent = untilMidnight()); }, 1000);
+}
+
+/* ---------- apertura estilo ruleta ---------- */
+const CARD_W = 104;
+function reelCard(c) {
+  const d = document.createElement('div'); d.className = 'rc'; d.dataset.r = c.rar;
+  d.appendChild(portraitCanvas(c.id)); d.insertAdjacentHTML('beforeend', `<span>${c.name}</span>`); return d;
+}
+function openBox(b, pay) {
+  if (pay === 'ticket') { if (!(save.tickets[b.id] > 0)) return; save.tickets[b.id]--; }
+  else if (pay === 'zeni') { if (save.zeni < b.price) return; save.zeni -= b.price; }
+  const win = rollBox(b), res = grantChar(win); persist();
+  state = 'gacha'; showScreen('reveal');
+  $('#rvTitle').textContent = b.name.toUpperCase(); $('#rvBox').hidden = true; $('#rvSkip').hidden = false;
+  const track = $('#rvTrack'), reel = $('#rvReel'); track.innerHTML = ''; track.style.transition = 'none'; track.style.transform = 'translateX(0)';
+  const N = 56, WIN = 48, cards = [];
+  for (let i = 0; i < N; i++) { const c = i === WIN ? win : rollBox(b); const el = reelCard(c); track.appendChild(el); cards.push(el); }
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, dur = reduce ? 900 : 5600;
+  const target = WIN * CARD_W - reel.clientWidth / 2 + CARD_W / 2 + rand(-CARD_W * .38, CARD_W * .38);
+  let lastIdx = -1, done = false, raf = 0;
+  const finish = () => {
+    if (done) return; done = true; cancelAnimationFrame(raf);
+    track.style.transition = 'none'; track.style.transform = `translateX(${-target}px)`;
+    cards[WIN].classList.add('win'); sfx(win.rar === 'L' ? 'trans' : win.rar === 'E' ? 'ball' : 'lvl'); $('#rvSkip').hidden = true;
+    setTimeout(() => showResult(win, res, b, pay), 650);
+  };
+  const tick = () => {
+    const m = getComputedStyle(track).transform, x = m && m !== 'none' ? -new DOMMatrixReadOnly(m).m41 : 0, idx = Math.floor((x + reel.clientWidth / 2) / CARD_W);
+    if (idx !== lastIdx) { lastIdx = idx; if (AU.ctx && save.opts.sfx) tone(900 + (idx % 3) * 60, .03, 'square', .04); }
+    if (!done) raf = requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    track.style.transition = `transform ${dur}ms cubic-bezier(.06,.72,.1,1)`; track.style.transform = `translateX(${-target}px)`; raf = requestAnimationFrame(tick);
+  }));
+  track.ontransitionend = finish;
+  $('#rvSkip').onclick = finish;
+  setTimeout(finish, dur + 400);
+}
+function showResult(c, res, box, pay) {
+  state = 'gacha'; showScreen('reveal'); $('#rvSkip').hidden = true;
+  if (!box) { $('#rvTitle').textContent = 'COMPRA'; $('#rvTrack').innerHTML = ''; }
+  const rb = $('#rvBox'); rb.hidden = false; rb.classList.remove('show'); void rb.offsetWidth; rb.classList.add('show'); rb.style.setProperty('--rc', RAR[c.rar].col);
+  paintSprite($('#rvCv'), c.id);
+  const msg = res.kind === 'new' ? `<div class="new">¡NUEVO GUERRERO!</div>` : res.kind === 'star' ? `<div class="gold" style="font-size:20px;margin-top:6px">Repetido: ${starTxt(res.stars)} (+poder)</div>` : `<div class="gold" style="font-size:20px;margin-top:6px">Ya está al máximo: +${fmtNum(res.z)} zenis</div>`;
+  $('#rvText').innerHTML = `${rarTag(c.rar)}<div class="nm">${c.name}</div>${msg}`;
+  const again = box && (pay === 'ticket' ? save.tickets[box.id] > 0 : pay === 'zeni' && save.zeni >= box.price);
+  $('#rvBtns').innerHTML = `${again ? `<button class="btn primary" id="rvAgain">OTRA${pay === 'ticket' ? ' GRATIS' : ' · ' + fmtNum(box.price)}</button>` : ''}<button class="btn" id="rvPlay">JUGAR CON ${c.name.toUpperCase()}</button><button class="btn" id="rvBack">VOLVER A LA TIENDA</button>`;
+  if (again) $('#rvAgain').onclick = () => openBox(box, pay);
+  $('#rvPlay').onclick = () => { selChar = c.id; save.lastChar = c.id; persist(); go('select'); };
+  $('#rvBack').onclick = () => go('gacha');
+}
 </script>
 <script>
 'use strict';

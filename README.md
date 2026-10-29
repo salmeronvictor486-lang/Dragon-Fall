@@ -21,11 +21,13 @@ Todo el juego está en **`index.html`** (HTML + CSS + JavaScript con `<canvas>`)
 ## Contenido
 
 - **54 guerreros de Dragon Ball Z y Super**, con rarezas Común, Raro, Épico y Legendario: de Krilin y Chaoz a Vegito, Gogeta, Beerus, Whis o Jiren. Cada uno tiene su ataque inicial y muchos se transforman.
-- **Cápsulas:** se abren con zenis o con las cápsulas gratis que regala ganar una saga. Te toca un guerrero al azar; si sale repetido, gana una estrella (+6% de daño y +5% de vida, hasta 5★). Solo se paga con zenis del juego, nunca con dinero real.
+- **Tienda** (todo con zenis del juego, nunca con dinero real):
+  - **Hoy:** regalo diario con racha de 7 días, ofertas **solo para ti** (distintas para cada jugador y cada día, según los guerreros y cajas que te faltan) y una **tienda diaria** de personajes y cajas con descuento. Se renueva a medianoche.
+  - **Cajas:** 9 cajas temáticas (Normal, Dorada, Guerreros Z, Imperio, Patrulla Roja, Majin, Saiyan, Fusión y Divina) con su lista de guerreros y probabilidades. Se abren con una ruleta estilo Counter-Strike. Los repetidos ganan estrellas (+6% de daño y +5% de vida, hasta 5★).
 - **5 sagas:** Saiyan, Namek, Juegos de Cell, Majin Buu y Torneo del Poder. Cada una tiene sus enemigos, sus élites y sus jefes.
 - **21 técnicas, cada una con su evolución, y 11 pasivas.** Entre ellas el Hakai de Beerus, la Espada de Ki y el Impacto de Poder de Jiren.
 - **Templo de Kami:** mejoras permanentes que se compran con zenis.
-- **Dragonpedia:** todos los personajes con nombre, saga y descripción. Los que aún no has visto salen como silueta.
+- **Dragonpedia:** todos los guerreros, enemigos y jefes con nombre, dibujo y descripción, aunque no los tengas. Indica cuáles has conseguido y cómo conseguir los que te faltan.
 - **Guardar la partida, de dos formas:**
   - **Con código** (siempre disponible): un código corto (`DF2.…`) con todo tu progreso. Se copia y se pega en otro navegador. Los códigos antiguos `DF1.…` siguen funcionando.
   - **Con correo y contraseña** (o Google): el progreso se guarda solo en la nube. Al crear la cuenta eliges con qué empezar: el progreso de este navegador, **tu código** (si jugaste en versiones anteriores u otro dispositivo) o de cero. Para activarlo, sigue [FIREBASE.md](FIREBASE.md).
