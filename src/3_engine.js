@@ -311,8 +311,8 @@ function musicSet(on) {
 /* =================== GUARDADO =================== */
 const SAVE_KEY = 'dragonfall_save_v1';
 let saveKey = SAVE_KEY;   // invitado; con cuenta: SAVE_KEY + '_' + uid
-function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, pid: '', streak: { last: '', n: 0 }, daily: { day: '', bought: {} }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true, vib: true, voice: true }, clearedD: {}, stats: defStats(), acc: { lvl: 1, xp: 0 }, missions: { day: '', list: [], bonus: 0 }, ach: {}, titles: { novato: 1 }, title: 'novato', buddy: '', diff: 0, mode: 'saga', rankSent: {}, lang: '' }; }
-function defStats() { return { wins: 0, time: 0, specials: 0, bosses: 0, boxes: 0, events: 0, fusions: 0, shenron: 0, evos: 0, trans: 0, zeniRun: 0, daily: 0, bestKills: 0, bestInf: 0, bestInfT: 0, shrines: 0, chests: 0, crates: 0, healed: 0, chars: {} }; }
+function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, pid: '', streak: { last: '', n: 0 }, daily: { day: '', bought: {} }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true, vib: true, voice: true }, clearedD: {}, stats: defStats(), acc: { lvl: 1, xp: 0 }, missions: { day: '', list: [], bonus: 0 }, ach: {}, titles: { novato: 1 }, title: 'novato', buddy: '', diff: 0, mode: 'saga', rankSent: {}, lang: '', cards: {}, sim: {} }; }
+function defStats() { return { wins: 0, time: 0, specials: 0, bosses: 0, boxes: 0, events: 0, fusions: 0, shenron: 0, evos: 0, trans: 0, zeniRun: 0, daily: 0, bestKills: 0, bestInf: 0, bestInfT: 0, shrines: 0, chests: 0, crates: 0, healed: 0, packs: 0, chars: {} }; }
 function normalizeSave(o) {
   const s = Object.assign(defSave(), o || {});
   s.opts = Object.assign(defSave().opts, (o && o.opts) || {});
@@ -322,7 +322,7 @@ function normalizeSave(o) {
   if (!s.streak || typeof s.streak !== 'object') s.streak = { last: '', n: 0 };
   if (!s.daily || typeof s.daily !== 'object' || !s.daily.bought) s.daily = { day: '', bought: {} };
   ['zeni', 'kills', 'maxTime', 'runs', 'ts'].forEach(k => { s[k] = Number(s[k]) || 0; });
-  ['clearedD', 'ach', 'titles', 'rankSent'].forEach(k => { if (!s[k] || typeof s[k] !== 'object') s[k] = {}; });
+  ['clearedD', 'ach', 'titles', 'rankSent', 'cards', 'sim'].forEach(k => { if (!s[k] || typeof s[k] !== 'object') s[k] = {}; });
   s.titles.novato = 1; if (!TITLES_OK(s.title, s)) s.title = 'novato';
   const st = defStats(), so = s.stats && typeof s.stats === 'object' ? s.stats : {};
   for (const k in st) st[k] = k === 'chars' ? (so.chars && typeof so.chars === 'object' ? so.chars : {}) : Number(so[k]) || 0;

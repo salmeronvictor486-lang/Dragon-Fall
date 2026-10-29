@@ -415,6 +415,71 @@ html.fr .acct-badge:hover{filter:brightness(1.2)}
 /* ---- modos, dificultad, misiones, ranking, compañero ---- */
 .langs{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.langs .btn.on{background:var(--orange);color:#2a1300}
 .choice.boon{box-shadow:0 0 0 3px var(--rc)}.choice.boon .ds.big{font-family:'Press Start 2P';font-size:16px;color:var(--rc);margin-top:10px;text-align:center}.choice .kb{margin-left:auto;align-self:flex-start;color:#8a90b8;font-size:16px}
+/* ---- cartas coleccionables ---- */
+.holo-btn{position:relative}
+html.fr .menu #bAcct{grid-column:1/-1}
+.holo-btn::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,138,200,.25) 42%,rgba(95,208,255,.25) 50%,rgba(255,242,122,.25) 58%,transparent 70%);background-size:250% 100%;animation:holoSweep 3.5s linear infinite;mix-blend-mode:screen}
+@keyframes holoSweep{0%{background-position:120% 0}100%{background-position:-120% 0}}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.cthumb{position:relative;border:0;padding:0;background:none;cursor:pointer;aspect-ratio:5/7;border-radius:10px;transition:transform .15s}
+.cthumb img{width:100%;height:100%;display:block;border-radius:10px;box-shadow:0 6px 16px rgba(0,0,0,.5)}
+.cthumb.have:hover{transform:translateY(-4px) rotate(-1deg)}
+.cthumb.have::after{content:"";position:absolute;inset:0;border-radius:10px;pointer-events:none;opacity:0}
+.cthumb.fin-h::after,.cthumb.fin-r::after,.cthumb.fin-g::after{opacity:1;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.45) 48%,transparent 60%);background-size:300% 100%;animation:holoSweep 3s linear infinite}
+.cthumb.fin-r::after{background:linear-gradient(115deg,rgba(255,90,90,.25),rgba(255,242,122,.25),rgba(89,214,107,.25),rgba(95,208,255,.25),rgba(176,107,255,.25),rgba(255,138,200,.25));background-size:300% 300%;mix-blend-mode:color-dodge;animation:holoSweep 4s linear infinite}
+.cthumb.fin-g::after{background:linear-gradient(115deg,transparent 35%,rgba(255,226,122,.55) 48%,transparent 60%);background-size:300% 100%}
+.cfins{position:absolute;right:6px;bottom:6px;display:flex;gap:3px}.cfins i{width:9px;height:9px;border-radius:50%;box-shadow:0 0 0 2px #05060f}
+.cback{width:100%;height:100%;border-radius:10px;background:repeating-linear-gradient(135deg,#141a3a 0 10px,#10163a 10px 20px);box-shadow:inset 0 0 0 3px #2a3572;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;text-align:center;color:#6b739a}
+.cback canvas{width:54px;height:84px;image-rendering:pixelated}.cback b{font-family:'Press Start 2P';font-size:8px;line-height:1.5;color:#8a90b8}.cback small{font-size:14px;line-height:1.1}
+.cno{position:absolute;top:8px;left:10px;font-family:'Press Start 2P';font-size:8px;color:#4a527a}
+.packs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.packc{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:10px;background:#0f1430;box-shadow:0 0 0 2px var(--line)}
+.pack{--pc:#3aa0ff;position:relative;width:150px;height:210px;border-radius:8px 8px 6px 6px;background:linear-gradient(160deg,color-mix(in srgb,var(--pc) 75%,#fff) 0%,var(--pc) 35%,color-mix(in srgb,var(--pc) 45%,#000) 100%);box-shadow:0 10px 24px rgba(0,0,0,.55),inset 0 0 0 3px rgba(255,255,255,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;overflow:hidden;cursor:pointer;transition:transform .2s}
+.pack::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.55) 48%,transparent 60%);background-size:300% 100%;animation:holoSweep 2.6s linear infinite}
+.pack .pk-top{position:absolute;top:0;left:0;right:0;height:18px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.25) 0 6px,transparent 6px 12px);border-bottom:2px dashed rgba(255,255,255,.5)}
+.pack b{font-family:'Press Start 2P';font-size:12px;color:#fff;text-shadow:0 2px 0 #05060f;line-height:1.4}
+.pack i{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe9a8 0 18%,#ff9a1c 20% 70%,#7a3a00 72%);box-shadow:0 0 18px rgba(255,210,63,.6)}
+.pack .pk-name{font-family:'Press Start 2P';font-size:8px;color:#fff;background:rgba(5,6,15,.55);padding:4px 6px;line-height:1.4}
+.pack:hover{transform:translateY(-4px) rotate(-2deg)}
+.packopen{position:fixed;inset:0;z-index:36;background:radial-gradient(circle at 50% 45%,rgba(60,40,120,.92),rgba(5,6,18,.96));display:flex;align-items:safe center;justify-content:center;padding:16px;overflow:auto}
+.po-stage{display:flex;flex-direction:column;align-items:center;gap:16px;width:min(1100px,100%)}
+.po-stage .pack{width:220px;height:310px;animation:packIn .5s cubic-bezier(.2,1.4,.4,1)}
+.po-stage .pack b{font-size:16px}.po-stage .pack i{width:96px;height:96px}
+@keyframes packIn{0%{transform:scale(.3) rotate(-20deg);opacity:0}100%{transform:none;opacity:1}}
+.pack.rip{animation:packRip .5s forwards}.pack.rip .pk-top{animation:ripTop .5s forwards}
+@keyframes packRip{40%{transform:scale(1.08) rotate(3deg)}100%{transform:scale(1.4);opacity:0;filter:brightness(3)}}
+@keyframes ripTop{100%{transform:translate(60px,-80px) rotate(30deg);opacity:0}}
+.po-hint{font-size:20px}
+.po-cards{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;perspective:1200px}
+.pocard{position:relative;width:min(200px,42vw);aspect-ratio:5/7;border:0;padding:0;background:none;cursor:pointer;animation:dealIn .45s backwards}
+@keyframes dealIn{0%{transform:translateY(-120px) scale(.6) rotate(-10deg);opacity:0}}
+.pc-in{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.3,1.3,.5,1)}
+.pocard.flip .pc-in{transform:rotateY(180deg)}
+.pc-in img{position:absolute;inset:0;width:100%;height:100%;border-radius:10px;backface-visibility:hidden;box-shadow:0 8px 20px rgba(0,0,0,.6)}
+.pc-front{transform:rotateY(180deg)}
+.pc-shine{position:absolute;inset:0;border-radius:10px;transform:rotateY(180deg);backface-visibility:hidden;pointer-events:none}
+.pocard.flip.fin-h .pc-shine,.pocard.flip.fin-g .pc-shine,.pocard.flip.fin-r .pc-shine{background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.5) 48%,transparent 60%);background-size:300% 100%;animation:holoSweep 2.4s linear infinite}
+.pocard.flip.fin-g{filter:drop-shadow(0 0 16px rgba(255,210,63,.8))}.pocard.flip.fin-r{filter:drop-shadow(0 0 18px rgba(255,138,200,.85))}.pocard.flip.fin-h{filter:drop-shadow(0 0 10px rgba(159,216,255,.7))}
+.pc-new{position:absolute;top:-10px;right:-8px;z-index:2;font-family:'Press Start 2P';font-size:9px;background:#e8433a;color:#fff;padding:5px 7px;box-shadow:0 0 0 2px #05060f;opacity:0;transition:opacity .3s .5s}
+.pocard.flip .pc-new{opacity:1}
+.pc-fin{position:absolute;bottom:-22px;left:0;right:0;font-family:'Press Start 2P';font-size:8px;opacity:0;transition:opacity .3s .5s}.pocard.flip .pc-fin{opacity:1}
+.po-btns{margin-top:22px;gap:10px}
+.cview{position:fixed;inset:0;z-index:37;background:rgba(5,6,18,.9);display:flex;align-items:safe center;justify-content:center;padding:16px;overflow:auto}
+.cv-wrap{display:flex;gap:28px;align-items:center;flex-wrap:wrap;justify-content:center}
+.cv-side{display:flex;flex-direction:column;gap:10px;max-width:300px}.cv-side .px{font-size:14px;line-height:1.5}
+.tcard{--mx:50%;--my:50%;--rx:0deg;--ry:0deg;--bp:50% 50%;position:relative;width:min(380px,80vw);aspect-ratio:5/7;border-radius:20px;transform:perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry));transition:transform .08s;touch-action:none;box-shadow:0 20px 50px rgba(0,0,0,.7)}
+.tcard img{width:100%;height:100%;display:block;border-radius:20px}
+.tcard.idle{animation:cardIdle 5s ease-in-out infinite;transition:transform .5s}
+@keyframes cardIdle{0%,100%{transform:perspective(1000px) rotateY(-8deg) rotateX(3deg)}50%{transform:perspective(1000px) rotateY(8deg) rotateX(-3deg)}}
+.tc-shine,.tc-glare{position:absolute;inset:0;border-radius:20px;pointer-events:none}
+.tc-glare{background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,.45),rgba(255,255,255,0) 45%);mix-blend-mode:overlay}
+.tcard.fin-h .tc-shine{background:repeating-linear-gradient(110deg,rgba(255,90,90,.18) 0%,rgba(255,242,122,.18) 6%,rgba(89,214,107,.18) 12%,rgba(95,208,255,.18) 18%,rgba(176,107,255,.18) 24%,rgba(255,90,90,.18) 30%);background-size:400% 400%;background-position:var(--bp);mix-blend-mode:color-dodge}
+.tcard.fin-r .tc-shine{background:repeating-linear-gradient(110deg,rgba(255,90,90,.35) 0%,rgba(255,242,122,.35) 5%,rgba(89,214,107,.35) 10%,rgba(95,208,255,.35) 15%,rgba(176,107,255,.35) 20%,rgba(255,90,90,.35) 25%);background-size:300% 300%;background-position:var(--bp);mix-blend-mode:color-dodge}
+.tcard.fin-g .tc-shine{background:linear-gradient(115deg,transparent 30%,rgba(255,236,150,.7) 45%,rgba(255,255,255,.8) 50%,rgba(255,236,150,.7) 55%,transparent 70%);background-size:300% 300%;background-position:var(--bp);mix-blend-mode:overlay}
+.tcard.idle.fin-h .tc-shine,.tcard.idle.fin-r .tc-shine,.tcard.idle.fin-g .tc-shine{animation:shineIdle 5s ease-in-out infinite}
+@keyframes shineIdle{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.tcard.idle .tc-glare{opacity:.4}
+@media (max-width:560px){.cgrid{grid-template-columns:repeat(2,1fr)}.cv-side{max-width:100%;align-items:stretch}}
 .padfocus{outline:3px solid #ffd23f!important;outline-offset:3px;filter:brightness(1.15)}
 .instbtn{position:absolute!important;top:14px;left:16px;padding:8px 12px}
 .optbtn{position:absolute!important;top:14px;right:16px;display:flex;align-items:center;gap:8px;padding:8px 12px}.optbtn .mi canvas{width:20px;height:20px;image-rendering:pixelated;display:block}
@@ -497,6 +562,7 @@ html.fr .acct-badge:hover{filter:brightness(1.2)}
     <button class="btn gold mbtn" id="bGacha"><span class="mi"></span><span class="ml"><b>TIENDA <span class="mbadge" id="giftBadge" hidden title="Regalo diario disponible">!</span></b><small id="subShop">Ofertas y cajas</small></span></button>
     <button class="btn mbtn" id="bMis"><span class="mi"></span><span class="ml"><b>MISIONES <span class="mbadge" id="misBadge" hidden title="Tienes premios por recoger">!</span></b><small id="subMis">Diarias, logros y perfil</small></span></button>
     <button class="btn mbtn" id="bRank"><span class="mi"></span><span class="ml"><b>RANKING</b><small>Los mejores de la semana</small></span></button>
+    <button class="btn mbtn holo-btn" id="bCards"><span class="mi"></span><span class="ml"><b>CARTAS</b><small id="subCards">Álbum, sobres y simulador</small></span></button>
     <button class="btn mbtn" id="bDex"><span class="mi"></span><span class="ml"><b>DRAGONPEDIA</b><small id="subDex">Todos los guerreros</small></span></button>
     <button class="btn mbtn" id="bShop"><span class="mi"></span><span class="ml"><b>TEMPLO DE KAMI</b><small>Mejoras permanentes</small></span></button>
     <button class="btn mbtn" id="bAcct"><span class="mi"></span><span class="ml"><b>CUENTA</b><small id="subAcct">Guarda tu partida</small></span></button>
@@ -607,6 +673,13 @@ html.fr .acct-badge:hover{filter:brightness(1.2)}
       <button class="btn small" id="bSkip">SALTAR (+ZENIS)</button>
     </div>
   </div>
+</section>
+
+<!-- CARTAS -->
+<section id="cards" class="screen dim">
+  <div class="topbar"><button class="btn small" data-back="title">◀ VOLVER</button><h2 class="px">CARTAS</h2><span class="zeni" id="zCards"><i></i>0</span></div>
+  <div class="tabs" id="cardTabs"></div>
+  <div class="mis-wrap" id="cardBody" style="width:min(1100px,100%)"></div>
 </section>
 
 <!-- ALTAR DE KI -->

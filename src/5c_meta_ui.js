@@ -65,7 +65,7 @@ function renderMissions() {
     const h = Math.floor(S.time / 3600), mi = Math.floor(S.time / 60) % 60;
     [['Partidas', fmtNum(save.runs)], ['Victorias', fmtNum(S.wins)], ['Tiempo jugado', `${h} h ${mi} min`], ['Enemigos derrotados', fmtNum(save.kills)],
      ['Jefes derrotados', fmtNum(S.bosses)], ['Técnicas especiales', fmtNum(S.specials)], ['Fusiones', fmtNum(S.fusions)], ['Eventos superados', fmtNum(S.events)],
-     ['Cajas abiertas', fmtNum(S.boxes)], ['Altares activados', fmtNum(S.shrines)], ['Cofres del mapa', fmtNum(S.chests)], ['Vida recuperada', fmtNum(S.healed)], ['Shenron invocado', fmtNum(S.shenron)], ['Récord de bajas', fmtNum(S.bestKills)], ['Récord Supervivencia', fmtNum(S.bestInf) + ' pts'],
+     ['Cajas abiertas', fmtNum(S.boxes)], ['Altares activados', fmtNum(S.shrines)], ['Cofres del mapa', fmtNum(S.chests)], ['Vida recuperada', fmtNum(S.healed)], ['Cartas', `${CARD_SET.filter(cardOwned).length}/${CARD_SET.length}`], ['Sobres abiertos', fmtNum(S.packs)], ['Shenron invocado', fmtNum(S.shenron)], ['Récord de bajas', fmtNum(S.bestKills)], ['Récord Supervivencia', fmtNum(S.bestInf) + ' pts'],
      ['Guerreros', `${CHARS.filter(isUnlocked).length}/${CHARS.length}`], ['Logros', `${ACHIEVEMENTS.filter(a => save.ach[a.id]).length}/${ACHIEVEMENTS.length}`], ['Misiones completadas', fmtNum(S.daily)], ['Favorito', fav ? `${favC.name} (${fav[1]})` : '—']]
       .forEach(([k, v]) => sec.querySelector('.statgrid').insertAdjacentHTML('beforeend', `<div>${k}<b>${v}</b></div>`));
     body.appendChild(sec);
