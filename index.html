@@ -386,6 +386,10 @@ html.fr .acct-badge:hover{filter:brightness(1.2)}
 .prof{display:flex;gap:14px;align-items:center}
 .prof canvas{width:72px;height:76px;image-rendering:pixelated;flex:none;border:7px solid transparent;border-image:var(--fr-rL) 4 fill / 7px stretch}
 #account .panel{gap:12px}
+.coinrain{position:fixed;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+.coinrain i{position:absolute;top:-30px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff6b0 0 20%,#ffd23f 22% 60%,#b8860b 62%);box-shadow:0 0 0 2px #7a5200;animation:coinfall 2s linear forwards}
+@keyframes coinfall{0%{transform:translateY(0) rotateY(0)}100%{transform:translateY(110vh) rotateY(720deg)}}
+@media (prefers-reduced-motion:reduce){.coinrain{display:none}}
 </style>
 </head>
 <body>
@@ -3256,7 +3260,12 @@ function banner(a, b) {
 }
 
 /* ---------- Teclado ---------- */
+let eggBuf = '';
 function onKey(e) {
+  if (state === 'gacha' && $('#gacha').classList.contains('on') && e.key && e.key.length === 1) {
+    eggBuf = (eggBuf + e.key.toLowerCase()).slice(-4);
+    if (eggBuf === 'wasd') { eggBuf = ''; shopEgg(); return; }
+  }
   if (state === 'play' && G && G.intro && ['Space', 'Enter', 'Escape'].includes(e.code)) { G.intro.t = Math.min(G.intro.t, .15); return; }
   if (state === 'play' && (e.code === 'Escape' || e.code === 'KeyP')) { pauseGame(); return; }
   if (state === 'paused' && (e.code === 'Escape' || e.code === 'KeyP')) { resumeGame(); return; }
@@ -3452,6 +3461,18 @@ function renderShop2() {
   }
   clearInterval(shopTimer);
   shopTimer = setInterval(() => { if (state !== 'gacha') { clearInterval(shopTimer); return; } if (dailyState().day !== dayKey()) renderShop2(); document.querySelectorAll('#shopBody .cd').forEach(e => e.textContent = untilMidnight()); }, 1000);
+}
+
+/* ---------- Easter egg: escribir W A S D en la tienda (una vez por partida) ---------- */
+function shopEgg() {
+  if (save.eggWasd) { toastShop('Ya encontraste este secreto. ¡Buen intento!'); sfx('click'); return; }
+  save.zeni += 14000; save.eggWasd = 1; persist();
+  sfx('trans'); setTimeout(() => sfx('ball'), 400);
+  toastShop('¡SECRETO ENCONTRADO! +14.000 zenis');
+  const box = document.createElement('div'); box.className = 'coinrain';
+  for (let i = 0; i < 40; i++) { const c = document.createElement('i'); c.style.left = Math.random() * 100 + 'vw'; c.style.animationDelay = Math.random() * .9 + 's'; c.style.animationDuration = 1.4 + Math.random() * 1.2 + 's'; box.appendChild(c); }
+  document.body.appendChild(box); setTimeout(() => box.remove(), 3600);
+  renderShop2(); renderTitle();
 }
 
 /* ---------- apertura estilo ruleta ---------- */
