@@ -15,7 +15,8 @@ Todo el juego está en **`index.html`** (HTML + CSS + JavaScript con `<canvas>`)
 - **Transformaciones:** algunos guerreros se transforman al llegar a ciertos niveles (Goku: SSJ → SSJ3 → SSJ Blue → Ultra Instinto).
 - Las **7 Bolas de Dragón** caen de élites y jefes. Al reunirlas aparece **Shenron** y te concede un deseo.
 - Cada saga dura 10 minutos: hay 3 jefes intermedios y un jefe final.
-- **Pausa:** Esc, P o el botón `II`.
+- **Pausa:** Esc, P o el botón `II`. Las presentaciones de jefe y las transformaciones se saltan con Espacio, Enter o tocando la pantalla.
+- Las flechas en el borde de la pantalla señalan Bolas de Dragón, cápsulas y jefes que están fuera de vista.
 
 ## Contenido
 
@@ -25,7 +26,9 @@ Todo el juego está en **`index.html`** (HTML + CSS + JavaScript con `<canvas>`)
 - **21 técnicas, cada una con su evolución, y 11 pasivas.** Entre ellas el Hakai de Beerus, la Espada de Ki y el Impacto de Poder de Jiren.
 - **Templo de Kami:** mejoras permanentes que se compran con zenis.
 - **Dragonpedia:** todos los personajes con nombre, saga y descripción. Los que aún no has visto salen como silueta.
-- **Cuentas y guardado en la nube:** creas una cuenta con email o con Google y recuperas tu progreso en cualquier dispositivo. Sin cuenta, se guarda en el navegador y puedes exportar o importar un código de copia de seguridad. Para activar las cuentas, sigue [FIREBASE.md](FIREBASE.md).
+- **Guardar la partida, de dos formas:**
+  - **Con código** (siempre disponible): un código corto (`DF2.…`) con todo tu progreso. Se copia y se pega en otro navegador. Los códigos antiguos `DF1.…` siguen funcionando.
+  - **Con correo y contraseña** (o Google): el progreso se guarda solo en la nube. Al crear la cuenta eliges con qué empezar: el progreso de este navegador, **tu código** (si jugaste en versiones anteriores u otro dispositivo) o de cero. Para activarlo, sigue [FIREBASE.md](FIREBASE.md).
 
 ## Dónde está publicado
 
