@@ -286,7 +286,7 @@ function renderScreen() {
     ctx.globalAlpha = .6; ctx.fillStyle = '#ff8a1c'; ctx.beginPath(); ctx.arc(joy.ox + dx * m, joy.oy + dy * m, 20, 0, TAU); ctx.fill(); ctx.globalAlpha = 1;
   }
 }
-/* Botón de técnica especial (abajo a la derecha). Tecla ESPACIO o tocarlo. */
+/* Botón de técnica especial (abajo a la derecha). Tecla 1 o tocarlo. */
 let spBtn = null;
 const FINE_PTR = matchMedia('(pointer:fine)').matches;
 function drawSpecialBtn(small) {
@@ -305,7 +305,14 @@ function drawSpecialBtn(small) {
   ctx.strokeStyle = ready ? '#ffffff' : sp.col; ctx.beginPath(); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + fr * TAU); ctx.stroke();
   if (!ready) txt(String(Math.ceil(P.spT)), x, y + 1, small ? 12 : 14, '#ffffff', 'center');
   txt(ready ? '¡LISTA!' : 'ESPECIAL', x, y - r - 12, small ? 6 : 7, ready ? sp.col : '#8a90b8', 'center');
-  if (FINE_PTR) txt('ESPACIO', x, y + r + 11, 6, '#8a90b8', 'center');
+  if (FINE_PTR) keycap('1', x - r * .78, y - r * .78);
+}
+// Tecla dibujada en la esquina de los botones redondos
+function keycap(k, x, y) {
+  ctx.fillStyle = '#05060f'; ctx.fillRect(Math.round(x - 10), Math.round(y - 10), 20, 20);
+  ctx.fillStyle = '#e6e9ff'; ctx.fillRect(Math.round(x - 9), Math.round(y - 9), 18, 18);
+  ctx.fillStyle = '#b8c0dc'; ctx.fillRect(Math.round(x - 9), Math.round(y + 5), 18, 4);
+  txt(k, x, y - 1, 9, '#1a2150', 'center', '#e6e9ff');
 }
 function hudText(t, x, y, size, col, align = 'left') { txt(t, x, y, size, col, align); }
 /* Flechas hacia objetivos fuera de pantalla */
@@ -663,7 +670,7 @@ function statBars(c) {
   return `<div class="statbars">${rows.map(([n, v, t]) => `<span>${n}</span><i><b style="width:${Math.round(clamp(v, .05, 1) * 100)}%"></b></i><span class="gold">${t}</span>`).join('')}</div>`;
 }
 const starTxt = n => '★'.repeat(n) + '☆'.repeat(MAX_STARS - n);
-const spInfo = id => { const sp = SPECIALS[id]; return sp ? `<div class="spinfo" style="--sc:${sp.col}"><b class="px">⚡ ${sp.name}</b><span class="muted">${sp.desc}</span><small>Técnica especial · ESPACIO o botón · recarga ${sp.cd} s</small></div>` : ''; };
+const spInfo = id => { const sp = SPECIALS[id]; return sp ? `<div class="spinfo" style="--sc:${sp.col}"><b class="px">⚡ ${sp.name}</b><span class="muted">${sp.desc}</span><small>Técnica especial · tecla 1 o botón · recarga ${sp.cd} s</small></div>` : ''; };
 const rarTag = r => `<span class="rar" style="background:${RAR[r].col}">${RAR[r].name.toUpperCase()}</span>`;
 function renderSelect() {
   $('#zSel').innerHTML = `<i></i>${fmtNum(save.zeni)}`;
@@ -1051,8 +1058,9 @@ function onKey(e) {
   }
   if (state === 'play' && G && G.intro && ['Space', 'Enter', 'Escape'].includes(e.code)) { G.intro.t = Math.min(G.intro.t, .15); return; }
   if (state === 'play' && (e.code === 'Escape' || e.code === 'KeyP')) { pauseGame(); return; }
-  if (state === 'play' && ['Space', 'KeyE', 'KeyQ'].includes(e.code)) { e.preventDefault(); useSpecial(); return; }
-  if (state === 'play' && e.code === 'KeyF') { startFusion(); return; }
+  // Técnica especial: tecla 1 (también Espacio, E o Q). Fusión: tecla 2 (o F).
+  if (state === 'play' && ['Digit1', 'Numpad1', 'Space', 'KeyE', 'KeyQ'].includes(e.code)) { e.preventDefault(); useSpecial(); return; }
+  if (state === 'play' && ['Digit2', 'Numpad2', 'KeyF'].includes(e.code)) { startFusion(); return; }
   if (state === 'paused' && (e.code === 'Escape' || e.code === 'KeyP')) { resumeGame(); return; }
   if (state === 'shrine') { const m = e.code.match(/^(?:Digit|Numpad)([1-3])$/); if (m) { pickBoon(+m[1] - 1); return; } }
   if (state === 'levelup') {
