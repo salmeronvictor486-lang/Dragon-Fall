@@ -236,9 +236,67 @@ function reelCard(c) {
   const d = document.createElement('div'); d.className = 'rc'; d.dataset.r = c.rar;
   d.appendChild(portraitCanvas(c.id)); d.insertAdjacentHTML('beforeend', `<span>${c.name}</span>`); return d;
 }
+/* ---------- «Kamehameha» al abrir cajas ----------
+   Voz sintetizada del propio navegador (no son grabaciones del anime) + carga de energía y explosión hechas con Web Audio.
+   Si el dispositivo tiene voz japonesa se usa esa; si no, castellano/catalán o inglés. */
+const KMH = { ja: ['か', 'め', 'は', 'め', 'はーーーっ！'], es: ['ka', 'me', 'ja', 'me', '¡jaaaaaa!'], en: ['kah', 'meh', 'hah', 'meh', 'haaaaaa!'], cur: null, timers: [], nodes: null };
+const canSpeak = () => 'speechSynthesis' in window && save.opts.voice && save.opts.sfx;
+function pickVoice(pref) { try { const vs = speechSynthesis.getVoices(); for (const p of pref) { const v = vs.find(v => (v.lang || '').toLowerCase().startsWith(p)); if (v) return v; } } catch (e) { } return null; }
+function say(text, o = {}) {
+  if (!canSpeak()) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text); u.lang = o.lang || 'es-ES';
+    try { if (o.voice) { u.voice = o.voice; u.lang = o.voice.lang; } } catch (e) { }
+    u.rate = o.rate || 1; u.pitch = o.pitch || 1; u.volume = 1; speechSynthesis.speak(u);
+  } catch (e) { }
+}
+function unlockSpeech() { if (!canSpeak()) return; try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch (e) { } }
+function kmhCharge(ms) {
+  kmhStop();
+  const ja = pickVoice(['ja']), lang = ja ? 'ja' : LANG === 'en' ? 'en' : 'es', voice = ja || pickVoice(lang === 'en' ? ['en'] : LANG === 'ca' ? ['ca', 'es'] : ['es']);
+  KMH.cur = { voice, lang: lang === 'ja' ? 'ja-JP' : lang === 'en' ? 'en-US' : 'es-ES', syl: KMH[lang] };
+  const step = ms / 4.5;
+  KMH.cur.syl.slice(0, 4).forEach((s, i) => KMH.timers.push(setTimeout(() => say(s, { voice, lang: KMH.cur.lang, rate: .85, pitch: .75 + i * .1 }), i * step)));
+  // zumbido de energía que sube hasta el disparo
+  const a = AU.ctx; if (!a || !save.opts.sfx) return;
+  const t = a.currentTime, d = ms / 1000, o = a.createOscillator(), o2 = a.createOscillator(), f = a.createBiquadFilter(), g = a.createGain(), lfo = a.createOscillator(), lg = a.createGain();
+  o.type = 'sawtooth'; o2.type = 'triangle'; o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(320, t + d); o2.frequency.setValueAtTime(140, t); o2.frequency.exponentialRampToValueAtTime(980, t + d);
+  f.type = 'lowpass'; f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(3200, t + d); f.Q.value = 6;
+  g.gain.setValueAtTime(.001, t); g.gain.exponentialRampToValueAtTime(.16, t + d);
+  lfo.frequency.setValueAtTime(6, t); lfo.frequency.linearRampToValueAtTime(26, t + d); lg.gain.value = .05;
+  lfo.connect(lg); lg.connect(g.gain); o.connect(f); o2.connect(f); f.connect(g); g.connect(AU.master);
+  [o, o2, lfo].forEach(n => { n.start(t); n.stop(t + d + 1.5); });
+  KMH.nodes = { g, stop: [o, o2, lfo] };
+}
+function kmhRelease(rar) {
+  KMH.timers.forEach(clearTimeout); KMH.timers = [];
+  const c = KMH.cur || { lang: 'es-ES', syl: KMH.es };
+  try { speechSynthesis.cancel(); } catch (e) { }
+  say(c.syl[4], { voice: c.voice, lang: c.lang, rate: .8, pitch: 1.15 });
+  const a = AU.ctx; if (!a || !save.opts.sfx) return;
+  if (KMH.nodes) { const t = a.currentTime; KMH.nodes.g.gain.cancelScheduledValues(t); KMH.nodes.g.gain.setValueAtTime(.16, t); KMH.nodes.g.gain.exponentialRampToValueAtTime(.001, t + .25); KMH.nodes = null; }
+  // ¡disparo! ruido + golpe grave + barrido brillante
+  const big = rar === 'L' ? 1.6 : rar === 'E' ? 1.25 : 1;
+  noise(.9 * big, .35, 180); tone(110, .7 * big, 'sine', .4, -80); tone(1400, .5, 'sawtooth', .08, -1100); tone(700, .6 * big, 'square', .05, -500, .05);
+  if (rar === 'L') [784, 988, 1175, 1568, 1976].forEach((fq, i) => tone(fq, .18, 'triangle', .1, 0, .35 + i * .07));
+}
+function kmhStop() {
+  KMH.timers.forEach(clearTimeout); KMH.timers = [];
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) { }
+  if (KMH.nodes && AU.ctx) { const t = AU.ctx.currentTime; KMH.nodes.g.gain.cancelScheduledValues(t); KMH.nodes.g.gain.setValueAtTime(.001, t); KMH.nodes = null; }
+}
+// Al ver al guerrero, grita su técnica especial con la voz del idioma del juego
+function shoutSpecial(c) {
+  const sp = SPECIALS[c.id]; if (!sp) return;
+  const v = pickVoice(LANG === 'en' ? ['en'] : LANG === 'ca' ? ['ca', 'es'] : ['es']);
+  setTimeout(() => say(L(sp.name).replace(/^¡|!$/g, '') + '!', { voice: v, lang: LANG === 'en' ? 'en-US' : LANG === 'ca' ? 'ca-ES' : 'es-ES', rate: 1.05, pitch: 1.05 }), 650);
+}
+try { if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } } catch (e) { }
+
 function openBox(b, pay) {
   if (pay === 'ticket') { if (!(save.tickets[b.id] > 0)) return; save.tickets[b.id]--; }
   else if (pay === 'zeni') { if (save.zeni < b.price) return; save.zeni -= b.price; }
+  unlockSpeech();
   const win = rollBox(b), res = grantChar(win); save.stats.boxes++; trackMis('boxes', 1); persist();
   state = 'gacha'; showScreen('reveal');
   $('#rvTitle').textContent = b.name.toUpperCase(); $('#rvBox').hidden = true; $('#rvSkip').hidden = false;
@@ -251,7 +309,7 @@ function openBox(b, pay) {
   const finish = () => {
     if (done) return; done = true; cancelAnimationFrame(raf);
     track.style.transition = 'none'; track.style.transform = `translateX(${-target}px)`;
-    cards[WIN].classList.add('win'); sfx(win.rar === 'L' ? 'trans' : win.rar === 'E' ? 'ball' : 'lvl'); $('#rvSkip').hidden = true;
+    cards[WIN].classList.add('win'); clearTimeout(chargeT); kmhRelease(win.rar); $('#rvSkip').hidden = true;
     setTimeout(() => showResult(win, res, b, pay), 650);
   };
   const tick = () => {
@@ -262,6 +320,8 @@ function openBox(b, pay) {
   requestAnimationFrame(() => requestAnimationFrame(() => {
     track.style.transition = `transform ${dur}ms cubic-bezier(.06,.72,.1,1)`; track.style.transform = `translateX(${-target}px)`; raf = requestAnimationFrame(tick);
   }));
+  // la carga empieza cuando la ruleta frena: «ka… me… ha… me…» y el «¡HA!» al pararse
+  const chargeMs = Math.min(2400, dur * .45), chargeT = setTimeout(() => { if (!done) kmhCharge(chargeMs); }, dur - chargeMs);
   track.ontransitionend = finish;
   $('#rvSkip').onclick = finish;
   setTimeout(finish, dur + 400);
@@ -269,6 +329,7 @@ function openBox(b, pay) {
 function showResult(c, res, box, pay) {
   state = 'gacha'; showScreen('reveal'); $('#rvSkip').hidden = true;
   if (!box) { $('#rvTitle').textContent = 'COMPRA'; $('#rvTrack').innerHTML = ''; }
+  if (box) shoutSpecial(c);
   const rb = $('#rvBox'); rb.hidden = false; rb.classList.remove('show'); void rb.offsetWidth; rb.classList.add('show'); rb.style.setProperty('--rc', RAR[c.rar].col);
   paintSprite($('#rvCv'), c.id);
   const msg = res.kind === 'new' ? `<div class="new">¡NUEVO GUERRERO!</div>` : res.kind === 'star' ? `<div class="gold" style="font-size:20px;margin-top:6px">Repetido: ${starTxt(res.stars)} (+poder)</div>` : `<div class="gold" style="font-size:20px;margin-top:6px">Ya está al máximo: +${fmtNum(res.z)} zenis</div>`;
@@ -276,8 +337,8 @@ function showResult(c, res, box, pay) {
   const again = box && (pay === 'ticket' ? save.tickets[box.id] > 0 : pay === 'zeni' && save.zeni >= box.price);
   $('#rvBtns').innerHTML = `${again ? `<button class="btn primary" id="rvAgain">OTRA${pay === 'ticket' ? ' GRATIS' : ' · ' + fmtNum(box.price)}</button>` : ''}<button class="btn" id="rvPlay">JUGAR CON ${c.name.toUpperCase()}</button><button class="btn" id="rvBack">VOLVER A LA TIENDA</button>`;
   if (again) $('#rvAgain').onclick = () => openBox(box, pay);
-  $('#rvPlay').onclick = () => { selChar = c.id; save.lastChar = c.id; persist(); go('select'); };
-  $('#rvBack').onclick = () => go('gacha');
+  $('#rvPlay').onclick = () => { kmhStop(); selChar = c.id; save.lastChar = c.id; persist(); go('select'); };
+  $('#rvBack').onclick = () => { kmhStop(); go('gacha'); };
 }
 if (state === 'title') renderTitle();
 </script>

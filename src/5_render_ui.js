@@ -1029,7 +1029,7 @@ function renderDex() {
 /* ---------- Cápsulas ---------- */
 /* ---------- Opciones ---------- */
 function renderOpts() {
-  const L = [['sfx', 'Efectos de sonido'], ['music', 'Música'], ['names', 'Nombre de todos los enemigos'], ['dmg', 'Números de daño'], ['shake', 'Temblor de pantalla'], ['vib', 'Vibración (móvil)']];
+  const L = [['sfx', 'Efectos de sonido'], ['music', 'Música'], ['names', 'Nombre de todos los enemigos'], ['dmg', 'Números de daño'], ['shake', 'Temblor de pantalla'], ['vib', 'Vibración (móvil)'], ['voice', 'Voces al abrir cajas (Kamehameha)']];
   const box = $('#optList'); box.innerHTML = '';
   L.forEach(([k, n]) => {
     const row = document.createElement('div'); row.className = 'opt';
