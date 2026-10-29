@@ -7,7 +7,11 @@ function rainbow(x, x0, y0, x1, y1, a = 1) { const g = x.createLinearGradient(x0
 const PS = '"Press Start 2P", monospace', VT = 'VT323, monospace';
 // Ajusta el tamaño de la letra para que el texto quepa en el ancho dado
 function fitFont(x, t, size, fam, maxW, min = 8) { let s = size; x.font = `${s}px ${fam}`; while (s > min && x.measureText(t).width > maxW) { s--; x.font = `${s}px ${fam}`; } return s; }
-function drawCard(k, fin, sim, scale = 1, t = 0, cv = null) {
+// Estilo de la ilustración: '3d' (guerrero en 3D en plena acción) o 'clasica' (solo el guerrero, el diseño original)
+function cardStyle() { return save.opts && save.opts.cardStyle === 'clasica' ? 'clasica' : '3d'; }
+function setCardStyle(st) { save.opts.cardStyle = st === 'clasica' ? 'clasica' : '3d'; persist(); }
+const CARD_STYLES = [['3d', '3D EN ACCIÓN'], ['clasica', 'CLÁSICA']];
+function drawCard(k, fin, sim, scale = 1, t = 0, cv = null, style = cardStyle()) {
   if (!cv) cv = document.createElement('canvas'); cv.width = Math.round(TC_W * scale); cv.height = Math.round(TC_H * scale);
   const x = cv.getContext('2d'); x.scale(scale, scale); x.imageSmoothingEnabled = false;
   const c = CHAR[k.base], T = CTYPES[cardType(c)], tc = T.col, rar = cardRar(k), sp = SPECIALS[k.base], w = WEAPONS[c.weapon];
@@ -33,7 +37,7 @@ function drawCard(k, fin, sim, scale = 1, t = 0, cv = null) {
   x.textAlign = 'left'; x.font = `20px ${VT}`; x.fillStyle = k.form ? '#ffd23f' : '#9aa6d8';
   x.fillText(k.form ? `${L('TRANSFORMACIÓN')} · ${L('Nv')} ${k.form.lv} · ${L(c.name)}` : `${L('BÁSICO')} · ${L(T.n)}`, 34, 84);
   const [AX, AY, AW, AH] = ART_BOX;
-  drawCardWindow(x, k, fin, t);
+  drawCardWindow(x, k, fin, t, style);
   // franja de datos
   x.font = `18px ${VT}`; x.fillStyle = '#c8d0f0'; x.textAlign = 'center';
   x.fillText(`Nº ${String(k.no).padStart(3, '0')} · ${L(c.saga)}`, TC_W / 2, AY + AH + 16);
@@ -68,8 +72,9 @@ function drawCard(k, fin, sim, scale = 1, t = 0, cv = null) {
 }
 // ventana de la ilustración (lo único que se anima)
 const ART_BOX = [34, 100, TC_W - 68, 300];
-function drawCardWindow(x, k, fin, t) {
+function drawCardWindow(x, k, fin, t, style) {
   const [AX, AY, AW, AH] = ART_BOX;
+  if (style === 'clasica') return drawClassicWindow(x, k, fin, t);
   x.save(); rr(x, AX, AY, AW, AH, 10); x.clip();
   drawCardArt(x, k, AX, AY, AW, AH, t);
   if (fin === 'h' || fin === 'r') { // foil sobre la ilustración
@@ -78,6 +83,29 @@ function drawCardWindow(x, k, fin, t) {
     x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
   }
   if (fin === 'g') { for (let i = 0; i < 40; i++) { const sx = AX + (i * 97 % AW), sy = AY + (i * 53 % AH); x.globalAlpha = .5 + .5 * Math.sin(t * 4 + i); x.fillStyle = i % 3 ? '#fff6b0' : '#ffd23f'; x.fillRect(sx, sy, 3, 3); x.fillRect(sx - 3, sy + 1, 9, 1); x.fillRect(sx + 1, sy - 3, 1, 9); } x.globalAlpha = 1; }
+  x.restore();
+  rr(x, AX, AY, AW, AH, 10); x.lineWidth = 4; x.strokeStyle = fin === 'g' ? '#ffd23f' : fin === 'r' ? '#ffffff' : '#c8d0f0'; x.stroke();
+}
+// Diseño clásico: solo el guerrero sobre rayos de energía, con su aura (en el visor, los rayos giran y el aura late)
+function drawClassicWindow(x, k, fin, t) {
+  const [AX, AY, AW, AH] = ART_BOX, c = CHAR[k.base], tc = CTYPES[cardType(c)].col, sp = SPECIALS[k.base];
+  x.save(); rr(x, AX, AY, AW, AH, 10); x.clip();
+  const bg = x.createLinearGradient(0, AY, 0, AY + AH); bg.addColorStop(0, shade(tc, -.15)); bg.addColorStop(1, shade(tc, -.65)); x.fillStyle = bg; x.fillRect(AX, AY, AW, AH);
+  // rayos de energía
+  x.globalAlpha = .18; x.fillStyle = '#ffffff'; const rot = t * .15;
+  for (let i = 0; i < 18; i++) { const a = i / 18 * TAU + rot; x.beginPath(); x.moveTo(TC_W / 2, AY + AH * .58); x.lineTo(TC_W / 2 + Math.cos(a) * 420, AY + AH * .58 + Math.sin(a) * 420); x.lineTo(TC_W / 2 + Math.cos(a + .09) * 420, AY + AH * .58 + Math.sin(a + .09) * 420); x.fill(); }
+  x.globalAlpha = 1;
+  if (fin === 'h' || fin === 'r') { // foil en el fondo
+    x.globalCompositeOperation = 'overlay'; x.fillStyle = rainbow(x, AX, AY, AX + AW, AY + AH, fin === 'r' ? .8 : .55); x.fillRect(AX, AY, AW, AH);
+    x.globalAlpha = .35; const off = (t * 90) % 80; for (let i = -6; i < 14; i++) { x.fillStyle = i % 2 ? '#ffffff' : 'rgba(255,255,255,0)'; x.beginPath(); x.moveTo(AX + i * 40 + off, AY); x.lineTo(AX + i * 40 + 18 + off, AY); x.lineTo(AX + i * 40 + 18 - 160 + off, AY + AH); x.lineTo(AX + i * 40 - 160 + off, AY + AH); x.fill(); }
+    x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
+  }
+  if (fin === 'g') { for (let i = 0; i < 40; i++) { const sx = AX + (i * 97 % AW), sy = AY + (i * 53 % AH); x.globalAlpha = t ? .5 + .5 * Math.sin(t * 4 + i) : .9; x.fillStyle = i % 3 ? '#fff6b0' : '#ffd23f'; x.fillRect(sx, sy, 3, 3); x.fillRect(sx - 3, sy + 1, 9, 1); x.fillRect(sx + 1, sy - 3, 1, 9); } x.globalAlpha = 1; }
+  // aura y pedestal
+  const pr = 190 * (1 + Math.sin(t * 3) * .06), ac = sp ? sp.col : tc, ag = x.createRadialGradient(TC_W / 2, AY + AH * .62, 10, TC_W / 2, AY + AH * .62, pr); ag.addColorStop(0, ac + 'cc'); ag.addColorStop(1, ac + '00'); x.fillStyle = ag; x.fillRect(AX, AY, AW, AH);
+  x.fillStyle = 'rgba(0,0,0,.35)'; x.beginPath(); x.ellipse(TC_W / 2, AY + AH - 26, 110, 18, 0, 0, TAU); x.fill();
+  const s = getSprite(k.spr, 0, false), sc = Math.max(4, Math.floor(Math.min((AH - 40) / s.height, (AW - 40) / s.width))), bob = Math.round(Math.sin(t * 2.2) * 3);
+  x.imageSmoothingEnabled = false; x.drawImage(s, Math.round(TC_W / 2 - s.width * sc / 2), Math.round(AY + AH - 26 - s.height * sc) + bob, s.width * sc, s.height * sc);
   x.restore();
   rr(x, AX, AY, AW, AH, 10); x.lineWidth = 4; x.strokeStyle = fin === 'g' ? '#ffd23f' : fin === 'r' ? '#ffffff' : '#c8d0f0'; x.stroke();
 }
@@ -91,13 +119,13 @@ function drawCardOverlay(x, fin, sim) {
   }
 }
 // Fotograma animado: la carta estática de base y solo la ventana de la ilustración redibujada
-function drawCardFrame(cv, base, k, fin, sim, scale, t) {
+function drawCardFrame(cv, base, k, fin, sim, scale, t, style = cardStyle()) {
   const x = cv.getContext('2d'), [AX, AY, AW, AH] = ART_BOX;
   if (cv.width !== base.width) { cv.width = base.width; cv.height = base.height; }
   x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1; x.globalCompositeOperation = 'source-over'; x.drawImage(base, 0, 0);
   x.scale(scale, scale); x.imageSmoothingEnabled = false;
   x.save(); x.beginPath(); x.rect(AX - 4, AY - 4, AW + 8, AH + 8); x.clip();
-  drawCardWindow(x, k, fin, t); drawCardOverlay(x, fin, sim); x.restore();
+  drawCardWindow(x, k, fin, t, style); drawCardOverlay(x, fin, sim); x.restore();
   return cv;
 }
 function drawCardBack(sim, scale = 1) {
@@ -115,7 +143,7 @@ function drawCardBack(sim, scale = 1) {
 }
 const cardImgCache = new Map();
 function cardURL(k, fin, sim, small) {
-  const key = k.id + fin + (sim ? 's' : '') + (small ? 't' : '') + LANG;
+  const key = k.id + fin + (sim ? 's' : '') + (small ? 't' : '') + LANG + cardStyle();
   let u = cardImgCache.get(key); if (u) return u;
   u = drawCard(k, fin, sim, small ? .5 : 1).toDataURL('image/png'); cardImgCache.set(key, u); return u;
 }
@@ -141,9 +169,11 @@ function renderCards() {
   if (cardTab === 'album' || cardTab === 'simbook') {
     const sim = cardTab === 'simbook', st = cardStats(sim), sec = document.createElement('div'); sec.className = 'panel shopsec';
     sec.innerHTML = `<div class="sechd"><b class="px gold">${sim ? 'CARPETA DEL SIMULADOR' : 'MI ÁLBUM'}</b><span class="muted">${sim ? 'Cartas de prueba, no oficiales' : 'Cartas'} ${st.own}/${CARD_SET.length} · ${'brillantes'} ${st.shiny}</span></div>
+      <div class="row wrap" style="gap:8px;align-items:center"><span class="muted">Estilo de las cartas:</span>${CARD_STYLES.map(([k, n]) => `<button class="btn small ${cardStyle() === k ? 'on' : ''}" data-st="${k}">${n}</button>`).join('')}</div>
       <div class="row wrap" style="gap:8px">${[['all', 'TODAS'], ['own', 'TENGO'], ['no', 'ME FALTAN']].map(([k, n]) => `<button class="btn small ${cardFilter === k ? 'on' : ''}" data-f="${k}">${n}</button>`).join('')}${sim ? '<button class="btn small" id="cbBack">◀ SIMULADOR</button>' : ''}</div>
       <div class="cgrid"></div>`;
     sec.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { cardFilter = b.dataset.f; sfx('click'); renderCards(); });
+    sec.querySelectorAll('[data-st]').forEach(b => b.onclick = () => { sfx('click'); setCardStyle(b.dataset.st); renderCards(); });
     if (sim) sec.querySelector('#cbBack').onclick = () => { cardTab = 'sim'; renderCards(); };
     body.appendChild(sec);
     const grid = sec.querySelector('.cgrid'), list = CARD_SET.filter(k => { const h = sim ? !!cardBest(k, true) : cardOwned(k); return cardFilter === 'all' || (cardFilter === 'own' ? h : !h); });
@@ -250,6 +280,7 @@ function openCardViewer(k, fin, sim) {
         <b class="px gold">${k.name}</b>
         <div class="muted">${sim ? 'Carta de prueba del simulador (no oficial)' : 'Carta de tu colección'} · Nº ${String(k.no).padStart(3, '0')}</div>
         <div class="row wrap" style="gap:6px">${fins.map(f => `<button class="btn small ${f === fin ? 'on' : ''}" data-fin="${f}">${FINISH[f].name}</button>`).join('')}</div>
+        <div class="row wrap" style="gap:6px">${CARD_STYLES.map(([st, n]) => `<button class="btn small ${st === cardStyle() ? 'on' : ''}" data-st="${st}">${n}</button>`).join('')}</div>
         <button class="btn primary" id="cvDl">⬇ DESCARGAR IMAGEN</button>
         ${cardVideoType() ? '<button class="btn" id="cvVid">🎬 DESCARGAR VÍDEO</button>' : ''}
         <button class="btn small" id="cvX">CERRAR</button>
@@ -260,14 +291,18 @@ function openCardViewer(k, fin, sim) {
   const show = f => { fin = f; tc.className = 'tcard fin-' + f + ' idle'; ov.querySelectorAll('[data-fin]').forEach(b => b.classList.toggle('on', b.dataset.fin === f)); };
   show(fin);
   // la ilustración se mueve: el guerrero gira, la técnica late y las chispas vuelan (~30 fps)
+  let style = cardStyle(); const style0 = style;
   const t0 = performance.now(); let last = 0, base = null, bfin = '';
   const loop = now => {
     if (!ov.isConnected) return; requestAnimationFrame(loop); if (now - last < 32) return; last = now;
-    if (bfin !== fin) { base = drawCard(k, fin, sim, 1.5); bfin = fin; }
-    drawCardFrame(cv, base, k, fin, sim, 1.5, (now - t0) / 1000);
+    if (bfin !== fin + style) { base = drawCard(k, fin, sim, 1.5, 0, null, style); bfin = fin + style; }
+    drawCardFrame(cv, base, k, fin, sim, 1.5, (now - t0) / 1000, style);
   };
   requestAnimationFrame(loop);
   ov.querySelectorAll('[data-fin]').forEach(b => b.onclick = () => { sfx('click'); show(b.dataset.fin); });
+  // estilo de la ilustración: se recuerda para el álbum y las próximas cartas
+  ov.querySelectorAll('[data-st]').forEach(b => b.onclick = () => { sfx('click'); style = b.dataset.st; setCardStyle(style); ov.querySelectorAll('[data-st]').forEach(x => x.classList.toggle('on', x === b)); });
+  const close = () => { ov.remove(); if (style !== style0 && state === 'cards') renderCards(); };
   const move = e => {
     const r = tc.getBoundingClientRect(), px = clamp((e.clientX - r.left) / r.width, 0, 1), py = clamp((e.clientY - r.top) / r.height, 0, 1);
     tc.classList.remove('idle');
@@ -276,15 +311,15 @@ function openCardViewer(k, fin, sim) {
   };
   tc.addEventListener('pointermove', move); tc.addEventListener('pointerdown', move);
   tc.addEventListener('pointerleave', () => { tc.classList.add('idle'); tc.style.removeProperty('--rx'); tc.style.removeProperty('--ry'); });
-  ov.querySelector('#cvDl').onclick = () => downloadCard(k, fin, sim);
-  const vb = ov.querySelector('#cvVid'); if (vb) vb.onclick = () => downloadCardVideo(k, fin, sim, vb);
-  ov.querySelector('#cvX').onclick = () => ov.remove();
-  ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  ov.querySelector('#cvDl').onclick = () => downloadCard(k, fin, sim, style);
+  const vb = ov.querySelector('#cvVid'); if (vb) vb.onclick = () => downloadCardVideo(k, fin, sim, vb, style);
+  ov.querySelector('#cvX').onclick = close; ov.close = close;
+  ov.onclick = e => { if (e.target === ov) close(); };
   sfx('ball');
 }
-function downloadCard(k, fin, sim) {
-  const cv = drawCard(k, fin, sim, 2);
-  const name = `dragon-fall-${k.id}-${FINISH[fin].name.toLowerCase().replace(/[^a-z]/g, '')}${sim ? '-simulador' : ''}.png`;
+function cardFileName(k, fin, sim, style, ext) { return `dragon-fall-${k.id}-${FINISH[fin].name.toLowerCase().replace(/[^a-z]/g, '')}${style === 'clasica' ? '-clasica' : '-3d'}${sim ? '-simulador' : ''}.${ext}`; }
+function downloadCard(k, fin, sim, style = cardStyle()) {
+  const cv = drawCard(k, fin, sim, 2, 0, null, style), name = cardFileName(k, fin, sim, style, 'png');
   cv.toBlob(b => { if (!b) return; const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); sfx('pick'); }, 'image/png');
 }
 // Vídeo animado de la carta (MP4 si el navegador lo permite, si no WebM)
@@ -292,9 +327,9 @@ function cardVideoType() {
   if (typeof MediaRecorder === 'undefined' || !HTMLCanvasElement.prototype.captureStream) return '';
   return ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m)) || '';
 }
-function downloadCardVideo(k, fin, sim, btn) {
+function downloadCardVideo(k, fin, sim, btn, style = cardStyle()) {
   const type = cardVideoType(); if (!type || btn.disabled) return;
-  const cv = document.createElement('canvas'), SECS = 5, FPS = 30, base = drawCard(k, fin, sim, 1.4); drawCardFrame(cv, base, k, fin, sim, 1.4, 0);
+  const cv = document.createElement('canvas'), SECS = 5, FPS = 30, base = drawCard(k, fin, sim, 1.4, 0, null, style); drawCardFrame(cv, base, k, fin, sim, 1.4, 0, style);
   const rec = new MediaRecorder(cv.captureStream(FPS), { mimeType: type, videoBitsPerSecond: 6e6 }), chunks = [];
   rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
   const label = btn.textContent; btn.disabled = true;
@@ -302,12 +337,12 @@ function downloadCardVideo(k, fin, sim, btn) {
     btn.disabled = false; btn.textContent = label; if (!chunks.length) return;
     const ext = type.includes('mp4') ? 'mp4' : 'webm', a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob(chunks, { type: type.split(';')[0] }));
-    a.download = `dragon-fall-${k.id}-${FINISH[fin].name.toLowerCase().replace(/[^a-z]/g, '')}${sim ? '-simulador' : ''}.${ext}`;
+    a.download = cardFileName(k, fin, sim, style, ext);
     document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); sfx('pick');
   };
   rec.start(250); const t0 = performance.now();
-  const step = () => { const s = (performance.now() - t0) / 1000; if (s >= SECS) { rec.stop(); return; } drawCardFrame(cv, base, k, fin, sim, 1.4, s); btn.textContent = `${L('GRABANDO')}… ${Math.ceil(SECS - s)} s`; setTimeout(step, 1000 / FPS); };
+  const step = () => { const s = (performance.now() - t0) / 1000; if (s >= SECS) { rec.stop(); return; } drawCardFrame(cv, base, k, fin, sim, 1.4, s, style); btn.textContent = `${L('GRABANDO')}… ${Math.ceil(SECS - s)} s`; setTimeout(step, 1000 / FPS); };
   step();
 }
-addEventListener('keydown', e => { if (e.code === 'Escape') { const v = $('#cardView'); if (v) { v.remove(); e.stopPropagation(); } } }, true);
+addEventListener('keydown', e => { if (e.code === 'Escape') { const v = $('#cardView'); if (v) { (v.close || v.remove).call(v); e.stopPropagation(); } } }, true);
 </script>

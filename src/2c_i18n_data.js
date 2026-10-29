@@ -658,6 +658,7 @@ const TR = {
   'DESCARGAR IMAGEN': ['DESCARREGA LA IMATGE', 'DOWNLOAD IMAGE'],
   'DESCARGAR VÍDEO': ['DESCARREGA EL VÍDEO', 'DOWNLOAD VIDEO'],
   'GRABANDO': ['GRAVANT', 'RECORDING'],
+  'Estilo de las cartas:': ['Estil de les cartes:', 'Card style:'], '3D EN ACCIÓN': ['3D EN ACCIÓ', '3D IN ACTION'], 'CLÁSICA': ['CLÀSSICA', 'CLASSIC'],
   'Mueve el ratón o el dedo por la carta para ver el brillo.': ['Mou el ratolí o el dit per la carta per veure la brillantor.', 'Move your mouse or finger over the card to see it shine.'],
   'PV': ['PV', 'HP'], 'TRANSFORMACIÓN': ['TRANSFORMACIÓ', 'TRANSFORMATION'], 'BÁSICO': ['BÀSIC', 'BASIC'],
   'Saiyan': ['Saiyan', 'Saiyan'], 'Terrícola': ['Terrícola', 'Earthling'], 'Majin': ['Majin', 'Majin'], 'Imperio': ['Imperi', 'Empire'], 'Divino': ['Diví', 'Divine'], 'Otro universo': ['Altre univers', 'Other universe'],

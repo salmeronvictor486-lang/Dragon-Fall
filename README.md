@@ -123,6 +123,7 @@ La **tienda** también tiene regalo diario con racha, ofertas pensadas **solo pa
 
 Cada guerrero y cada transformación que consigues tiene su carta: **78 en total**. En cada una, el guerrero aparece **en 3D** lanzando su técnica contra un enemigo, en el escenario de su saga.
 
+- 🎨 **Dos estilos:** **3D en acción** (el guerrero lanzando su técnica) o **Clásica** (solo el guerrero, con su aura). Se cambia en el álbum o en la propia carta.
 - 🌈 **Cuatro acabados:** Normal, Holo, Oro y Arcoíris, con brillo que se mueve al inclinar la carta con el ratón o el dedo.
 - 🔢 Cada carta lleva **tu nombre y un número de serie único**.
 - ⬇️ **Descárgalas** en imagen (PNG) o en **vídeo animado**.
