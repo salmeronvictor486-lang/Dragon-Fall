@@ -656,6 +656,8 @@ const TR = {
   'Carta de tu colección': ['Carta de la teva col·lecció', 'Card from your collection'],
   'Nº #': ['Núm. #', 'No. #'],
   'DESCARGAR IMAGEN': ['DESCARREGA LA IMATGE', 'DOWNLOAD IMAGE'],
+  'DESCARGAR VÍDEO': ['DESCARREGA EL VÍDEO', 'DOWNLOAD VIDEO'],
+  'GRABANDO': ['GRAVANT', 'RECORDING'],
   'Mueve el ratón o el dedo por la carta para ver el brillo.': ['Mou el ratolí o el dit per la carta per veure la brillantor.', 'Move your mouse or finger over the card to see it shine.'],
   'PV': ['PV', 'HP'], 'TRANSFORMACIÓN': ['TRANSFORMACIÓ', 'TRANSFORMATION'], 'BÁSICO': ['BÀSIC', 'BASIC'],
   'Saiyan': ['Saiyan', 'Saiyan'], 'Terrícola': ['Terrícola', 'Earthling'], 'Majin': ['Majin', 'Majin'], 'Imperio': ['Imperi', 'Empire'], 'Divino': ['Diví', 'Divine'], 'Otro universo': ['Altre univers', 'Other universe'],
