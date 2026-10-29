@@ -1,70 +1,200 @@
-# Dragon Fall
+<div align="center">
 
-Survivor en *pixel art* ambientado en Dragon Ball, al estilo de PokéSurvivor / Vampire Survivors. Se juega en el navegador, en ordenador y en móvil, sin instalar nada.
+<a href="https://victorsalmeron.dev/dragon-fall/"><img src="docs/media/portada.png" alt="Dragon Fall: Goku y Vegeta en Super Saiyan chocando sus rayos bajo el logo del juego" width="100%"></a>
 
-**▶ Jugar:** https://victorsalmeron.dev/dragon-fall/
+# 🐉 DRAGON FALL
 
-El juego publicado es un solo archivo, **`index.html`**, con el código **protegido** (minificado y ofuscado). El código legible está en **`src/`** (HTML + CSS + JavaScript con `<canvas>`). Los sprites se dibujan desde código: no hay imágenes externas.
+### Un *survivor* de Dragon Ball en *pixel art*.<br>Gratis, en el navegador y en el móvil. Sin descargas ni registro.
 
-## Cómo se juega
+<a href="https://victorsalmeron.dev/dragon-fall/"><img src="docs/media/jugar.svg" alt="▶ Jugar ahora" width="300"></a>
 
-- **Moverse:** WASD o flechas. En móvil, arrastra el dedo por la pantalla.
-- **Técnica especial:** cada guerrero tiene la suya (Final Flash, Taiyoken, Hakai, Parar el tiempo…). Se lanza con la **tecla 1** (también Espacio, E o Q) o con el botón redondo de abajo a la derecha, y luego tiene que recargarse.
-- Los ataques se lanzan solos y apuntan al enemigo más cercano. Recoge los **orbes de ki** que sueltan los enemigos para subir de nivel.
-- En cada nivel eliges una mejora: un ataque nuevo, subir uno que ya tienes o una pasiva (máximo 6 de cada).
-- **Evoluciones:** un ataque al nivel 7 más su pasiva se convierte en su técnica definitiva (por ejemplo, Kamehameha + Kaio-ken → Kamehameha x10).
-- **Transformaciones:** algunos guerreros se transforman al llegar a ciertos niveles (Goku: SSJ → SSJ3 → SSJ Blue → Ultra Instinto).
-- Las **7 Bolas de Dragón** caen de élites y jefes. Al reunirlas aparece **Shenron** y te concede un deseo.
-- Cada saga dura 10 minutos: hay 3 jefes intermedios y un jefe final.
-- **Compañero y fusiones:** antes de jugar puedes elegir un segundo guerrero que te sigue, dispara solo y usa su técnica especial. Goku + Vegeta, Goten + Trunks y Kale + Caulifla llenan un medidor y se **fusionan** durante 25 s (Gogeta, Gotenks, Kefla) con la **tecla 2** (o F) o el botón de fusión.
-- **Mando:** stick o cruceta para moverse, A = técnica especial, X/Y = fusión, Start = pausa. En los menús, la cruceta mueve el foco, A pulsa y B vuelve atrás.
-- **Pausa:** Esc, P o el botón `II`. Las presentaciones de jefe y las transformaciones se saltan con Espacio, Enter o tocando la pantalla.
-- Las flechas en el borde de la pantalla señalan Bolas de Dragón, cápsulas y jefes que están fuera de vista.
+![Gratis](https://img.shields.io/badge/precio-GRATIS-ff9a1c?style=for-the-badge)
+![Plataformas](https://img.shields.io/badge/PC%20%C2%B7%20m%C3%B3vil%20%C2%B7%20tablet-jugable-5fd0ff?style=for-the-badge)
+![PWA](https://img.shields.io/badge/PWA-instalable%20y%20offline-59d66b?style=for-the-badge)
+![Idiomas](https://img.shields.io/badge/idiomas-ES%20%C2%B7%20CA%20%C2%B7%20EN-b06bff?style=for-the-badge)
 
-## Contenido
+**54 guerreros · 28 transformaciones · 5 sagas · 21 técnicas con evolución · 78 cartas coleccionables**
 
-- **54 guerreros de Dragon Ball Z y Super**, con rarezas Común, Raro, Épico y Legendario: de Krilin y Chaoz a Vegito, Gogeta, Beerus, Whis o Jiren. Cada uno tiene su ataque inicial, su **técnica especial propia** y muchos se transforman.
-- **Tienda** (todo con zenis del juego, nunca con dinero real):
-  - **Hoy:** regalo diario con racha de 7 días, ofertas **solo para ti** (distintas para cada jugador y cada día, según los guerreros y cajas que te faltan) y una **tienda diaria** de personajes y cajas con descuento. Se renueva a medianoche.
-  - **Cajas:** 9 cajas temáticas (Normal, Dorada, Guerreros Z, Imperio, Patrulla Roja, Majin, Saiyan, Fusión y Divina) con su lista de guerreros y probabilidades. Haciendo clic en una caja (o en **Ver contenido**) se ve todo lo que puede tocar, con el porcentaje de cada guerrero y cuáles tienes ya. Se abren con una ruleta estilo Counter-Strike: mientras frena se carga un «Ka… me… ha… me…» y al pararse suena «¡HA!» con una explosión. Después, el guerrero que te toca grita su técnica especial. Las voces las genera el propio navegador (no son grabaciones del anime) y se pueden quitar en Opciones. Los repetidos ganan estrellas (+6% de daño y +5% de vida, hasta 5★).
-- **5 sagas:** Saiyan, Namek, Juegos de Cell, Majin Buu y Torneo del Poder. Cada una tiene sus enemigos, sus élites, sus jefes y su propia música.
-- **Dificultades:** Normal, Difícil (x1,6 zenis) y Pesadilla (x2,5 zenis). Se desbloquean saga a saga y la primera victoria da premio.
-- **∞ Supervivencia:** sin final. Los enemigos no paran de crecer y los jefes vuelven una y otra vez. Cuenta puntos.
-- **Objetos por el mapa (inspirados en Megabonk):**
-  - **Cajas y jarrones** que se rompen al tocarlos o al atacarlos y sueltan comida, zenis o experiencia.
-  - **Comida** que cura un 15% de vida. También la sueltan los enemigos (sobre todo las élites).
-  - **Fuentes curativas**: quedarse dentro cura hasta que se secan. Si vas mal de vida, una flecha te señala la más cercana.
-  - **Altares de ki**: quédate dentro unos segundos para cargarlos y elige una bendición para la partida, con rareza (común, raro, épico o legendario).
-  - **Cofres** que se abren con los zenis de la partida; cada uno cuesta más que el anterior.
-  - **Estatuas de Babidi**: al tocarlas activas una maldición. Hay más enemigos y más duros, pero ganas más experiencia y zenis.
-  - Además, cada vez que subes de nivel recuperas un 6% de vida.
-- **Eventos en partida:** horda sorpresa, cápsula de suministros que hay que defender, Torneo de Artes Marciales (3 luchadores sin salir del ring) y Luna llena con un Gran Mono (los Saiyan ganan poder).
-- **Misiones diarias** (3 al día, distintas para cada jugador), **25 logros** con zenis, cajas y **títulos**, **nivel de cuenta** con premios y un **perfil** con estadísticas, entre ellas las **horas jugadas** (cuentan con el juego abierto: siempre en partida y, en los menús, mientras haya actividad).
-- **Ranking semanal** (Supervivencia y bajas), para jugadores con cuenta. Se reinicia cada lunes.
-- **Idiomas:** castellano, català e English (se elige en Opciones; la primera vez usa el idioma del navegador).
-- **Instalable (PWA):** se puede añadir a la pantalla de inicio y funciona sin conexión.
-- **21 técnicas, cada una con su evolución, y 11 pasivas.** Entre ellas el Hakai de Beerus, la Espada de Ki y el Impacto de Poder de Jiren.
-- **Cartas coleccionables (78):** cada guerrero que consigues tiene su carta, y cada transformación que alcanzas en partida, otra (por ejemplo, Broly y Broly SSJ Legendario).
-  - Cuatro acabados: Normal, Holo, Oro y Arcoíris, con brillo animado e inclinación 3D al mover el ratón o el dedo.
-  - Ilustración 3D: el guerrero aparece como modelo de vóxeles generado a partir de su sprite, lanzando su técnica especial contra un enemigo en el escenario de su saga. En el visor la escena está animada.
-  - Cada carta lleva tu nombre y un número de serie propio, y se puede **descargar como PNG** o como **vídeo animado** (MP4, o WebM si el navegador no graba MP4).
-  - **Tienda de sobres** con zenis, que da versiones brillantes de tus cartas.
-  - **Simulador** gratis e ilimitado con todas las cartas. Se guardan en otra carpeta y llevan la marca «SIMULADOR · NO OFICIAL».
-- **Templo de Kami:** mejoras permanentes que se compran con zenis.
-- **Dragonpedia:** todos los guerreros, enemigos y jefes con nombre, dibujo y descripción, aunque no los tengas. Indica cuáles has conseguido y cómo conseguir los que te faltan.
-- **Guardar la partida, de dos formas:**
-  - **Con código** (siempre disponible): un código corto (`DF2.…`) con todo tu progreso. Se copia y se pega en otro navegador. Los códigos antiguos `DF1.…` siguen funcionando.
-  - **Con correo y contraseña** (o Google): el progreso se guarda solo en la nube. Al crear la cuenta eliges con qué empezar: el progreso de este navegador, **tu código** (si jugaste en versiones anteriores u otro dispositivo) o de cero. Para activarlo, sigue [FIREBASE.md](FIREBASE.md).
+</div>
 
-## Dónde está publicado
+---
 
-El juego se publica en la web personal (repo `salmeronvictor486-lang.github.io`, carpeta `dragon-fall/`): https://victorsalmeron.dev/dragon-fall/. Al cambiar el juego aquí, hay que copiar `index.html` a esa carpeta.
+<div align="center">
 
-También puedes abrir `index.html` directamente con doble clic.
+<img src="docs/media/partida.webp" alt="Partida: Goku se transforma en Super Saiyan y lanza un Kamehameha contra una horda de Saibaman con Raditz" width="760">
 
-## Cómo se construye
+*Goku se transforma en Super Saiyan en plena horda y barre la pantalla con su Kamehameha.*
 
-Se edita el código de `src/` y se genera el archivo final:
+</div>
+
+## 💥 Aguanta. Sube de nivel. Transfórmate.
+
+Llegan los Saibaman. Luego los soldados de Freezer, los Cell Jr., los esbirros de Babidi y los guerreros de los otros universos. **Oleadas enormes de enemigos**, y tú solo tienes que moverte: tus ataques salen solos.
+
+Recoge ki, sube de nivel y elige mejoras hasta montar tu combinación definitiva. Junta un ataque al máximo con su pasiva para **evolucionarlo** (Kamehameha + Kaio-ken = **Kamehameha x10**). Llega al nivel justo y **transfórmate**: Goku pasa de Super Saiyan a SSJ3, SSJ Blue y **Ultra Instinto**.
+
+Reúne las **7 Bolas de Dragón** y Shenron te concederá un deseo. Y si el jefe final se te resiste, pulsa **1** y suelta tu técnica especial.
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### ⚡ Cada guerrero, su técnica
+**54 técnicas especiales distintas**: el Final Flash de Vegeta, el Taiyoken de Krilin, la Bola de la Muerte de Freezer, el Hakai de Beerus, el «¡Conviértete en caramelo!» de Buu o el «¡Soy el campeón!» de Mr. Satan.
+
+</td>
+<td width="50%" valign="top">
+
+### 🤝 Fusiones
+Lleva un **compañero** que lucha a tu lado. Si es la pareja correcta, llena el medidor y pulsa **2**: **Gogeta**, **Gotenks** o **Kefla** durante 25 segundos.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### 🔥 Dificultad a tu medida
+**Normal, Difícil y Pesadilla**, con más zenis cuanto más duro. Y para los valientes, **∞ Supervivencia**: sin final, con jefes que vuelven una y otra vez.
+
+</td>
+<td valign="top">
+
+### 🎲 Partidas que nunca se repiten
+Hordas sorpresa, cápsulas que defender, un **Torneo de Artes Marciales** en mitad del mapa y la **Luna llena**, con un Gran Mono suelto y más poder para los Saiyan.
+
+</td>
+</tr>
+</table>
+
+## 🧬 54 guerreros de Dragon Ball Z y Super
+
+<div align="center">
+<img src="docs/media/guerreros.png" alt="Los 54 guerreros del juego en 3D" width="100%">
+</div>
+
+De **Krilin y Chaoz** a **Vegito, Gogeta, Beerus, Whis o Jiren**. Cada uno tiene su ataque inicial, su técnica especial y sus estadísticas, y muchos se transforman durante la partida.
+
+| Rareza | Guerreros | Ejemplos |
+|:--|:--:|:--|
+| 🟡 **Legendario** | 7 | Broly, Vegito, Gogeta, Beerus, Jiren |
+| 🟣 **Épico** | 21 | Goku, Vegeta, Freezer, Cell, Majin Buu, Hit |
+| 🔵 **Raro** | 15 | Trunks, Ten Shin Han, Androide 17, Cabba |
+| ⚪ **Común** | 11 | Krilin, Yamcha, Videl, Mr. Satán |
+
+## 🌍 5 sagas, 20 jefes
+
+| Saga | Escenario | Jefe final |
+|:--|:--|:--|
+| 🪨 **Saga Saiyan** | Páramo rocoso | Vegeta Ozaru |
+| 🟢 **Saga de Namek** | Planeta Namek | Freezer (forma final) |
+| 🏟️ **Juegos de Cell** | Ring de Cell | Cell Perfecto |
+| 🩷 **Saga de Majin Buu** | Planeta Supremo | Kid Buu |
+| 🌌 **Torneo del Poder** | Mundo del Vacío | Jiren |
+
+Cada saga dura 10 minutos, tiene su música y sus enemigos, 3 jefes intermedios y un jefe final.
+
+## 🗺️ Un mapa lleno de secretos
+
+<div align="center">
+<img src="docs/media/oleada.jpg" alt="Oleada de enemigos en Namek con una fuente curativa" width="49%"> <img src="docs/media/altar.jpg" alt="Altar de ki: elige una bendición" width="49%">
+</div>
+
+- 📦 **Cajas y jarrones** que se rompen y sueltan comida, zenis o experiencia.
+- 🍖 **Comida** que cura, y **fuentes curativas**: cuando vas mal de vida, una flecha te señala la más cercana.
+- ✨ **Altares de ki**: cárgalos y elige una bendición para la partida, de común a legendaria.
+- 💰 **Cofres** que se abren con los zenis que ganas.
+- 😈 **Estatuas de Babidi**: actívalas si te atreves. Más enemigos y más duros, pero más recompensa.
+
+## 🎰 Cajas con ruleta
+
+<div align="center">
+<img src="docs/media/cajas.webp" alt="Apertura de la Caja Divina: la ruleta frena y toca Jiren, legendario" width="720">
+</div>
+
+**9 cajas temáticas** (Guerreros Z, Imperio, Patrulla Roja, Majin, Saiyan, Fusión, Divina…). Ábrelas con una ruleta estilo Counter-Strike: mientras frena se carga un **«Ka… me… ha… me…»** y al pararse suena **«¡HA!»**. Haz clic en una caja para ver todo lo que puede tocar y con qué probabilidad.
+
+La **tienda** también tiene regalo diario con racha, ofertas pensadas **solo para ti** y descuentos que cambian cada día. Todo con zenis del juego: **nunca con dinero real**.
+
+## 🃏 Cartas coleccionables
+
+<div align="center">
+<img src="docs/media/cartas.png" alt="Cinco cartas en abanico: Vegeta, Piccolo, Goku, Freezer y Broly" width="100%">
+</div>
+
+Cada guerrero y cada transformación que consigues tiene su carta: **78 en total**. En cada una, el guerrero aparece **en 3D** lanzando su técnica contra un enemigo, en el escenario de su saga.
+
+- 🌈 **Cuatro acabados:** Normal, Holo, Oro y Arcoíris, con brillo que se mueve al inclinar la carta con el ratón o el dedo.
+- 🔢 Cada carta lleva **tu nombre y un número de serie único**.
+- ⬇️ **Descárgalas** en imagen (PNG) o en **vídeo animado**.
+- 🛍️ **Sobres** que se pagan con zenis, y un **simulador gratis** para abrir todos los que quieras.
+
+<div align="center">
+<img src="docs/media/sobres.webp" alt="Apertura de un Sobre Leyenda y carta de Goku animada en el visor" width="720">
+</div>
+
+## 🏆 Siempre hay algo que hacer
+
+- 📋 **3 misiones diarias**, distintas para cada jugador.
+- 🎖️ **30 logros** con premios y **títulos** para presumir.
+- ⭐ **Nivel de cuenta** con recompensas y un **perfil** con tus estadísticas y tus **horas jugadas**.
+- 🥇 **Ranking semanal** de Supervivencia y de bajas. Se reinicia cada lunes.
+- 🏛️ **Templo de Kami**: mejoras permanentes para tu guerrero.
+- 📖 **Dragonpedia** con todos los guerreros, enemigos y jefes, y cómo conseguir los que te faltan.
+
+<div align="center">
+<img src="docs/media/menu.jpg" alt="Menú principal" width="49%"> <img src="docs/media/dragonpedia.jpg" alt="Dragonpedia" width="49%">
+<img src="docs/media/mejoras.jpg" alt="Elección de mejoras al subir de nivel" width="49%">
+</div>
+
+## 📱 En el bolsillo
+
+<div align="center">
+<img src="docs/media/movil.jpg" alt="El juego en un móvil: menú, partida y álbum de cartas" width="760">
+</div>
+
+Se juega igual de bien en el móvil: arrastra el dedo para moverte y toca el botón redondo para lanzar la técnica especial. **Añádelo a la pantalla de inicio** y funciona como una app, incluso **sin conexión**.
+
+## 🎮 Controles
+
+| Acción | ⌨️ Teclado | 📱 Móvil | 🎮 Mando |
+|:--|:--|:--|:--|
+| Moverse | WASD / flechas | Arrastrar el dedo | Stick o cruceta |
+| Técnica especial | **1** (o Espacio, E, Q) | Botón redondo | A |
+| Fusión | **2** (o F) | Botón de fusión | X / Y |
+| Pausa | Esc / P | Botón `II` | Start |
+
+Los ataques normales se lanzan solos contra el enemigo más cercano.
+
+## 💾 Tu progreso, a salvo
+
+- **Con correo y contraseña (o Google):** se guarda solo en la nube y lo recuperas en cualquier dispositivo.
+- **Con código:** un código corto con todo tu progreso. Lo copias y lo pegas en otro navegador.
+
+<div align="center">
+
+---
+
+### ¿A qué esperas? Los Saibaman ya están aquí.
+
+<a href="https://victorsalmeron.dev/dragon-fall/"><img src="docs/media/jugar.svg" alt="▶ Jugar ahora" width="300"></a>
+
+**[victorsalmeron.dev/dragon-fall](https://victorsalmeron.dev/dragon-fall/)**
+
+---
+
+</div>
+
+<details>
+<summary><b>🛠️ Para desarrolladores: cómo está hecho</b></summary>
+
+<br>
+
+Todo el juego cabe en un solo archivo HTML (HTML, CSS y JavaScript con `<canvas>`). No hay imágenes externas: los sprites, los escenarios, los modelos 3D de las cartas, la música y las voces se generan por código.
+
+- **Código legible:** `src/`. **Juego publicado:** `index.html`, protegido (minificado y ofuscado).
+- **Traducciones:** `src/2c_i18n_data.js` (cada texto en castellano con su versión en català y English).
+- **Cuentas y ranking:** Firebase (Auth y Firestore). Para activarlo, sigue [FIREBASE.md](FIREBASE.md); las reglas están en `firestore.rules`.
+- **Imágenes de este README:** `docs/media/`. Son capturas y grabaciones del propio juego.
 
 ```bash
 npm install
@@ -72,12 +202,20 @@ npm run build   # index.html protegido (el que se publica)
 npm run dev     # dev.html legible, para probar cambios
 ```
 
-`npm run build` genera también `manifest.webmanifest` y `sw.js` (para instalar el juego y jugar sin conexión). Para publicar, copia a la carpeta `dragon-fall/` de la web: `index.html`, `manifest.webmanifest`, `sw.js` y la carpeta `icons/`.
+`npm run build` genera también `manifest.webmanifest` y `sw.js` (instalación y modo sin conexión).
 
-Las traducciones están en `src/2c_i18n_data.js`: cada texto en castellano con su versión en català y en English.
+**Publicar:** copia `index.html`, `manifest.webmanifest`, `sw.js` y la carpeta `icons/` a la carpeta `dragon-fall/` de la web (repo `salmeronvictor486-lang.github.io`). También se puede abrir `index.html` con doble clic.
 
-La protección junta todo el JavaScript en un bloque cerrado (desde la consola del navegador no se puede tocar la partida ni los zenis) y lo ofusca para que no se pueda copiar fácilmente. Para que nadie vea el código legible de `src/`, **este repositorio debe ser privado**.
+**Protección:** todo el JavaScript va en un bloque cerrado (desde la consola del navegador no se puede tocar la partida ni los zenis) y está ofuscado. Para que nadie vea el código de `src/`, **este repositorio debe ser privado**.
 
-## Aviso
+</details>
 
-Fan game sin ánimo de lucro: no tiene anuncios, ni pagos, ni donaciones a cambio de ventajas, y así debe seguir para no tener problemas con los dueños de Dragon Ball. Dragon Ball © Bird Studio / Shueisha / Toei Animation. Este proyecto no está afiliado con ellos.
+## ⚠️ Aviso
+
+Fan game **sin ánimo de lucro**: no tiene anuncios, ni pagos, ni donaciones a cambio de ventajas, y así debe seguir para no tener problemas con los dueños de Dragon Ball. Dragon Ball © Bird Studio / Shueisha / Toei Animation. Este proyecto no está afiliado con ellos. Las voces las genera el navegador; no son grabaciones del anime.
+
+<div align="center">
+
+Hecho con ki por **[Víctor Salmerón Gavilán](https://victorsalmeron.dev)** 🐉
+
+</div>
