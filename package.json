@@ -1,0 +1,12 @@
+{
+  "name": "dragon-fall",
+  "private": true,
+  "description": "Dragon Fall: survivor de Dragon Ball en pixel art",
+  "scripts": {
+    "build": "node tools/build.js",
+    "dev": "node tools/build.js --dev"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "4.1.1"
+  }
+}
