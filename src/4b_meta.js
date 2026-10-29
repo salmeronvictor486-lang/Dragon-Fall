@@ -179,7 +179,7 @@ const TITLES = {
   novato: 'Aprendiz de Kame', guerrero_z: 'Guerrero Z', elite: 'Élite Saiyan', ssgod: 'Super Saiyan Dios', angel: 'Ángel del Universo 7',
   exterminador: 'Exterminador', calamidad: 'Calamidad galáctica', discipulo: 'Discípulo constante', heroe: 'Héroe del multiverso',
   leyenda: 'Leyenda de Pesadilla', cazadioses: 'Cazador de dioses', capsulas: 'Maestro de las cápsulas', fusionado: 'Fusión perfecta',
-  inmortal: 'Inmortal', millonario: 'Millonario', explorador: 'Explorador curioso', deseo: 'Amigo de Shenron',
+  inmortal: 'Inmortal', devoto: 'Devoto del ki', saqueador: 'Saqueador', millonario: 'Millonario', explorador: 'Explorador curioso', deseo: 'Amigo de Shenron',
 };
 const ACHIEVEMENTS = [
   { id: 'k1', name: 'Primeros pasos', desc: 'Derrota a 1.000 enemigos', v: () => save.kills, g: 1000, rw: { z: 500 } },
@@ -206,6 +206,8 @@ const ACHIEVEMENTS = [
   { id: 'a1', name: 'Veterano', desc: 'Llega al nivel de cuenta 10', v: () => save.acc.lvl, g: 10, rw: { t: 'saiyan' } },
   { id: 'zn', name: 'Millonario', desc: 'Gana 100.000 zenis en partidas', v: () => save.stats.zeniRun, g: 100000, rw: { title: 'millonario' } },
   { id: 'dm', name: 'Constancia', desc: 'Completa 30 misiones diarias', v: () => save.stats.daily, g: 30, rw: { z: 2000, t: 'g' } },
+  { id: 'sr', name: 'Devoto del ki', desc: 'Activa 25 altares de ki', v: () => save.stats.shrines, g: 25, rw: { z: 1500, title: 'devoto' } },
+  { id: 'ch', name: 'Saqueador', desc: 'Abre 50 cofres del mapa', v: () => save.stats.chests, g: 50, rw: { z: 2000, title: 'saqueador' } },
   { id: 'eg', name: 'Curioso', desc: 'Encuentra el secreto de la tienda', v: () => save.eggWasd ? 1 : 0, g: 1, rw: { title: 'explorador' }, secret: 1 },
 ];
 // Plantillas de misiones diarias. max = cuenta el mejor valor de una sola partida.
@@ -222,6 +224,9 @@ const MISSIONS = [
   { k: 'events', txt: n => n > 1 ? `Supera ${n} eventos de partida` : 'Supera un evento de partida', g: [1, 2], z: [300, 500] },
   { k: 'fusions', txt: () => 'Fusiónate con tu compañero', g: [1], z: [450], need: () => FUSIONS.some(f => isUnlocked(CHAR[f.a]) && isUnlocked(CHAR[f.b])) },
   { k: 'zeniRun', txt: n => `Consigue ${fmtNum(n)} zenis en partidas`, g: [400, 900], z: [250, 450] },
+  { k: 'shrines', txt: n => `Activa ${n} altares de ki`, g: [2, 4], z: [300, 500] },
+  { k: 'chests', txt: n => `Abre ${n} cofres del mapa`, g: [2, 4], z: [300, 500] },
+  { k: 'crates', txt: n => `Rompe ${n} cajas o jarrones`, g: [15, 30], z: [200, 350] },
   { k: 'buddySp', txt: n => `Tu compañero usa ${n} técnicas especiales`, g: [3, 6], z: [250, 400], need: () => CHARS.filter(isUnlocked).length >= 2 },
 ];
 const MISSION_BONUS = { t: 'g', txt: 'Cápsula Dorada' };
@@ -282,6 +287,8 @@ function recordRun(win, earned) {
   trackMis('kills', G.kills); trackMis('surv', minutes); trackMis('specials', st.specials); trackMis('bosses', G.killedBosses.length);
   trackMis('lvl', G.lvl); trackMis('evos', st.evos); trackMis('trans', st.trans); trackMis('wins', win ? 1 : 0); trackMis('events', st.events);
   trackMis('fusions', st.fusions); trackMis('zeniRun', earned); trackMis('buddySp', st.buddySp);
+  trackMis('shrines', st.shrines); trackMis('chests', st.chests); trackMis('crates', st.crates);
+  S.shrines += st.shrines; S.chests += st.chests; S.crates += st.crates; S.healed += Math.round(st.healed);
   const doneNow = missionsToday().list.filter((m, i) => !before[i] && m.p >= m.g).map(missionText);
   let rec = null;
   if (G.endless) {

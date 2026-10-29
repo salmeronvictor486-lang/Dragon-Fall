@@ -3,7 +3,7 @@
 //   node tools/build.js --dev   -> dev.html legible, para desarrollar y probar
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..');
-const PARTS = ['1_head.html', '2b_i18n.js', '2c_i18n_data.js', '2_data.js', '3_engine.js', '3b_world.js', '4_game.js', '4b_meta.js', '5_render_ui.js', '5b_shop.js', '5c_meta_ui.js', '6_account.js'];
+const PARTS = ['1_head.html', '2b_i18n.js', '2c_i18n_data.js', '2_data.js', '3_engine.js', '3b_world.js', '4_game.js', '4b_meta.js', '4c_map.js', '5_render_ui.js', '5b_shop.js', '5c_meta_ui.js', '6_account.js'];
 const html = PARTS.map(f => fs.readFileSync(path.join(ROOT, 'src', f), 'utf8')).join('');
 
 if (process.argv.includes('--dev')) {

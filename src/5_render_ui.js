@@ -22,6 +22,11 @@ function gemSprite(col, big) {
   x.fillStyle = '#ffffff'; x.fillRect(m - 1, 2, 1, 2);
   gemCache.set(k, c); return c;
 }
+// Comida (cura): muslo de carne
+function drawFood(px, py) {
+  const R = (c, a, b, w, h) => { lx.fillStyle = c; lx.fillRect(px + a, py + b, w, h); };
+  R('#3a1608', -4, -4, 7, 7); R('#a8461e', -3, -3, 5, 5); R('#d8743a', -3, -3, 2, 2); R('#3a1608', 2, 1, 3, 2); R('#f6efdc', 3, 1, 3, 1); R('#f6efdc', 5, 0, 1, 3);
+}
 function drawCoin(px, py, t) {
   const w = Math.max(1, Math.round(Math.abs(Math.cos(t * 4)) * 4));
   pxEllipse(lx, px, py, w + 1, 5, OUTLINE); pxEllipse(lx, px, py, w, 4, '#b8860b');
@@ -85,6 +90,7 @@ function renderWorld(dt) {
     if (p.k === 'ball') { lx.globalAlpha = .4 + Math.sin(p.t * 6) * .2; circ(p.x, p.y + bob, 9, '#ff8a1c'); lx.globalAlpha = 1; drawDragonBall(lx, px, py, 5, p.v); }
     else if (p.k === 'capsule') { lx.globalAlpha = .35; circ(p.x, p.y + bob, 12, '#ffd23f'); lx.globalAlpha = 1; lx.drawImage(makeIcon('cap', '#fff'), px - 9, py - 9, 18, 18); }
     else if (p.k === 'zeni') drawCoin(px, py, p.t + p.x);
+    else if (p.k === 'food') drawFood(px, py);
     else lx.drawImage(makeIcon(p.k === 'senzu' ? 'senzu' : 'radar', p.k === 'radar' ? '#59d66b' : '#ffd23f'), px - 6, py - 6);
   }
   // sombras
@@ -97,14 +103,18 @@ function renderWorld(dt) {
     lx.globalAlpha = .18 + Math.sin(t * 6) * .04; circ(P.x, P.y - 6, R, col); lx.globalAlpha = .6;
     lx.strokeStyle = col; lx.lineWidth = 1; lx.beginPath(); lx.arc(Math.round(P.x - camX), Math.round(P.y - 6 - camY), Math.max(.5, R), 0, TAU); lx.stroke(); lx.globalAlpha = 1;
   }
+  drawObjsGround(t);
   drawEventWorld(t);
+  for (const o of G.objs) if (!o.gone && (o.k === 'crate' || o.k === 'chest' || o.k === 'statue')) drawShadow(o.x, o.y, o.k === 'crate' ? 6 : 8);
   const B = G.buddy && !P.fused && P.hp > 0 ? G.buddy : null;
   if (B) drawShadow(B.x, B.y, 6);
   // entidades por profundidad
   const ents = G.enemies.slice(); if (P.hp > 0) ents.push(P); if (B) ents.push({ bud: B, y: B.y });
+  for (const o of G.objs) if (!o.gone && (o.k === 'crate' || o.k === 'chest' || o.k === 'statue') && o.x > camX - 30 && o.x < camX + VW + 30 && o.y > camY - 10 && o.y < camY + VH + 40) ents.push({ obj: o, y: o.y });
   for (const pr of visibleProps(G.stage.id, camX, camY)) ents.push({ prop: pr, y: pr.y });
   ents.sort((a, b) => a.y - b.y);
   for (const e of ents) {
+    if (e.obj) { drawObj(e.obj, t); continue; }
     if (e.bud) { drawEnt(e.bud.id, e.bud.x, e.bud.y, sprScale(e.bud.id) * .85, e.bud.face, e.bud.frame, '', false); continue; }
     if (e.prop) {
       const pr = e.prop, ps = getPropSprite(pr.type, G.stage.id, pr.v);
@@ -247,6 +257,7 @@ function renderScreen() {
     ctx.fillStyle = '#3a0d14'; ctx.fillRect(px - w / 2, py + 6, w, 3);
     ctx.fillStyle = fr > .5 ? '#59d66b' : fr > .25 ? '#ffd23f' : '#e8433a'; ctx.fillRect(px - w / 2, py + 6, w * fr, 3);
   }
+  drawObjLabels(fs - 1);
   if (G.buddy && !P.fused && P.hp > 0) { const [bx, by] = toS(G.buddy.x, G.buddy.y); txt(CHAR[G.buddy.id].name, bx, by - 30 * ZOOM * sprScale(G.buddy.id) * .85 - 2, fs - 1, '#9fd8ff'); }
   // números de daño
   for (const n of G.nums) {
@@ -302,17 +313,26 @@ function drawPointers() {
   const tg = [];
   for (const p of G.picks) if (p.k === 'ball' || p.k === 'capsule') tg.push({ x: p.x, y: p.y, k: p.k, v: p.v });
   if (G.boss) tg.push({ x: G.boss.x, y: G.boss.y - G.boss.h / 2, k: 'boss', spr: G.boss.spr });
+  // objetos del mapa: la fuente más cercana si vas mal de vida, y altares y cofres cercanos
+  const nearestObj = (f, R) => { let b = null, bd = R * R; for (const o of G.objs) { if (o.gone || !f(o)) continue; const d = (o.x - P.x) ** 2 + (o.y - P.y) ** 2; if (d < bd) { bd = d; b = o; } } return b; };
+  const fo = P.hp / P.maxHp < .6 ? nearestObj(o => o.k === 'fountain' && o.water > 0, 1100) : null;
+  if (fo) tg.push({ x: fo.x, y: fo.y, k: 'fountain' });
+  const sh = nearestObj(o => o.k === 'shrine' && !o.done, 650); if (sh) tg.push({ x: sh.x, y: sh.y, k: 'shrine' });
+  const ch = nearestObj(o => o.k === 'chest' && G.zeni >= chestCost(), 650); if (ch) tg.push({ x: ch.x, y: ch.y - 6, k: 'chest' });
   const m = 34, top = 150, cx = SWd / 2, cy = SHd / 2;
   for (const t of tg) {
     let [sx, sy] = toS(t.x, t.y);
     if (sx > m && sx < SWd - m && sy > top && sy < SHd - m) continue;
-    const dx = sx - cx, dy = sy - cy, k = Math.min(Math.abs((SWd / 2 - m) / (dx || 1e-6)), Math.abs(((dy < 0 ? cy - top : SHd / 2 - m)) / (dy || 1e-6)));
+    const bot = 120, dx = sx - cx, dy = sy - cy, k = Math.min(Math.abs((SWd / 2 - m - (dy > 0 && dx > 0 ? 70 : 0)) / (dx || 1e-6)), Math.abs(((dy < 0 ? cy - top : SHd / 2 - bot)) / (dy || 1e-6)));
     const px = cx + dx * k, py = cy + dy * k, a = Math.atan2(dy, dx), pul = 1 + Math.sin(performance.now() / 180) * .08, r = 15 * pul;
     ctx.save(); ctx.translate(px, py); ctx.rotate(a); ctx.fillStyle = t.k === 'boss' ? '#e8433a' : '#ffd23f';
     ctx.beginPath(); ctx.moveTo(r + 10, 0); ctx.lineTo(r + 1, -6); ctx.lineTo(r + 1, 6); ctx.closePath(); ctx.fill(); ctx.restore();
     draw9(ctx, t.k === 'boss' ? 'cardsel' : 'slot', px - r - 3, py - r - 3, (r + 3) * 2, (r + 3) * 2, 1.5);
     if (t.k === 'ball') drawDragonBall(ctx, px, py, 8, t.v);
     else if (t.k === 'capsule') ctx.drawImage(makeIcon('cap', '#fff'), px - 10, py - 10, 20, 20);
+    else if (t.k === 'fountain') ctx.drawImage(makeIcon('heal', '#5fd0ff'), px - 10, py - 10, 20, 20);
+    else if (t.k === 'shrine') ctx.drawImage(makeIcon('kiai', '#b06bff'), px - 10, py - 10, 20, 20);
+    else if (t.k === 'chest') ctx.drawImage(makeIcon('zeni', '#ffd23f'), px - 10, py - 10, 20, 20);
     else { const pr = getPortrait(t.spr); ctx.drawImage(pr, px - 9 * 1.2, py - 11, 18 * 1.2, 19 * 1.2); }
     const d = Math.round(Math.hypot(t.x - P.x, t.y - P.y) / 10);
     txt(d + 'm', px, py + r + 10, 6, '#ffffff', 'center');
@@ -555,7 +575,7 @@ function renderMenuBG(dt) {
 }
 function render(dt) {
   lx.imageSmoothingEnabled = false;
-  const inGame = G && P && ['play', 'levelup', 'paused', 'shenron', 'capsule', 'over'].includes(state);
+  const inGame = G && P && ['play', 'levelup', 'paused', 'shenron', 'capsule', 'over', 'shrine'].includes(state);
   if (inGame) renderWorld(dt); else renderMenuBG(dt);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.imageSmoothingEnabled = false;
   ctx.drawImage(lc, 0, 0, VW * ZOOM, VH * ZOOM);
@@ -564,7 +584,7 @@ function render(dt) {
 }
 
 /* =================== INTERFAZ =================== */
-const SCREENS = ['title', 'select', 'stages', 'shop', 'dex', 'opts', 'account', 'gacha', 'reveal', 'levelup', 'pause', 'over', 'shenron', 'capsule', 'missions', 'rank'];
+const SCREENS = ['shrine', 'title', 'select', 'stages', 'shop', 'dex', 'opts', 'account', 'gacha', 'reveal', 'levelup', 'pause', 'over', 'shenron', 'capsule', 'missions', 'rank'];
 function showScreen(id) {
   SCREENS.forEach(s => $('#' + s).classList.toggle('on', s === id));
   $('#pausebtn').style.display = id ? 'none' : 'block';
@@ -1034,6 +1054,7 @@ function onKey(e) {
   if (state === 'play' && ['Space', 'KeyE', 'KeyQ'].includes(e.code)) { e.preventDefault(); useSpecial(); return; }
   if (state === 'play' && e.code === 'KeyF') { startFusion(); return; }
   if (state === 'paused' && (e.code === 'Escape' || e.code === 'KeyP')) { resumeGame(); return; }
+  if (state === 'shrine') { const m = e.code.match(/^(?:Digit|Numpad)([1-3])$/); if (m) { pickBoon(+m[1] - 1); return; } }
   if (state === 'levelup') {
     const m = e.code.match(/^(?:Digit|Numpad)([1-4])$/); if (m) { pickChoice(+m[1] - 1); return; }
     if (e.code === 'KeyR') $('#bReroll').click();

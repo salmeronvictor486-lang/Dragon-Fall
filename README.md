@@ -30,6 +30,14 @@ El juego publicado es un solo archivo, **`index.html`**, con el código **proteg
 - **5 sagas:** Saiyan, Namek, Juegos de Cell, Majin Buu y Torneo del Poder. Cada una tiene sus enemigos, sus élites, sus jefes y su propia música.
 - **Dificultades:** Normal, Difícil (x1,6 zenis) y Pesadilla (x2,5 zenis). Se desbloquean saga a saga y la primera victoria da premio.
 - **∞ Supervivencia:** sin final. Los enemigos no paran de crecer y los jefes vuelven una y otra vez. Cuenta puntos.
+- **Objetos por el mapa (inspirados en Megabonk):**
+  - **Cajas y jarrones** que se rompen al tocarlos o al atacarlos y sueltan comida, zenis o experiencia.
+  - **Comida** que cura un 15% de vida. También la sueltan los enemigos (sobre todo las élites).
+  - **Fuentes curativas**: quedarse dentro cura hasta que se secan. Si vas mal de vida, una flecha te señala la más cercana.
+  - **Altares de ki**: quédate dentro unos segundos para cargarlos y elige una bendición para la partida, con rareza (común, raro, épico o legendario).
+  - **Cofres** que se abren con los zenis de la partida; cada uno cuesta más que el anterior.
+  - **Estatuas de Babidi**: al tocarlas activas una maldición. Hay más enemigos y más duros, pero ganas más experiencia y zenis.
+  - Además, cada vez que subes de nivel recuperas un 6% de vida.
 - **Eventos en partida:** horda sorpresa, cápsula de suministros que hay que defender, Torneo de Artes Marciales (3 luchadores sin salir del ring) y Luna llena con un Gran Mono (los Saiyan ganan poder).
 - **Misiones diarias** (3 al día, distintas para cada jugador), **25 logros** con zenis, cajas y **títulos**, **nivel de cuenta** con premios y un **perfil** con estadísticas.
 - **Ranking semanal** (Supervivencia y bajas), para jugadores con cuenta. Se reinicia cada lunes.

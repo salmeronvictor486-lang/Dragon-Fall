@@ -65,7 +65,7 @@ function renderMissions() {
     const h = Math.floor(S.time / 3600), mi = Math.floor(S.time / 60) % 60;
     [['Partidas', fmtNum(save.runs)], ['Victorias', fmtNum(S.wins)], ['Tiempo jugado', `${h} h ${mi} min`], ['Enemigos derrotados', fmtNum(save.kills)],
      ['Jefes derrotados', fmtNum(S.bosses)], ['Técnicas especiales', fmtNum(S.specials)], ['Fusiones', fmtNum(S.fusions)], ['Eventos superados', fmtNum(S.events)],
-     ['Cajas abiertas', fmtNum(S.boxes)], ['Shenron invocado', fmtNum(S.shenron)], ['Récord de bajas', fmtNum(S.bestKills)], ['Récord Supervivencia', fmtNum(S.bestInf) + ' pts'],
+     ['Cajas abiertas', fmtNum(S.boxes)], ['Altares activados', fmtNum(S.shrines)], ['Cofres del mapa', fmtNum(S.chests)], ['Vida recuperada', fmtNum(S.healed)], ['Shenron invocado', fmtNum(S.shenron)], ['Récord de bajas', fmtNum(S.bestKills)], ['Récord Supervivencia', fmtNum(S.bestInf) + ' pts'],
      ['Guerreros', `${CHARS.filter(isUnlocked).length}/${CHARS.length}`], ['Logros', `${ACHIEVEMENTS.filter(a => save.ach[a.id]).length}/${ACHIEVEMENTS.length}`], ['Misiones completadas', fmtNum(S.daily)], ['Favorito', fav ? `${favC.name} (${fav[1]})` : '—']]
       .forEach(([k, v]) => sec.querySelector('.statgrid').insertAdjacentHTML('beforeend', `<div>${k}<b>${v}</b></div>`));
     body.appendChild(sec);
@@ -191,6 +191,7 @@ function drawRunInfo(small, y) {
   let yy = y;
   if (G.endless) { txt('∞ ' + fmtNum(runScore()) + ' PTS', SWd / 2, yy + 8, small ? 7 : 9, '#9fd8ff', 'center'); yy += 18; }
   else if (G.diff.id) { txt(G.diff.name.toUpperCase(), SWd / 2, yy + 8, small ? 6 : 7, G.diff.col, 'center'); yy += 16; }
+  if (G.curse) { txt('MALDICIÓN x' + G.curse, SWd / 2, yy + 8, small ? 6 : 7, '#c89bff', 'center'); yy += 16; }
   const ev = G.ev; if (!ev) return;
   const w = Math.min(320, SWd * .8), h = small ? 40 : 46, x = (SWd - w) / 2;
   draw9(ctx, 'panel', x, yy, w, h, small ? 1.5 : 2);

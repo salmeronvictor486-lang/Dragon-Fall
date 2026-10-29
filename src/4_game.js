@@ -15,13 +15,14 @@ function newRun(cid, si, opt = {}) {
     rerolls: save.shop.reroll || 0, intro: null,
     diff: DIFFS[opt.endless ? 0 : opt.diff || 0], endless: !!opt.endless, bossCycle: 0, nextBossT: 0, hs: 0,
     ev: null, evT: 95, moonDone: 0, fuse: 0, fuseNeed: 150, fusionPair: null, buddy: null,
-    stat: { specials: 0, events: 0, fusions: 0, evos: 0, trans: 0, shenron: 0, buddySp: 0 },
-    tut: save.tut ? null : [[1, 'Muévete con WASD o las flechas. En el móvil, arrastra el dedo por la pantalla.'], [8, 'Tus ataques se lanzan solos contra el enemigo más cercano.'], [15, 'Recoge los cristales de ki para subir de nivel y elegir mejoras.'], [24, 'Los enemigos con nombre naranja sueltan Bolas de Dragón. ¡Reúne las 7!'], [31, 'Pulsa ESPACIO (o toca el botón redondo) para usar la técnica especial de tu guerrero.']], shake: 0, flash: 0, victoryT: -1, killedBosses: [], seen: {}, endT: -1, auraT: 0, pid: 0, maxCombo: 0,
+    stat: { specials: 0, events: 0, fusions: 0, evos: 0, trans: 0, shenron: 0, buddySp: 0, crates: 0, chests: 0, shrines: 0, healed: 0 },
+    objs: [], objT: 0, curse: 0,
+    tut: save.tut ? null : [[1, 'Muévete con WASD o las flechas. En el móvil, arrastra el dedo por la pantalla.'], [8, 'Tus ataques se lanzan solos contra el enemigo más cercano.'], [15, 'Recoge los cristales de ki para subir de nivel y elegir mejoras.'], [24, 'Los enemigos con nombre naranja sueltan Bolas de Dragón. ¡Reúne las 7!'], [31, 'Pulsa ESPACIO (o toca el botón redondo) para usar la técnica especial de tu guerrero.'], [42, 'Rompe cajas y jarrones: sueltan comida que cura. Las fuentes azules también te curan.'], [52, 'Quédate en un altar de ki para cargarlo y ganar una bendición. Los cofres se abren con zenis.']], shake: 0, flash: 0, victoryT: -1, killedBosses: [], seen: {}, endT: -1, auraT: 0, pid: 0, maxCombo: 0,
   };
   P = {
     x: 0, y: 0, r: 6, dirx: 1, diry: 0, face: 1, ft: 0, frame: 0, inv: 1, moving: false,
     spr: c.id, name: c.name, aura: null, formIdx: -1, weapons: [], passives: [], hp: 1, maxHp: 1, revive: 0, immortal: 0,
-    spT: 4, rage: null, shieldT: 0, fused: null, moon: 0,
+    spT: 4, rage: null, shieldT: 0, fused: null, moon: 0, boons: {},
   };
   G.spq = []; G.spTint = null;
   P.weapons.push(newWeapon(c.weapon));
@@ -29,6 +30,7 @@ function newRun(cid, si, opt = {}) {
   P.revive = save.shop.revive || 0;
   P.hp = P.maxHp;
   markSeen(c.id);
+  fillObjs(true);
   G.buddy = newBuddy(save.buddy);
   if (G.buddy) { G.fusionPair = fusionOf(cid, G.buddy.id); markSeen(G.buddy.id); }
   chunkCache.clear();
@@ -48,6 +50,7 @@ function recalc(init) {
   add({ might: .05 * (sh.might || 0), maxHp: 10 * (sh.maxHp || 0), armor: sh.armor || 0, regen: .2 * (sh.regen || 0), spd: .05 * (sh.spd || 0), magnet: .2 * (sh.magnet || 0), cd: .03 * (sh.cd || 0), growth: .06 * (sh.growth || 0), greed: .1 * (sh.greed || 0), luck: .1 * (sh.luck || 0), amount: sh.amount || 0 });
   P.passives.forEach(p => { const st = PASSIVES[p.id].st; for (const k in st) s[k] += st[k] * p.lvl; });
   c.forms.forEach((f, i) => { if (i <= P.formIdx) add(f.bonus); });
+  if (P.boons) add(P.boons);
   if (P.fused) add({ might: .6, spd: .15, cd: .15, armor: 2, maxHp: 40 });
   if (P.moon) add({ might: .4 });
   if (P.rage) add({ might: P.rage.might || 0, spd: P.rage.spd || 0, cd: P.rage.cd || 0, crit: P.rage.crit || 0 });
@@ -108,7 +111,7 @@ function hurtEnemy(e, dmg, w, kx = 0, ky = 0, forceCrit = false) {
 }
 
 /* =================== ENEMIGOS =================== */
-function enemyHpMul() { const t = G.endless ? G.t : Math.min(G.t, 720); return (1 + t / 600 * G.stage.mul) * G.diff.hp * (G.endless ? 1 + Math.max(0, G.t - 600) / 900 : 1); }
+function enemyHpMul() { const t = G.endless ? G.t : Math.min(G.t, 720); return (1 + t / 600 * G.stage.mul) * G.diff.hp * (G.endless ? 1 + Math.max(0, G.t - 600) / 900 : 1) * (1 + .15 * G.curse); }
 function enemyDmgMul() { const t = G.endless ? G.t : Math.min(G.t, 720); return (1 + t / 600 * (.5 + G.si * .2)) * G.diff.dmg; }
 function spawnPos(dist) {
   const a = Math.random() * TAU, d = dist || Math.hypot(VW, VH) / 2 + 20;
@@ -148,7 +151,7 @@ function poolPick() {
 }
 function director(dt) {
   const t = G.t;
-  const target = Math.min(330, (10 + t * .38 + G.si * 10) * G.diff.spawn) * (G.boss ? .6 : 1) * (G.ev && G.ev.k === 'tourney' ? .35 : 1);
+  const target = Math.min(330, (10 + t * .38 + G.si * 10) * G.diff.spawn) * (G.boss ? .6 : 1) * (G.ev && G.ev.k === 'tourney' ? .35 : 1) * (1 + .25 * G.curse);
   G.spawnT -= dt;
   if (G.spawnT <= 0) {
     G.spawnT = .45;
@@ -252,6 +255,7 @@ function killEnemy(e, w) {
   const zc = (e.elite ? .9 : .035) * luck;
   if (Math.random() < zc) dropPick('zeni', e.x + rand(-6, 6), e.y + rand(-6, 6), Math.ceil(rand(1, 4) * (G.si + 1) * (e.elite ? 5 : 1)));
   if (Math.random() < .004 * luck) dropPick('senzu', e.x, e.y);
+  else if (Math.random() < (e.elite ? .35 : .012) * luck) dropPick('food', e.x + 4, e.y);
   if (Math.random() < .0012 * luck) dropPick('radar', e.x, e.y);
   if (e.elite && !e.boss) {
     if (Math.random() < .25 * luck) dropPick('senzu', e.x + 8, e.y);
@@ -294,6 +298,7 @@ function hurtPlayer(d) {
 }
 function shockwave(R, dmg) {
   G.fx.push({ k: 'ring', x: P.x, y: P.y - 10, r0: 6, r1: R, life: .5, max: .5, col: P.aura || '#ffffff' });
+  hitObjsCircle(P.x, P.y - 5, R);
   for (const e of G.enemies) {
     if (e.dead) continue; const dx = e.x - P.x, dy = e.y - P.y, d = Math.hypot(dx, dy);
     if (d < R) hurtEnemy(e, dmg * P.might, null, dx / (d || 1) * 260, dy / (d || 1) * 260);
@@ -455,6 +460,7 @@ function updateOrbital(w, dt) {
 }
 function explode(x, y, R, dmg, w, col) {
   G.fx.push({ k: 'boom', x, y, r: R, life: .4, max: .4, col });
+  hitObjsCircle(x, y, R);
   query(x, y + 6, R + 14, e => { const dx = e.x - x, dy = e.y - e.h / 2 - y; if (dx * dx + dy * dy < (R + e.r) ** 2) { const d = Math.hypot(dx, dy) || 1; hurtEnemy(e, dmg, w, dx / d * 150, dy / d * 150); } });
   if (R > 40) { G.shake = Math.max(G.shake, .25); sfx('boom'); }
 }
@@ -468,6 +474,7 @@ function updateProjs(dt) {
         if (p.tg && !p.tg.dead) { const a = Math.atan2(p.tg.y - p.tg.h / 2 - p.y, p.tg.x - p.x), sp = Math.hypot(p.vx, p.vy), ca = Math.atan2(p.vy, p.vx); let da = a - ca; da = Math.atan2(Math.sin(da), Math.cos(da)); const na = ca + clamp(da, -p.homing * dt, p.homing * dt); p.vx = Math.cos(na) * sp; p.vy = Math.sin(na) * sp; }
       }
       p.x += p.vx * dt; p.y += p.vy * dt;
+      if (G.objs.length) hitObjsCircle(p.x, p.y, p.r);
       query(p.x, p.y + 8, p.r + 14, e => {
         if (p.hit.has(e)) return;
         if ((e.x - p.x) ** 2 + (e.y - e.h / 2 - p.y) ** 2 < (p.r + e.r) ** 2) {
@@ -483,6 +490,7 @@ function updateProjs(dt) {
       if (p.tt <= 0 && p.dmg) {
         p.tt = p.tick; p.tickN++;
         const k = 'b' + p.id + '_' + p.tickN;
+        hitObjsSeg(P.x, PY(), p.ang, p.len, p.wd);
         enemiesOnSeg(P.x, PY(), p.ang, p.len, p.wd, e => { if (!e.hitT[k]) { e.hitT[k] = 1; hurtEnemy(e, p.dmg, p.w, Math.cos(p.ang) * 50, Math.sin(p.ang) * 50); } });
       }
     } else if (p.k === 'disc') {
@@ -534,7 +542,8 @@ function updatePickups(dt) {
   G.picks = G.picks.filter(p => !p.got);
 }
 function collect(p) {
-  if (p.k === 'zeni') { G.zeni += p.v * P.greed; sfx('pick'); }
+  if (p.k === 'zeni') { G.zeni += p.v * P.greed * (1 + .25 * G.curse); sfx('pick'); }
+  else if (p.k === 'food') { const h = Math.min(P.maxHp * .15, P.maxHp - P.hp); P.hp += h; G.stat.healed += h; sfx('heal'); floatText('+' + Math.round(h) + ' VIDA', '#59d66b'); }
   else if (p.k === 'senzu') { P.hp = Math.min(P.maxHp, P.hp + P.maxHp * .35); sfx('heal'); floatText('+VIDA', '#59d66b'); }
   else if (p.k === 'radar') { G.gems.forEach(g => g.mag = true); sfx('pick'); floatText('¡RADAR!', '#59d66b'); }
   else if (p.k === 'ball') {
@@ -546,9 +555,10 @@ function collect(p) {
 }
 function floatText(t, col) { G.fx.push({ k: 'text', t, col, x: P.x, y: P.y - 34, life: 1.2, max: 1.2 }); }
 function addXp(v) {
-  G.xp += v * P.growth;
+  G.xp += v * P.growth * (1 + .2 * G.curse);
   while (G.xp >= G.xpNext) {
     G.xp -= G.xpNext; G.lvl++; G.xpNext = xpNeed(G.lvl); G.pendingLv++;
+    if (P.hp > 0) P.hp = Math.min(P.maxHp, P.hp + P.maxHp * .06);
     checkForm();
   }
 }
@@ -754,6 +764,7 @@ function update(dt) {
   updateEnemies(dt);
   updateEProjs(dt);
   updatePickups(dt);
+  updateObjs(dt);
   updateFx(dt);
   G.enemies = G.enemies.filter(e => !e.dead);
   if (G.boss && G.boss.dead) G.boss = null;
