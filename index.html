@@ -6,6 +6,10 @@
 <title>Dragon Fall</title>
 <meta name="description" content="Dragon Fall: survivor pixel art del universo Dragon Ball. Juega gratis en el navegador.">
 <meta name="theme-color" content="#0b0f24">
+<meta property="og:title" content="Dragon Fall">
+<meta property="og:description" content="Survivor pixel art del universo Dragon Ball. Juega gratis en el navegador.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Ccircle cx='8' cy='8' r='7.5' fill='%237a3a00'/%3E%3Ccircle cx='8' cy='8' r='6.6' fill='%23ff9a1c'/%3E%3Ccircle cx='6' cy='6' r='2.4' fill='%23ffcf6a'/%3E%3Crect x='5' y='7' width='2' height='2' fill='%23d8261a'/%3E%3Crect x='9' y='5' width='2' height='2' fill='%23d8261a'/%3E%3Crect x='9' y='9' width='2' height='2' fill='%23d8261a'/%3E%3C/svg%3E">
+<script data-goatcounter="https://victorsalmeron.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
@@ -58,6 +62,8 @@ h2.px{font-size:18px;color:var(--gold);text-shadow:3px 3px 0 var(--line);text-al
 .menu{display:flex;flex-direction:column;gap:min(14px,1.8vh);width:min(340px,86vw)}
 .menu .btn{width:100%;font-size:14px;padding:min(16px,2.2vh) 16px}
 .disclaimer{margin-top:auto;padding-top:12px;text-align:center;font-size:16px;color:#7480b0}
+.disclaimer a{color:#aab4e0}
+.disclaimer a:hover,.disclaimer a:focus-visible{color:var(--orange2)}
 .title-stats{margin-top:min(18px,2vh);display:flex;gap:18px;flex-wrap:wrap;justify-content:center;font-size:20px;color:var(--muted)}
 
 /* ---------- Select ---------- */
@@ -149,6 +155,46 @@ h2.px{font-size:18px;color:var(--gold);text-shadow:3px 3px 0 var(--line);text-al
 .howto{font-size:20px;color:#cfd6f5;max-width:460px}
 .howto b{color:var(--gold)}
 .back{position:absolute;top:12px;left:12px}
+
+/* ---------- Rarezas ---------- */
+.card{--rc:#2a3572}
+.card[data-r=C]{--rc:#8a93b8}.card[data-r=R]{--rc:#3aa0ff}.card[data-r=E]{--rc:#b06bff}.card[data-r=L]{--rc:#ffd23f}
+.card{box-shadow:0 0 0 3px var(--line),inset 0 -4px 0 var(--rc)}
+.card.sel{box-shadow:0 0 0 3px var(--orange),0 0 18px rgba(255,138,28,.5),inset 0 -4px 0 var(--rc)}
+.card .st{font-size:13px;color:var(--gold);letter-spacing:1px;height:14px;line-height:14px}
+.rar{font-family:'Press Start 2P';font-size:9px;padding:4px 6px;color:#0b0f24;display:inline-block}
+.filters{display:flex;gap:6px;flex-wrap:wrap;padding:4px 6px 8px}
+.filters .btn{font-size:9px;padding:8px 9px}
+.filters .btn.on{background:var(--orange);color:#2a1300}
+.selgrid{display:flex;flex-direction:column;min-height:0;width:100%}
+
+/* ---------- Cápsulas ---------- */
+.gacha-wrap{width:min(900px,100%);margin-top:56px;display:flex;flex-direction:column;gap:16px}
+.caps{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.cap{background:var(--panel2);box-shadow:0 0 0 3px var(--line);padding:16px;display:flex;flex-direction:column;gap:10px;align-items:stretch}
+.cap.gold{box-shadow:0 0 0 3px var(--gold),0 0 22px rgba(255,210,63,.25)}
+.cap canvas{width:144px;height:96px;image-rendering:pixelated;align-self:center}
+.cap .t{font-family:'Press Start 2P';font-size:12px;color:var(--gold);text-align:center}
+.odds{display:grid;grid-template-columns:auto 1fr auto;gap:4px 8px;align-items:center;font-size:18px}
+.odds i{height:8px;background:#0b0f24;box-shadow:0 0 0 2px var(--line);display:block}
+.odds i b{display:block;height:100%}
+.coll{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:20px}
+#reveal{z-index:20}
+.reveal-box{position:relative;width:min(460px,94vw);padding:28px 18px 18px;background:var(--panel);box-shadow:0 0 0 4px var(--line),0 0 0 8px #2b3670;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;overflow:hidden}
+.rays{position:absolute;left:50%;top:150px;width:700px;height:700px;margin:-350px 0 0 -350px;background:repeating-conic-gradient(var(--rc,#ffd23f) 0 10deg,transparent 10deg 20deg);opacity:0;border-radius:50%;pointer-events:none}
+.reveal-box.show .rays{opacity:.22;animation:spin 8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#rvCap{width:192px;height:128px;image-rendering:pixelated;position:relative}
+#rvCap.shake{animation:shake .12s ease-in-out infinite alternate}
+@keyframes shake{from{transform:rotate(-7deg) translateY(2px)}to{transform:rotate(7deg) translateY(-2px)}}
+#rvCv{width:144px;height:224px;image-rendering:pixelated;position:relative;display:none}
+.reveal-box.show #rvCv{display:block;animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+.reveal-box.show #rvCap{display:none}
+@keyframes pop{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+#rvText{position:relative;min-height:70px}
+#rvText .nm{font-family:'Press Start 2P';font-size:16px;color:var(--ink);margin-top:6px;line-height:1.4}
+#rvText .new{font-family:'Press Start 2P';font-size:11px;color:var(--green);margin-top:6px}
+@media (prefers-reduced-motion:reduce){#rvCap.shake,.reveal-box.show .rays,.reveal-box.show #rvCv{animation:none}}
 #ask{z-index:30}
 #ask .panel{width:min(440px,92vw);text-align:center}
 #askText{font-size:22px}
@@ -186,6 +232,7 @@ details.priv summary{cursor:pointer;color:#cfd6f5}
   <p class="tagline">Sobrevive a las sagas, reúne las 7 Bolas de Dragón y despierta tu verdadero poder.</p>
   <div class="menu">
     <button class="btn primary" id="bPlay">JUGAR</button>
+    <button class="btn gold" id="bGacha">CÁPSULAS</button>
     <button class="btn" id="bDex">DRAGONPEDIA</button>
     <button class="btn" id="bShop">TEMPLO DE KAMI</button>
     <button class="btn" id="bOpts">OPCIONES</button>
@@ -193,15 +240,34 @@ details.priv summary{cursor:pointer;color:#cfd6f5}
   </div>
   <button class="acct-badge" id="acctBadge"></button>
   <div class="title-stats" id="titleStats"></div>
-  <p class="disclaimer">Fan game sin ánimo de lucro. Dragon Ball © Bird Studio / Shueisha / Toei Animation.</p>
+  <p class="disclaimer">Hecho por <a href="https://victorsalmeron.dev/">Víctor Salmerón</a> · Fan game sin ánimo de lucro. Dragon Ball © Bird Studio / Shueisha / Toei Animation.</p>
 </section>
 
 <!-- CHARACTER SELECT -->
 <section id="select" class="screen dim">
   <div class="topbar"><button class="btn small" data-back="title">◀ VOLVER</button><h2 class="px">ELIGE GUERRERO</h2><span class="zeni" id="zSel"><i></i>0</span></div>
   <div class="select-wrap">
-    <div class="panel" style="padding:10px;display:flex;min-height:0"><div class="grid" id="charGrid"></div></div>
+    <div class="panel" style="padding:10px;display:flex;min-height:0"><div class="selgrid"><div class="filters" id="charFilters"></div><div class="grid" id="charGrid"></div></div></div>
     <div class="panel detail" id="charDetail"></div>
+  </div>
+</section>
+
+<!-- CÁPSULAS -->
+<section id="gacha" class="screen dim">
+  <div class="topbar"><button class="btn small" data-back="title">◀ VOLVER</button><h2 class="px">CÁPSULAS</h2><span class="zeni" id="zGacha"><i></i>0</span></div>
+  <div class="gacha-wrap">
+    <p class="muted" style="text-align:center;font-size:20px">Abre cápsulas con tus zenis y consigue guerreros de Dragon Ball Z y Super. Cuanto más rara la rareza, más fuerte el guerrero.</p>
+    <div class="caps" id="capGrid"></div>
+    <div class="panel col" id="gachaInfo"></div>
+  </div>
+</section>
+<section id="reveal" class="screen dim">
+  <div class="reveal-box" id="rvBox">
+    <div class="rays"></div>
+    <canvas id="rvCap" width="48" height="32"></canvas>
+    <canvas id="rvCv" width="36" height="56"></canvas>
+    <div id="rvText"></div>
+    <div class="row center wrap" id="rvBtns"></div>
   </div>
 </section>
 
@@ -392,6 +458,11 @@ const HAIR = {
   hit: ['', '', '.......X', '......XX', '...X.XXX', '..XX.XXX', '..XXSSSS'],
   toppo: ['', '', '', '......SSSS......', '....SSSSSSSS....', '...SSSSSSSSSS...', '..HSSSSSSSSSSH..', '..HSSSSSSSSSSH..', '..HSKKSSSSKKSH..', '', '', '..HHHHHHHHHHHH..', '..HHH......HHH..', '...H........H...'],
   ears: ['...X....', '...XX...', '...XX...', '...XX...', '...XXXXX', '...XXXXX'],
+  cat: ['', '..S.....', '..SS....', '..SxS...', '..SSSSSS', '...SSSSS'],
+  whis: ['......HH', '.....HHH', '.....HLH', '.....HHH', '....HHHH', '....HHHH', '...HHHHH', '...HHHSS'],
+  pigtails: ['', '', '', '......HH', '....HHHH', '...HHHLH', '..HHHHHH', '..HHHHSS', '.HH.....', 'HH......', 'Hh......'],
+  caulifla: ['.......H........', '......HHH.......', '.....HHHHH......', '....HHHLHHH.....', '...HHHHHHHHH....', '...HHHHHHHHHH...', '..HHHHHHHHHHHH..', '..HHhHHHHHHhHH..', '..HHSSSSHSSSHH..', '..H..........H..'],
+  vegito: ['.....H..H.......', '.....HH.HH.H....', '....HHHHHHHH....', '....HHHHHHHHH...', '...HHHHLHHHHH...', '...HHHHHHHHHHH..', '...HHhHHHHhHHH..', '...HSSHHHHSSHH..', '...SSKKHHKKSS...', '........H.......'],
 };
 const BODY = {
   gi: ['....GGGUUGGG....', '...GGGGUUGGGG...', '..GGGGGGGGGGGG..', '..SSgGGGGGGgSS..', '..UUgGGGGGGgUU..', '..SSBBBBBBBBSS..', '...PPPPPPPPPP...', '...PPPPPPPPPP...', '....PPPppPPP....', '....PPP..PPP....', '....OOO..OOO....', '...OOOO..OOOO...'],
@@ -441,6 +512,30 @@ const SPR = {
   broly: { hair: 'broly', body: 'gi', eyes: 'angry', pal: { H: '#1d1b2e', Y: '#e6c046', G: SKIN, U: '#e6c046', B: '#d83a2e', P: '#efe9dc', O: '#6a2a2a' } },
   broly_lssj: { hair: 'broly', body: 'gi', eyes: 'angry', scale: 1.1, pal: { H: '#b9f045', E: '#efe9dc', W: '#efe9dc', Y: '#e6c046', G: SKIN, U: '#e6c046', B: '#d83a2e', P: '#efe9dc', O: '#6a2a2a' }, aura: '#9cff4a' },
   satan: { hair: 'satan', body: 'gi', pal: { H: '#2a1d16', S: SKIN2, G: '#f4f1e8', U: '#f4f1e8', B: '#e9b72a', P: '#f4f1e8', O: '#7a4a24' } },
+  // ---- Guerreros de las Cápsulas
+  bardock: { hair: 'goku', body: 'armor', eyes: 'angry', pal: { H: '#1d1b2e', X: '#3f7a3f', x: '#7a5a2a', U: '#1d1b2e', Y: '#7a5a2a', R: '#c41f1f' }, x: ['', '', '', '', '', '', '', '', '..RRRRRRRRRRRR..', '', '', '..........R.....'] },
+  bardock_ssj: { hair: 'ssj', body: 'armor', eyes: 'angry', pal: { H: '#ffd43a', E: '#1d8a6a', X: '#3f7a3f', x: '#7a5a2a', U: '#1d1b2e', Y: '#7a5a2a', R: '#c41f1f' }, aura: '#ffd43a', x: ['', '', '', '', '', '', '', '', '..RRRRRRRRRRRR..'] },
+  turles: { hair: 'goku', body: 'armor', eyes: 'angry', pal: { H: '#1d1b2e', S: '#9a6a4a', X: '#3a3a4a', x: '#7a5a2a', U: '#1d1b2e', Y: '#3a3a4a' } },
+  cooler: { hair: 'freezer', body: 'suit', eyes: 'angry', pal: { S: '#ece6f4', X: '#5a2a9a', G: '#ece6f4', O: '#5a2a9a', E: '#b5121b' }, x: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '.............GG.', '..............GG', '...............G'] },
+  gotenks: { hair: 'gohan', body: 'gi', eyes: 'angry', scale: .9, pal: { H: '#3a2a5a', G: '#3a8ab8', U: '#3a8ab8', B: '#e6c046', P: '#f0eadc', O: '#1c1c2a' } },
+  gotenks_ssj3: { hair: 'ssj3', body: 'gi', eyes: 'angry', scale: .9, pal: { H: '#ffcf2e', E: '#1d8a6a', G: '#3a8ab8', U: '#3a8ab8', B: '#e6c046', P: '#f0eadc', O: '#1c1c2a' }, aura: '#ffcf2e' },
+  vegito: { hair: 'vegito', body: 'gi', eyes: 'angry', pal: { H: '#1d1b2e', ...TURTLE, G: '#f27a1f', Y: '#e6c046' }, x: ['', '', '', '', '', '', '', '', '', '', '', '..Y..........Y..'] },
+  vegito_blue: { hair: 'vegito', body: 'gi', pal: { H: '#37c8ff', E: '#1e64c8', ...TURTLE, Y: '#e6c046' }, aura: '#37c8ff', x: ['', '', '', '', '', '', '', '', '', '', '', '..Y..........Y..'] },
+  gogeta: { hair: 'goku', body: 'gi', eyes: 'angry', pal: { H: '#1d1b2e', G: '#2a3a7a', U: '#e85f1a', B: '#3a8ab8', P: '#f0eadc', O: '#1c1c2a' } },
+  gogeta_blue: { hair: 'ssj', body: 'gi', eyes: 'angry', pal: { H: '#37c8ff', E: '#1e64c8', G: '#2a3a7a', U: '#e85f1a', B: '#3a8ab8', P: '#f0eadc', O: '#1c1c2a' }, aura: '#37c8ff' },
+  videl: { hair: 'pigtails', body: 'gi', pal: { H: '#1d1b2e', E: '#2a6ad8', G: '#f4f2ea', U: '#f4f2ea', B: '#1c1c2a', P: '#1c1c2a', O: '#e6e2d8' } },
+  chaoz: { hair: 'bald', body: 'gi', scale: .8, pal: { S: '#f6f3ee', G: '#2f7a4c', U: '#2f7a4c', B: '#d83a2e', P: '#e8e2cc', O: '#3a2a1a', R: '#ff7a8a' }, x: ['', '', '', '', '', '', '', '', '', '', '', '...R........R...'] },
+  beerus: { hair: 'cat', body: 'gi', eyes: 'angry', pal: { S: '#9a80c8', x: '#e898c0', E: '#e6c046', W: '#fff6c0', G: '#9a80c8', U: '#e6c046', B: '#e6c046', P: '#1c1c2a', O: '#e6c046' } },
+  whis: { hair: 'whis', body: 'suit', pal: { H: '#f2f2f6', S: '#6fa8e8', G: '#8a3ab8', X: '#1c1c2a', O: '#1c1c2a', E: '#2a2a4a' }, x: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '..XXXXXXXXXXXX..'] },
+  goku_black: { hair: 'goku', body: 'gi', eyes: 'angry', pal: { H: '#1d1b2e', G: '#3a3a4a', U: '#2a2a32', B: '#c41f1f', P: '#3a3a4a', O: '#e6e2d8', Y: '#e6c046' }, x: ['', '', '', '', '', '', '', '', '', '', '', '..Y.............'] },
+  goku_rose: { hair: 'ssj', body: 'gi', eyes: 'angry', pal: { H: '#ff6ab0', E: '#8a2a5a', G: '#3a3a4a', U: '#2a2a32', B: '#c41f1f', P: '#3a3a4a', O: '#e6e2d8' }, aura: '#ff6ab0' },
+  zamasu: { hair: 'mohawk', body: 'gi', eyes: 'angry', pal: { H: '#f2f2f6', S: '#9ad09a', G: '#3a6a6a', U: '#e6c046', B: '#e6c046', P: '#3a6a6a', O: '#e6c046', Y: '#e6c046' }, x: ['', '', '', '', '', '', '', '', '', '', '', '..Y..........Y..'] },
+  cabba: { hair: 'vegeta', body: 'armor', pal: { H: '#1d1b2e', X: '#e7e2d4', x: '#4a6b8a', U: '#2a3a6a', Y: '#e7e2d4' } },
+  cabba_ssj: { hair: 'vegeta', body: 'armor', eyes: 'angry', pal: { H: '#ffd43a', E: '#1d8a6a', X: '#e7e2d4', x: '#4a6b8a', U: '#2a3a6a', Y: '#e7e2d4' }, aura: '#ffd43a' },
+  caulifla: { hair: 'caulifla', body: 'gi', pal: { H: '#1d1b2e', G: '#d83a2e', U: '#d83a2e', B: '#e6c046', P: '#7a3ab8', O: '#1c1c2a' } },
+  caulifla_ssj: { hair: 'caulifla', body: 'gi', eyes: 'angry', pal: { H: '#ffd43a', E: '#1d8a6a', G: '#d83a2e', U: '#d83a2e', B: '#e6c046', P: '#7a3ab8', O: '#1c1c2a' }, aura: '#ffd43a' },
+  uub: { hair: 'mohawk', body: 'gi', pal: { H: '#1d1b2e', S: '#7a4a2a', G: '#2b4fc4', U: '#f27a1f', B: '#f27a1f', P: '#2b4fc4', O: '#1c1c2a' } },
+  pan: { hair: 'bob', body: 'gi', scale: .85, pal: { H: '#1d1b2e', X: '#f27a1f', G: '#c41f1f', U: '#c41f1f', B: '#1c1c2a', P: '#3a6ab8', O: '#e6e2d8' }, x: ['', '', '', '', '....XXXXXXXX....', '...XXXXXXXXXX...'] },
   // ---- Enemigos
   saibaman: { hair: 'saiba', body: 'suit', scale: .9, pal: { S: '#4ea33b', G: '#4ea33b', X: '#3c8a2c', O: '#3c8a2c', W: '#f04040', E: '#9a1010' } },
   jinkouman: { hair: 'saiba', body: 'suit', scale: .9, pal: { S: '#5a8ad8', G: '#5a8ad8', X: '#3c6cc0', O: '#3c6cc0', W: '#f04040', E: '#9a1010' } },
@@ -520,7 +615,65 @@ const CHARS = [
     unlock: { clear: 'top', txt: 'Completa el Torneo del Poder' } },
   { id: 'satan', name: 'Mr. Satán', saga: 'Campeón del mundo', desc: '¿Débil? Puede. Pero la suerte y los zenis le persiguen.', weapon: 'combo', hp: 100, mods: { luck: 1, greed: .6 }, forms: [], unlock: { cost: 2500, txt: 'Cómpralo por 2.500 zenis' } },
 ];
+/* ---------------- RAREZAS Y CÁPSULAS ---------------- */
+const RAR = {
+  C: { name: 'Común', col: '#b8c0dc', hp: 100, might: 0 },
+  R: { name: 'Raro', col: '#3aa0ff', hp: 110, might: .05 },
+  E: { name: 'Épico', col: '#b06bff', hp: 120, might: .1 },
+  L: { name: 'Legendario', col: '#ffd23f', hp: 135, might: .18 },
+};
+const RAR_ORDER = ['L', 'E', 'R', 'C'];
+const CHAR_BY_ID = id => CHARS.find(c => c.id === id);
+Object.entries({ goku: 'E', krilin: 'C', yamcha: 'C', vegeta: 'E', gohan: 'E', piccolo: 'E', tien: 'R', trunks: 'R', goten: 'R', a18: 'R', freezer: 'E', cell: 'E', buu: 'E', broly: 'L', satan: 'C' }).forEach(([id, r]) => { CHAR_BY_ID(id).rar = r; });
+CHARS.forEach(c => { if (c.unlock && !c.unlock.cost) c.unlock.txt += ' o consíguelo en las Cápsulas'; });
+// Guerreros que solo salen en las Cápsulas: [id, nombre, saga, rareza, ataque, descripción, mejoras, transformaciones]
+[
+  ['chaoz', 'Chaoz', 'Escuela Grulla', 'C', 'taiyoken', 'Pequeño y valiente. Paraliza a los enemigos con su telequinesis.', { cd: .08 }],
+  ['videl', 'Videl', 'Hija de Mr. Satán', 'C', 'combo', 'Aprendió a volar con Gohan y pega muy fuerte.', { spd: .08 }],
+  ['guldo', 'Guldo', 'Fuerzas Especiales Ginyu', 'C', 'taiyoken', 'Detiene el tiempo... mientras aguanta la respiración.', { area: .1 }],
+  ['jeice', 'Jeice', 'Fuerzas Especiales Ginyu', 'C', 'masenko', 'Lanza su Crusher Ball sin pestañear.', {}],
+  ['burter', 'Burter', 'Fuerzas Especiales Ginyu', 'C', 'combo', 'El más rápido del universo, según él.', { spd: .15 }],
+  ['dodoria', 'Dodoria', 'Ejército de Freezer', 'C', 'masenko', 'Rosa, con pinchos y con muy malas pulgas.', { maxHp: 30 }],
+  ['celljr', 'Cell Jr.', 'Juegos de Cell', 'C', 'kiblast', 'Pequeño, rápido y travieso.', { spd: .1 }],
+  ['a19', 'Androide 19', 'Androides', 'C', 'aura', 'Absorbe la energía de quien toca.', { regen: .4 }],
+  ['raditz', 'Raditz', 'Saga Saiyan', 'R', 'galick', 'El hermano mayor de Goku, con su Double Sunday.', { might: .05 }],
+  ['nappa', 'Nappa', 'Saga Saiyan', 'R', 'bigbang', 'Su Bomber DX arrasa todo a su alrededor.', { maxHp: 30 }],
+  ['zarbon', 'Zarbon', 'Ejército de Freezer', 'R', 'kiblast', 'Elegante, rápido y vanidoso.', { spd: .08 }],
+  ['recoome', 'Recoome', 'Fuerzas Especiales Ginyu', 'R', 'eraser', '¡Recoome Eraser Gun!', { maxHp: 30 }],
+  ['a16', 'Androide 16', 'Androides', 'R', 'kamehameha', 'Gigante pacífico con un Hell\'s Flash devastador.', { armor: 1 }],
+  ['a17', 'Androide 17', 'Androides', 'R', 'orbital', 'Su barrera de energía lo protege de todo.', { cd: .08 }],
+  ['gero', 'Dr. Gero', 'Androides', 'R', 'deathbeam', 'Dispara rayos por los ojos.', { crit: .05 }],
+  ['uub', 'Uub', 'Reencarnación de Buu', 'R', 'aura', 'Un niño con un poder enorme por descubrir.', { growth: .1 }],
+  ['pan', 'Pan', 'Nieta de Goku', 'R', 'kiblast', 'Pequeña, rápida y con mucho carácter.', { spd: .12 }],
+  ['cabba', 'Cabba', 'Universo 6', 'R', 'galick', 'Saiyan del Universo 6 y alumno de Vegeta.', {}, [{ lv: 10, name: 'Cabba SSJ', spr: 'cabba_ssj', bonus: { might: .25 } }]],
+  ['dyspo', 'Dyspo', 'Universo 11', 'R', 'kienzan', 'El más veloz de las Tropas del Orgullo.', { spd: .2 }],
+  ['ginyu', 'Capitán Ginyu', 'Fuerzas Especiales Ginyu', 'E', 'burning', 'Líder de las Fuerzas Especiales. ¡Poses incluidas!', { might: .05 }],
+  ['dabura', 'Dabura', 'Saga de Majin Buu', 'E', 'burning', 'Rey de los Demonios: escupe fuego.', { might: .05 }],
+  ['bardock', 'Bardock', 'Padre de Goku', 'E', 'bigbang', 'Su Riot Javelin desafió al mismísimo Freezer.', { might: .05 }, [{ lv: 15, name: 'Bardock SSJ', spr: 'bardock_ssj', bonus: { might: .3 } }]],
+  ['turles', 'Turles', 'Película: el árbol del poder', 'E', 'masenko', 'Saiyan renegado con el fruto del Árbol Sagrado.', { regen: .5 }],
+  ['cooler', 'Cooler', 'Hermano de Freezer', 'E', 'deathbeam', 'El hermano mayor de Freezer, igual de cruel.', { crit: .06 }],
+  ['gotenks', 'Gotenks', 'Fusión de Goten y Trunks', 'E', 'sokidan', '¡Ataque Kamikaze de los Fantasmas!', { amount: 1 }, [{ lv: 15, name: 'Gotenks SSJ3', spr: 'gotenks_ssj3', bonus: { might: .35 } }]],
+  ['superbuu', 'Super Buu', 'Saga de Majin Buu', 'E', 'candy', 'Absorbe a sus rivales para hacerse más fuerte.', { regen: .5 }],
+  ['kidbuu', 'Kid Buu', 'Saga de Majin Buu', 'E', 'genkidama', 'Puro caos: lanza bombas capaces de destruir planetas.', { spd: .08 }],
+  ['hit', 'Hit', 'Universo 6', 'E', 'combo', 'Asesino que salta el tiempo para golpear.', { crit: .1 }],
+  ['caulifla', 'Caulifla', 'Universo 6', 'E', 'kiblast', 'Saiyan con talento descomunal.', {}, [{ lv: 10, name: 'Caulifla SSJ', spr: 'caulifla_ssj', bonus: { might: .3 } }]],
+  ['kale', 'Kale', 'Universo 6', 'E', 'eraser', 'Super Saiyan legendaria del Universo 6.', { maxHp: 30 }],
+  ['toppo', 'Toppo', 'Universo 11', 'E', 'hakai', 'Candidato a Dios de la Destrucción.', { armor: 1 }],
+  ['zamasu', 'Zamasu', 'Saga de Trunks del futuro', 'E', 'kikoho', 'Kaioshin aprendiz que odia a los mortales.', { regen: .6 }],
+  ['goku_black', 'Goku Black', 'Saga de Trunks del futuro', 'E', 'kiblade', 'Zamasu en el cuerpo de Goku, con guadaña de ki.', { might: .05 }, [{ lv: 15, name: 'Goku Black Rosé', spr: 'goku_rose', bonus: { might: .35, spd: .05 } }]],
+  ['vegito', 'Vegito', 'Fusión Potara', 'L', 'kiblade', 'Goku y Vegeta fusionados con los pendientes Potara.', { might: .05 }, [{ lv: 20, name: 'Vegito Blue', spr: 'vegito_blue', bonus: { might: .4, cd: .1 } }]],
+  ['gogeta', 'Gogeta', 'Danza de la Fusión', 'L', 'kamehameha', 'La fusión definitiva y su Big Bang Kamehameha.', { might: .05 }, [{ lv: 20, name: 'Gogeta Blue', spr: 'gogeta_blue', bonus: { might: .4, area: .15 } }]],
+  ['beerus', 'Beerus', 'Dios de la Destrucción', 'L', 'hakai', 'Destruye lo que le molesta con un solo gesto.', { cd: .1 }],
+  ['whis', 'Whis', 'Ángel del Universo 7', 'L', 'orbital', 'Maestro de Beerus. Nadie le ha visto pelear en serio.', { spd: .15, armor: 2 }],
+  ['kefla', 'Kefla', 'Fusión Potara', 'L', 'eraser', 'Kale y Caulifla fusionadas: Gigantic Ray.', { might: .1 }],
+  ['jiren', 'Jiren', 'Universo 11', 'L', 'shockwave', 'El guerrero más fuerte del Universo 11.', { armor: 3, maxHp: 30 }],
+].forEach(([id, name, saga, rar, weapon, desc, mods, forms]) => CHARS.push({ id, name, saga, rar, weapon, desc, hp: RAR[rar].hp, mods: mods || {}, forms: forms || [], unlock: { gacha: 1, txt: 'Consíguelo abriendo Cápsulas' } }));
 const CHAR = Object.fromEntries(CHARS.map(c => [c.id, c]));
+const CAPSULES = [
+  { id: 'n', name: 'Cápsula Normal', price: 400, odds: { C: 60, R: 28, E: 10, L: 2 } },
+  { id: 'g', name: 'Cápsula Dorada', price: 1500, odds: { C: 15, R: 42, E: 32, L: 11 } },
+];
+const MAX_STARS = 5;
 
 /* ---------------- ENEMIGOS ---------------- */
 // ai: chase | fast | ranged | tank
@@ -625,6 +778,12 @@ const WEAPONS = {
     evo: { with: 'scouter', name: 'Rayo Mortal Dorado', desc: 'Una ráfaga continua de rayos dorados.', mod: { n: 4, dmg: 12, cd: -.4 } } },
   burning: { name: 'Burning Attack', col: '#ff9a3a', icon: 'fire', desc: 'Abanico de bolas de fuego que explotan.', base: { dmg: 11, cd: 1.6, n: 3, area: 1, spd: 210, life: 1 }, up: [{ dmg: 4 }, { n: 1 }, { area: .2 }, { dmg: 5 }, { n: 1 }, { cd: -.3 }],
     evo: { with: 'kaioken', name: 'Heat Dome Attack', desc: 'Una cúpula de fuego que barre la zona.', mod: { n: 4, dmg: 14, area: .5 } } },
+  hakai: { name: 'Hakai', col: '#b06bff', icon: 'hakai', desc: 'Destruye al instante a enemigos normales. A élites y jefes les hace mucho daño.', base: { dmg: 60, cd: 3.2, n: 1, area: 1 }, up: [{ n: 1 }, { dmg: 25 }, { cd: -.4 }, { n: 1 }, { dmg: 35 }, { n: 1 }],
+    evo: { with: 'tiempo', name: 'Hakai Total', desc: 'Borra de la existencia a varios enemigos a la vez.', mod: { n: 3, dmg: 80, cd: -.6 } } },
+  kiblade: { name: 'Espada de Ki', col: '#7fe8ff', icon: 'blade', desc: 'Corte en arco hacia el enemigo más cercano.', base: { dmg: 18, cd: 1.2, n: 1, area: 1 }, up: [{ dmg: 6 }, { area: .2 }, { cd: -.2 }, { dmg: 8 }, { area: .25 }, { dmg: 12 }],
+    evo: { with: 'kinton', name: 'Espada Espiritual Final', desc: 'Un corte de 360° que no deja a nadie en pie.', mod: { dmg: 30, area: .5 } } },
+  shockwave: { name: 'Impacto de Poder', col: '#ff6a4a', icon: 'wave', desc: 'Onda expansiva a tu alrededor que empuja a los enemigos.', base: { dmg: 22, cd: 2.6, n: 1, area: 1 }, up: [{ area: .2 }, { dmg: 8 }, { cd: -.3 }, { area: .2 }, { dmg: 12 }, { cd: -.3 }],
+    evo: { with: 'armadura', name: 'Puño del Orgullo', desc: 'Ondas gigantes que además aturden a los enemigos.', mod: { dmg: 30, area: .6 } } },
   candy: { name: 'Rayo Caramelo', col: '#ff8ac8', icon: 'laser', desc: 'Rayo que convierte en caramelo a los enemigos que mata (doble experiencia).', base: { dmg: 16, cd: 1.5, n: 1, area: 1 }, up: [{ dmg: 6 }, { n: 1 }, { cd: -.25 }, { dmg: 8 }, { n: 1 }, { dmg: 12 }],
     evo: { with: 'zenkai', name: 'Rayo Caramelo Majin', desc: 'Puede convertir a cualquier enemigo normal en caramelo al instante.', mod: { n: 2, dmg: 20 } } },
 };
@@ -781,6 +940,9 @@ function makeIcon(kind, col) {
     case 'zenkai': rect(5, 1, 2, 10, col); rect(1, 5, 10, 2, col); disk(6, 6, 1.4, '#fff'); break;
     case 'kiai': for (let i = 0; i < 3; i++) { const r = 2 + i * 1.8; for (let a = 0; a < 16; a++) { const ang = a / 16 * TAU; px(Math.round(6 + Math.cos(ang) * r), Math.round(6 + Math.sin(ang) * r), i === 2 ? col : lt); } } break;
     case 'clock': disk(6, 6, 5, dk); disk(6, 6, 4, col); rect(6, 3, 1, 3, '#fff'); rect(6, 6, 3, 1, '#fff'); break;
+    case 'hakai': disk(6, 6, 5, '#2a1040'); for (let a = 0; a < 20; a++) { const r = a / 20 * 5, an = a * .9; px(Math.round(6 + Math.cos(an) * r), Math.round(6 + Math.sin(an) * r), a % 2 ? col : lt); } px(6, 6, '#fff'); break;
+    case 'blade': for (let i = 0; i < 9; i++) { px(2 + i, 9 - i, lt); px(3 + i, 9 - i, col); } rect(1, 9, 3, 2, '#c9c9d4'); px(2, 11, '#c9c9d4'); break;
+    case 'wave': for (let i = 0; i < 3; i++) { const r = 1.5 + i * 2; for (let a = 0; a < 18; a++) { const an = a / 18 * TAU; px(Math.round(6 + Math.cos(an) * r), Math.round(6 + Math.sin(an) * r), i === 0 ? '#fff' : i === 1 ? lt : col); } } break;
     case 'senzu': disk(5, 6, 3, '#59d66b'); disk(7, 6, 3, '#59d66b'); rect(4, 5, 4, 1, '#b4ffb4'); break;
     case 'zeni': disk(6, 6, 4.5, '#7a5200'); disk(6, 6, 3.6, '#ffd23f'); rect(5, 4, 2, 5, '#a87a00'); break;
     case 'cap': rect(2, 3, 8, 6, '#f4f4f4'); rect(2, 6, 8, 3, '#ff8a1c'); rect(5, 4, 2, 2, '#3aa0ff'); break;
@@ -874,11 +1036,12 @@ function musicSet(on) {
 /* =================== GUARDADO =================== */
 const SAVE_KEY = 'dragonfall_save_v1';
 let saveKey = SAVE_KEY;   // invitado; con cuenta: SAVE_KEY + '_' + uid
-function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true } }; }
+function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true } }; }
 function normalizeSave(o) {
   const s = Object.assign(defSave(), o || {});
   s.opts = Object.assign(defSave().opts, (o && o.opts) || {});
-  ['shop', 'cleared', 'best', 'bosses', 'seen', 'bought'].forEach(k => { if (!s[k] || typeof s[k] !== 'object') s[k] = {}; });
+  ['shop', 'cleared', 'best', 'bosses', 'seen', 'bought', 'owned', 'gifts'].forEach(k => { if (!s[k] || typeof s[k] !== 'object') s[k] = {}; });
+  s.tickets = { n: Number(s.tickets && s.tickets.n) || 0, g: Number(s.tickets && s.tickets.g) || 0 };
   ['zeni', 'kills', 'maxTime', 'runs', 'ts'].forEach(k => { s[k] = Number(s[k]) || 0; });
   return s;
 }
@@ -888,13 +1051,16 @@ function writeLocal() { try { localStorage.setItem(saveKey, JSON.stringify(save)
 function persist() { save.ts = Date.now(); writeLocal(); if (typeof Account !== 'undefined') Account.queue(); }
 let save = loadSave();
 function isUnlocked(c) {
+  if (save.owned[c.id]) return true;
   const u = c.unlock; if (!u) return true;
+  if (u.gacha) return false;
   if (u.boss) return !!save.bosses[u.boss];
   if (u.clear) return !!save.cleared[u.clear];
   if (u.time) return save.maxTime >= u.time;
   if (u.cost) return !!save.bought[c.id];
   return false;
 }
+function starsOf(id) { const c = CHAR[id]; return save.owned[id] || (c && isUnlocked(c) ? 1 : 0); }
 function stageUnlocked(i) { return i === 0 || !!save.cleared[STAGES[i - 1].id]; }
 
 /* =================== INPUT =================== */
@@ -1038,6 +1204,8 @@ function recalc(init) {
   const s = { maxHp: c.hp, spd: 1, might: 1, area: 1, cd: 0, amount: 0, magnet: 1, armor: 0, regen: 0, crit: .05, luck: 1, growth: 1, dur: 1, greed: 1 };
   const add = o => { for (const k in o) s[k] = (s[k] || 0) + o[k]; };
   add(c.mods || {});
+  const rr = RAR[c.rar] || RAR.C, st = Math.max(1, starsOf(c.id));
+  add({ might: rr.might + (st - 1) * .06, maxHp: Math.round(c.hp * (st - 1) * .05) });
   add({ might: .05 * (sh.might || 0), maxHp: 10 * (sh.maxHp || 0), armor: sh.armor || 0, regen: .2 * (sh.regen || 0), spd: .05 * (sh.spd || 0), magnet: .2 * (sh.magnet || 0), cd: .03 * (sh.cd || 0), growth: .06 * (sh.growth || 0), greed: .1 * (sh.greed || 0), luck: .1 * (sh.luck || 0), amount: sh.amount || 0 });
   P.passives.forEach(p => { const st = PASSIVES[p.id].st; for (const k in st) s[k] += st[k] * p.lvl; });
   c.forms.forEach((f, i) => { if (i <= P.formIdx) add(f.bonus); });
@@ -1304,7 +1472,7 @@ function fireWeapon(w) {
   const s = wstats(w), d = WEAPONS[w.id], col = w.evo && w.id === 'deathbeam' ? '#ffd23f' : d.col;
   switch (w.id) {
     case 'kamehameha': {
-      const base = Math.atan2(P.diry, P.dirx), angs = [];
+      const tg = nearest(260), base = tg ? aimAt(tg) : Math.atan2(P.diry, P.dirx), angs = [];
       for (let i = 0; i < s.n; i++) angs.push(base + (i - (s.n - 1) / 2) * .4);
       if (w.evo) angs.push(...angs.map(a => a + Math.PI));
       angs.forEach(a => addProj({ k: 'beam', w, ang: a, len: 150 * s.area, wd: 10 * s.area * (w.evo ? 1.5 : 1), dmg: s.dmg, life: s.life, max: s.life, tick: .12, tt: 0, col, follow: true, tickN: 0 }));
@@ -1372,8 +1540,33 @@ function fireWeapon(w) {
       break;
     }
     case 'orbital': break; // continuo
+    case 'hakai': {
+      const vis = shuffle(visibleEnemies(-10)); if (!vis.length) return false;
+      const normals = vis.filter(e => !e.elite), elites = vis.filter(e => e.elite);
+      const ts = normals.slice(0, s.n); if (ts.length < s.n) ts.push(...elites.slice(0, s.n - ts.length));
+      ts.forEach(e => { G.fx.push({ k: 'hakai', x: e.x, y: e.y - e.h / 2, r: e.h * .6, life: .6, max: .6 }); burst(e.x, e.y - e.h / 2, 8, '#b06bff', 1.2); hurtEnemy(e, e.elite ? s.dmg * 3 : e.hp + 1, w, 0, 0, !e.elite); });
+      sfx('boom'); break;
+    }
+    case 'kiblade': {
+      const tg = nearest(160), a = tg ? aimAt(tg) : Math.atan2(P.diry, P.dirx), R = 46 * s.area, half = w.evo ? Math.PI : 1.25;
+      query(P.x, P.y, R + 20, e => {
+        const dx = e.x - P.x, dy = e.y - e.h / 2 - PY(), d = Math.hypot(dx, dy); if (d > R + e.r) return;
+        let da = Math.atan2(dy, dx) - a; da = Math.atan2(Math.sin(da), Math.cos(da));
+        if (Math.abs(da) <= half) hurtEnemy(e, s.dmg, w, dx / (d || 1) * 120, dy / (d || 1) * 120);
+      });
+      G.fx.push({ k: 'arc', x: P.x, y: PY(), ang: a, half, r: R, col: w.evo ? '#ffd23f' : WEAPONS.kiblade.col, life: .22, max: .22 });
+      sfx('hit'); break;
+    }
+    case 'shockwave': {
+      const R = 70 * s.area;
+      G.fx.push({ k: 'ring', x: P.x, y: PY(), r0: 8, r1: R, life: .4, max: .4, col: '#ff6a4a' });
+      G.fx.push({ k: 'ring', x: P.x, y: PY(), r0: 4, r1: R * .7, life: .3, max: .3, col: '#ffd0a0' });
+      query(P.x, P.y, R + 20, e => { const dx = e.x - P.x, dy = e.y - P.y, d = Math.hypot(dx, dy); if (d < R + e.r) { hurtEnemy(e, s.dmg, w, dx / (d || 1) * 260, dy / (d || 1) * 260); if (w.evo && !e.boss) e.stun = .8; } });
+      G.shake = Math.max(G.shake, .12); sfx('boom'); break;
+    }
     case 'combo': {
-      const sides = s.n >= 2 ? [P.face, -P.face] : [P.face];
+      const tg = nearest(140), fs = tg ? (tg.x >= P.x ? 1 : -1) : P.face;
+      const sides = s.n >= 2 ? [fs, -fs] : [fs];
       const L = (w.evo ? 80 : 34) * s.area, H = (w.evo ? 26 : 22) * s.area;
       sides.forEach((sd, i) => {
         const cx = P.x + sd * (L / 2 + 4), cy = PY();
@@ -1770,6 +1963,15 @@ function renderWorld() {
       }
       lx.globalAlpha = 1;
     }
+    else if (f.k === 'arc') {
+      const x = Math.round(f.x - camX), y = Math.round(f.y - camY), rr = f.r * (1.05 - fr * .15);
+      lx.globalAlpha = fr; lx.strokeStyle = f.col; lx.lineWidth = 5; lx.beginPath(); lx.arc(x, y, Math.max(.5, rr), f.ang - f.half, f.ang + f.half); lx.stroke();
+      lx.strokeStyle = '#ffffff'; lx.lineWidth = 2; lx.beginPath(); lx.arc(x, y, Math.max(.5, rr - 1), f.ang - f.half * .8, f.ang + f.half * .8); lx.stroke(); lx.globalAlpha = 1;
+    }
+    else if (f.k === 'hakai') {
+      lx.globalAlpha = fr; for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + f.life * 12, d = f.r * (1 - fr) + 2; lx.fillStyle = i % 2 ? '#b06bff' : '#f0d8ff'; lx.fillRect(Math.round(f.x + Math.cos(a) * d - camX), Math.round(f.y + Math.sin(a) * d - camY), 2, 2); }
+      lx.globalAlpha = 1;
+    }
     else if (f.k === 'pillar') { lx.globalCompositeOperation = 'lighter'; lx.globalAlpha = fr * .8; lx.fillStyle = f.col; const w = 26 * fr + 4; lx.fillRect(Math.round(P.x - w / 2 - camX), 0, Math.round(w), Math.round(P.y - camY)); lx.fillStyle = '#ffffff'; lx.fillRect(Math.round(P.x - w / 6 - camX), 0, Math.round(w / 3), Math.round(P.y - camY)); lx.globalAlpha = 1; lx.globalCompositeOperation = 'source-over'; }
     else if (f.k === 'candy') { const x = Math.round(f.x - camX), y = Math.round(f.y - camY - (1 - fr) * 10); lx.globalAlpha = fr; lx.fillStyle = '#ff8ac8'; lx.fillRect(x - 3, y - 2, 6, 4); lx.fillStyle = '#ffd6ec'; lx.fillRect(x - 5, y - 1, 2, 2); lx.fillRect(x + 3, y - 1, 2, 2); lx.globalAlpha = 1; }
   }
@@ -1888,7 +2090,7 @@ function drawHUD(small) {
 
 /* ---------- fondo de menús ---------- */
 const menu = { x: 0, y: 0, stage: 'saiyan', walkers: [], t: 0 };
-const PARADE = ['goku', 'vegeta', 'gohan', 'piccolo', 'krilin', 'trunks', 'goten', 'a18', 'freezer', 'cell', 'buu', 'broly', 'saibaman', 'raditz', 'nappa', 'ginyu', 'satan', 'goku_ssj', 'vegeta_blue', 'jiren', 'hit', 'kidbuu'];
+const PARADE = ['goku', 'vegeta', 'gohan', 'piccolo', 'krilin', 'trunks', 'goten', 'a18', 'freezer', 'cell', 'buu', 'broly', 'saibaman', 'raditz', 'nappa', 'ginyu', 'satan', 'goku_ssj', 'vegeta_blue', 'jiren', 'hit', 'kidbuu', 'beerus', 'whis', 'vegito', 'gogeta_blue', 'goku_rose', 'gotenks', 'bardock', 'caulifla', 'cooler', 'videl', 'pan'];
 function renderMenuBG(dt) {
   menu.t += dt; menu.x += dt * 16; menu.y += dt * 6;
   camX = Math.round(menu.x); camY = Math.round(menu.y);
@@ -1918,7 +2120,7 @@ function render(dt) {
 }
 
 /* =================== INTERFAZ =================== */
-const SCREENS = ['title', 'select', 'stages', 'shop', 'dex', 'opts', 'account', 'levelup', 'pause', 'over', 'shenron', 'capsule'];
+const SCREENS = ['title', 'select', 'stages', 'shop', 'dex', 'opts', 'account', 'gacha', 'reveal', 'levelup', 'pause', 'over', 'shenron', 'capsule'];
 function showScreen(id) {
   SCREENS.forEach(s => $('#' + s).classList.toggle('on', s === id));
   $('#pausebtn').style.display = id ? 'none' : 'block';
@@ -1934,6 +2136,7 @@ function go(id) {
   if (id === 'dex') renderDex();
   if (id === 'opts') renderOpts();
   if (id === 'account') renderAccount();
+  if (id === 'gacha') renderGacha();
 }
 document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => {
   const to = b.dataset.back;
@@ -1950,12 +2153,14 @@ function renderTitle() {
 }
 $('#bPlay').onclick = () => { audioInit(); go('select'); };
 $('#bDex').onclick = () => go('dex');
+$('#bGacha').onclick = () => { audioInit(); go('gacha'); };
 $('#bShop').onclick = () => go('shop');
 $('#bOpts').onclick = () => { optsReturn = 'title'; go('opts'); };
 
 /* ---------- selección de personaje ---------- */
 function statTags(c) {
-  const t = [`Vida ${c.hp}`], m = c.mods || {};
+  const st = Math.max(1, starsOf(c.id)), rr = RAR[c.rar];
+  const t = [`Vida ${Math.round(c.hp * (1 + (st - 1) * .05) + (c.mods.maxHp || 0))}`, `+${Math.round((rr.might + (st - 1) * .06) * 100)}% daño (rareza${st > 1 ? ' y estrellas' : ''})`], m = Object.assign({}, c.mods || {}); delete m.maxHp;
   const L = { might: 'daño', area: 'área', spd: 'velocidad', cd: 'recarga', luck: 'suerte', greed: 'zenis', growth: 'experiencia', crit: 'crítico', magnet: 'atracción' };
   for (const k in m) {
     if (k === 'regen') t.push(`Regenera ${m[k]}/s`);
@@ -1966,22 +2171,33 @@ function statTags(c) {
   }
   return t;
 }
+let charFilter = 'all';
+const starTxt = n => '★'.repeat(n) + '☆'.repeat(MAX_STARS - n);
+const rarTag = r => `<span class="rar" style="background:${RAR[r].col}">${RAR[r].name.toUpperCase()}</span>`;
 function renderSelect() {
   $('#zSel').innerHTML = `<i></i>${fmtNum(save.zeni)}`;
+  const own = CHARS.filter(isUnlocked).length;
+  const fl = $('#charFilters'); fl.innerHTML = '';
+  [['all', `TODOS ${own}/${CHARS.length}`], ...RAR_ORDER.map(r => [r, RAR[r].name.toUpperCase()])].forEach(([k, n]) => {
+    const b = document.createElement('button'); b.className = 'btn' + (charFilter === k ? ' on' : ''); b.textContent = n;
+    b.onclick = () => { charFilter = k; sfx('click'); renderSelect(); }; fl.appendChild(b);
+  });
   const g = $('#charGrid'); g.innerHTML = '';
-  CHARS.forEach(c => {
-    const un = isUnlocked(c), b = document.createElement('button');
-    b.className = 'card' + (un ? '' : ' locked') + (c.id === selChar ? ' sel' : '');
+  const list = CHARS.filter(c => charFilter === 'all' || c.rar === charFilter)
+    .sort((a, b) => (isUnlocked(b) - isUnlocked(a)) || (RAR_ORDER.indexOf(a.rar) - RAR_ORDER.indexOf(b.rar)));
+  list.forEach(c => {
+    const un = isUnlocked(c), st = starsOf(c.id), b = document.createElement('button');
+    b.className = 'card' + (un ? '' : ' locked') + (c.id === selChar ? ' sel' : ''); b.dataset.r = c.rar;
     const cv2 = document.createElement('canvas'); cv2.width = 36; cv2.height = 56; paintSprite(cv2, c.id);
     b.appendChild(cv2);
-    b.insertAdjacentHTML('beforeend', `<div class="nm">${un ? c.name : '???'}</div>${un ? '' : '<span class="lock">🔒</span>'}`);
+    b.insertAdjacentHTML('beforeend', `<div class="nm">${un || save.seen[c.id] ? c.name : '???'}</div><div class="st">${un ? '★'.repeat(st) : ''}</div>${un ? '' : '<span class="lock">🔒</span>'}`);
     b.onclick = () => { selChar = c.id; sfx('click'); renderSelect(); };
-    b.ondblclick = () => { if (isUnlocked(c)) go('stages'); };
+    b.ondblclick = () => { if (isUnlocked(c)) { save.lastChar = c.id; go('stages'); } };
     g.appendChild(b);
   });
-  const c = CHAR[selChar], un = isUnlocked(c), w = WEAPONS[c.weapon];
+  const c = CHAR[selChar], un = isUnlocked(c), w = WEAPONS[c.weapon], st = starsOf(c.id);
   const d = $('#charDetail');
-  d.innerHTML = `<div class="big"><canvas width="36" height="56" id="bigSpr"></canvas><div><div class="name">${un ? c.name : '???'}</div><div class="saga">${c.saga}</div><p style="margin-top:6px">${c.desc}</p></div></div>
+  d.innerHTML = `<div class="big"><canvas width="36" height="56" id="bigSpr"></canvas><div><div class="name">${un || save.seen[c.id] ? c.name : '???'}</div><div class="saga">${c.saga}</div><div class="row" style="gap:8px;margin-top:6px">${rarTag(c.rar)}<span class="gold" style="font-size:18px">${un ? starTxt(st) : ''}</span></div><p style="margin-top:6px">${c.desc}</p></div></div>
     <div class="tags">${statTags(c).map(t => `<span class="tag">${t}</span>`).join('')}</div>
     <div class="row" style="background:#0f1430;padding:8px;box-shadow:0 0 0 2px var(--line)"><span id="wIcon"></span><div><b class="gold px" style="font-size:10px">${w.name}</b><div class="muted">${w.desc}</div></div></div>
     ${c.forms.length ? `<div class="muted">Transformaciones</div><div class="forms" id="formsBox"></div>` : ''}
@@ -1998,7 +2214,10 @@ function renderSelect() {
     const can = save.zeni >= c.unlock.cost;
     act.innerHTML = `<p class="muted">🔒 ${c.unlock.txt}</p><button class="btn gold" style="width:100%;margin-top:8px" ${can ? '' : 'disabled'}>COMPRAR · ${fmtNum(c.unlock.cost)} ZENIS</button>`;
     act.querySelector('button').onclick = () => { if (save.zeni >= c.unlock.cost) { save.zeni -= c.unlock.cost; save.bought[c.id] = 1; markSeen(c.id); persist(); sfx('ball'); renderSelect(); } };
-  } else act.innerHTML = `<p class="muted">🔒 ${c.unlock.txt}</p>`;
+  } else {
+    act.innerHTML = `<p class="muted">🔒 ${c.unlock.txt}</p><button class="btn gold" style="width:100%;margin-top:8px">IR A CÁPSULAS</button>`;
+    act.querySelector('button').onclick = () => go('gacha');
+  }
 }
 
 /* ---------- selección de saga ---------- */
@@ -2178,6 +2397,7 @@ function endRun(win, quit) {
     save.cleared[st.id] = 1;
     const b = save.best[st.id]; if (!b || G.t < b.t) save.best[st.id] = { t: G.t, lvl: G.lvl, c: G.cid };
   }
+  const tk = []; if (win) { if (!save.gifts[st.id]) { save.gifts[st.id] = 1; save.tickets.g++; tk.push('Cápsula Dorada'); } save.tickets.n++; tk.push('Cápsula Normal'); }
   const newly = CHARS.filter(c => isUnlocked(c) && !before.has(c.id));
   newly.forEach(c => markSeen(c.id));
   const nextStage = win && !nextWas ? STAGES[G.si + 1] : null;
@@ -2190,6 +2410,7 @@ function endRun(win, quit) {
    <div class="stats"><span>Tiempo</span><b>${fmtTime(G.t)}</b><span>Nivel</span><b>${G.lvl}</b><span>Bajas</span><b>${fmtNum(G.kills)}</b><span>Jefes derrotados</span><b>${G.killedBosses.length}</b><span>Zenis</span><b class="gold">+${fmtNum(earned)}${bonus ? ` (bonus ${fmtNum(bonus)})` : ''}</b></div>
    <table class="dmgtable">${P.weapons.slice().sort((a, b) => b.dealt - a.dealt).map(w => `<tr><td>${wname(w)} ${w.evo ? '★' : 'Nv ' + w.lvl} <span class="muted">${Math.round(w.dealt / tot * 100)}%</span></td><td>${fmtNum(w.dealt)}</td></tr>`).join('')}</table>
    ${newly.map(c => `<div class="unlock">🔓 ¡Nuevo guerrero desbloqueado: <b class="gold">${c.name}</b>!</div>`).join('')}
+   ${tk.map(n => `<div class="unlock">🎁 Premio: <b class="gold">${n}</b> gratis (ábrela en CÁPSULAS)</div>`).join('')}
    ${nextStage ? `<div class="unlock">🗺️ ¡Nueva saga desbloqueada: <b class="gold">${nextStage.name}</b>!</div>` : ''}
    <div class="row wrap center" style="margin-top:6px"><button class="btn primary" id="bRetry">REINTENTAR</button><button class="btn" id="bOther">OTRO GUERRERO</button><button class="btn" id="bMenu">MENÚ</button></div>`;
   const cid = G.cid, si = G.si;
@@ -2221,7 +2442,7 @@ function renderShop() {
 /* ---------- Dragonpedia ---------- */
 let dexTab = 'chars';
 function dexEntries(tab) {
-  if (tab === 'chars') { const out = []; CHARS.forEach(c => { out.push({ id: c.id, spr: c.id, name: c.name, saga: c.saga, desc: c.desc, seen: isUnlocked(c) || save.seen[c.id] }); c.forms.forEach(f => { if (f.spr !== c.id) out.push({ id: f.spr, spr: f.spr, name: f.name, saga: 'Transformación (Nv ' + f.lv + ')', desc: `Forma de ${c.name}.`, seen: save.seen[f.spr] }); }); }); return out; }
+  if (tab === 'chars') { const out = []; CHARS.slice().sort((a, b) => RAR_ORDER.indexOf(a.rar) - RAR_ORDER.indexOf(b.rar)).forEach(c => { out.push({ id: c.id, spr: c.id, name: c.name, saga: c.saga + ' · ' + RAR[c.rar].name, desc: c.desc, seen: isUnlocked(c) || save.seen[c.id] }); c.forms.forEach(f => { if (f.spr !== c.id) out.push({ id: f.spr, spr: f.spr, name: f.name, saga: 'Transformación (Nv ' + f.lv + ')', desc: `Forma de ${c.name}.`, seen: save.seen[f.spr] }); }); }); return out; }
   if (tab === 'enemies') return Object.entries(ENEMIES).map(([id, d]) => ({ id, spr: id, name: d.name, saga: d.saga + (d.elite ? ' · Élite' : ''), desc: d.desc, seen: save.seen[id] }));
   if (tab === 'bosses') return Object.entries(BOSSES).map(([id, d]) => ({ id, spr: d.spr || id, name: d.name, saga: d.saga + (d.final ? ' · Jefe final' : ' · Jefe'), desc: d.desc, seen: save.seen[id] }));
   return Object.entries(WEAPONS).map(([id, d]) => ({ id, icon: [d.icon, d.col], name: d.name, saga: 'Evoluciona con ' + PASSIVES[d.evo.with].name + ' → ' + d.evo.name, desc: d.desc, seen: true }))
@@ -2243,6 +2464,62 @@ function renderDex() {
     el.insertAdjacentHTML('beforeend', `<div class="n">${e.seen ? e.name : '???'}</div><div class="s">${e.seen ? e.saga : '—'}</div><div class="d">${e.seen ? e.desc : 'Aún no lo has encontrado.'}</div>`);
     g.appendChild(el);
   });
+}
+
+/* ---------- Cápsulas ---------- */
+function drawCapsule(cv, gold) {
+  const x = cv.getContext('2d'), W = cv.width, H = cv.height, s = W / 48; x.imageSmoothingEnabled = false; x.clearRect(0, 0, W, H);
+  const c1 = gold ? '#ffd23f' : '#ff8a1c', c2 = gold ? '#fff2a8' : '#ffc27a';
+  const r = (a, b, w, h, c) => { x.fillStyle = c; x.fillRect(a * s, b * s, w * s, h * s); };
+  r(6, 6, 36, 20, OUTLINE); r(4, 8, 40, 16, OUTLINE);
+  r(7, 7, 17, 18, c1); r(5, 9, 19, 14, c1); r(24, 7, 17, 18, '#f4f1e8'); r(24, 9, 19, 14, '#f4f1e8');
+  r(8, 8, 14, 3, c2); r(26, 8, 14, 3, '#ffffff'); r(24, 23, 18, 2, '#c9c4b8'); r(6, 21, 17, 3, shade(c1, -.25));
+  r(23, 7, 2, 18, '#3a4270'); r(29, 13, 6, 6, OUTLINE); r(30, 14, 4, 4, '#3aa0ff'); r(31, 15, 1, 1, '#ffffff');
+  r(12, 14, 6, 4, gold ? '#b8860b' : '#c25a00'); r(13, 15, 4, 2, c2);
+}
+function rollRarity(odds) { let r = Math.random() * 100; for (const k of ['L', 'E', 'R', 'C']) { r -= odds[k]; if (r <= 0) return k; } return 'C'; }
+function renderGacha() {
+  $('#zGacha').innerHTML = `<i></i>${fmtNum(save.zeni)}`;
+  const g = $('#capGrid'); g.innerHTML = '';
+  CAPSULES.forEach(cap => {
+    const el = document.createElement('div'); el.className = 'cap' + (cap.id === 'g' ? ' gold' : '');
+    const cv2 = document.createElement('canvas'); cv2.width = 48; cv2.height = 32; drawCapsule(cv2, cap.id === 'g');
+    el.appendChild(cv2);
+    const tk = save.tickets[cap.id] || 0;
+    el.insertAdjacentHTML('beforeend', `<div class="t">${cap.name.toUpperCase()}</div>
+      <div class="odds">${RAR_ORDER.map(r => `<span style="color:${RAR[r].col}">${RAR[r].name}</span><i><b style="width:${cap.odds[r]}%;background:${RAR[r].col}"></b></i><span>${cap.odds[r]}%</span>`).join('')}</div>
+      <button class="btn ${cap.id === 'g' ? 'gold' : 'primary'}" data-pay="z" ${save.zeni >= cap.price ? '' : 'disabled'}>ABRIR · ${fmtNum(cap.price)} ZENIS</button>
+      ${tk ? `<button class="btn" data-pay="t">USAR CÁPSULA GRATIS (${tk})</button>` : ''}`);
+    el.querySelectorAll('button').forEach(b => b.onclick = () => openGacha(cap, b.dataset.pay === 't'));
+    g.appendChild(el);
+  });
+  const own = c => isUnlocked(c);
+  $('#gachaInfo').innerHTML = `<div class="coll">${RAR_ORDER.map(r => { const all = CHARS.filter(c => c.rar === r); return `<span style="color:${RAR[r].col}">${RAR[r].name}: ${all.filter(own).length}/${all.length}</span>`; }).join('')}</div>
+    <p class="muted" style="font-size:19px;text-align:center">Si te toca un guerrero repetido, gana una estrella (máximo ${MAX_STARS}★): cada estrella da +6% de daño y +5% de vida. Con ${MAX_STARS}★ te devolvemos zenis. Ganar una saga te regala cápsulas.</p>`;
+}
+function openGacha(cap, ticket) {
+  if (ticket) { if (!save.tickets[cap.id]) return; save.tickets[cap.id]--; }
+  else { if (save.zeni < cap.price) return; save.zeni -= cap.price; }
+  const r = rollRarity(cap.odds), c = pick(CHARS.filter(x => x.rar === r)), st = starsOf(c.id);
+  let res;
+  if (st === 0) { save.owned[c.id] = 1; res = `<div class="new">¡NUEVO GUERRERO!</div>`; }
+  else if (st < MAX_STARS) { save.owned[c.id] = st + 1; res = `<div class="gold" style="font-size:20px;margin-top:6px">Repetido: ${starTxt(st + 1)} (+poder)</div>`; }
+  else { const z = { C: 100, R: 250, E: 600, L: 1500 }[r]; save.zeni += z; res = `<div class="gold" style="font-size:20px;margin-top:6px">Ya está al máximo: +${fmtNum(z)} zenis</div>`; }
+  markSeen(c.id); persist();
+  state = 'gacha'; showScreen('reveal');
+  const box = $('#rvBox'); box.classList.remove('show'); box.style.setProperty('--rc', RAR[r].col);
+  drawCapsule($('#rvCap'), cap.id === 'g'); $('#rvCap').classList.add('shake'); paintSprite($('#rvCv'), c.id);
+  $('#rvText').innerHTML = '<p class="muted" style="font-size:20px">Abriendo cápsula…</p>'; $('#rvBtns').innerHTML = '';
+  sfx('pick');
+  setTimeout(() => {
+    $('#rvCap').classList.remove('shake'); box.classList.add('show'); sfx(r === 'L' ? 'trans' : r === 'E' ? 'ball' : 'lvl');
+    $('#rvText').innerHTML = `${rarTag(r)}<div class="nm">${c.name}</div>${res}`;
+    const again = ticket ? (save.tickets[cap.id] > 0) : save.zeni >= cap.price;
+    $('#rvBtns').innerHTML = `${again ? `<button class="btn ${cap.id === 'g' ? 'gold' : 'primary'}" id="rvAgain">OTRA${ticket ? '' : ' · ' + fmtNum(cap.price)}</button>` : ''}<button class="btn" id="rvPlay">JUGAR CON ${c.name.toUpperCase()}</button><button class="btn" id="rvBack">VOLVER</button>`;
+    if (again) $('#rvAgain').onclick = () => openGacha(cap, ticket);
+    $('#rvPlay').onclick = () => { selChar = c.id; save.lastChar = c.id; persist(); go('select'); };
+    $('#rvBack').onclick = () => go('gacha');
+  }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 300 : 1300);
 }
 
 /* ---------- Opciones ---------- */
