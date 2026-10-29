@@ -46,7 +46,8 @@ El juego publicado es un solo archivo, **`index.html`**, con el código **proteg
 - **21 técnicas, cada una con su evolución, y 11 pasivas.** Entre ellas el Hakai de Beerus, la Espada de Ki y el Impacto de Poder de Jiren.
 - **Cartas coleccionables (78):** cada guerrero que consigues tiene su carta, y cada transformación que alcanzas en partida, otra (por ejemplo, Broly y Broly SSJ Legendario).
   - Cuatro acabados: Normal, Holo, Oro y Arcoíris, con brillo animado e inclinación 3D al mover el ratón o el dedo.
-  - Cada carta lleva tu nombre y un número de serie propio, y se puede **descargar como PNG**.
+  - Ilustración 3D: el guerrero aparece como modelo de vóxeles generado a partir de su sprite, lanzando su técnica especial contra un enemigo en el escenario de su saga. En el visor la escena está animada.
+  - Cada carta lleva tu nombre y un número de serie propio, y se puede **descargar como PNG** o como **vídeo animado** (MP4, o WebM si el navegador no graba MP4).
   - **Tienda de sobres** con zenis, que da versiones brillantes de tus cartas.
   - **Simulador** gratis e ilimitado con todas las cartas. Se guardan en otra carpeta y llevan la marca «SIMULADOR · NO OFICIAL».
 - **Templo de Kami:** mejoras permanentes que se compran con zenis.
