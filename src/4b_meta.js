@@ -32,7 +32,7 @@ function updateBuddy(dt) {
   else if (d > 2) { const sp = Math.min(d * 6, P.spd * 1.6) * dt; B.x += dx / d * sp; B.y += dy / d * sp; B.face = dx > .5 ? 1 : dx < -.5 ? -1 : B.face; B.view = viewOf(dx, dy, B.view); B.still = 0; }
   else if (P.aim) { const ax = P.aim.x - B.x; if (Math.abs(ax) > 4) B.face = ax > 0 ? 1 : -1; B.view = viewOf(ax, P.aim.y - P.aim.h * .4 - B.y + 8, B.view); }
   else if ((B.still = (B.still || 0) + dt) > .2) B.view = 0;
-  B.ft += dt; if (B.ft > (d > 4 ? .1 : .4)) { B.ft = 0; B.frame = d > 4 ? (B.frame + 1) & 3 : 0; }
+  B.ft += dt; if (B.ft > (d > 4 ? .14 : .4)) { B.ft = 0; B.frame = d > 4 ? B.frame ^ 1 : 0; }
   B.atkT -= dt;
   if (B.atkT <= 0) {
     const t = nearest(220, B.x, B.y);

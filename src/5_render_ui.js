@@ -5,12 +5,10 @@ let camX = 0, camY = 0;
 const shadeMemo = new Map();
 function sh(c, a) { const k = c + a; let v = shadeMemo.get(k); if (!v) { v = shade(c, a); shadeMemo.set(k, v); } return v; }
 function circ(x, y, r, col) { lx.fillStyle = col; lx.beginPath(); lx.arc(rd(x - camX), rd(y - camY), Math.max(.5, r), 0, TAU); lx.fill(); }
-// view: 0 de frente, 1 de espaldas, 2 de perfil. En modo suave el sprite tiene más detalle (HDF píxeles por píxel del mundo)
-let HDF = 1;
+// view: 0 de frente, 1 de espaldas, 2 de perfil
 function drawEnt(spr, x, y, sc, face, frame, variant, squash, view) {
-  const s = getSpriteV(spr, frame, face < 0, variant || '', view || 0, HDF), k = sc / (s.f || 1);
-  let w = s.width * k, h = s.height * k;
-  if (HDF === 1) { w = Math.round(w); h = Math.round(h); }
+  const s = getSpriteV(spr, frame, face < 0, variant || '', view || 0);
+  let w = Math.round(s.width * sc), h = Math.round(s.height * sc);
   if (squash) { w = Math.round(w * 1.12); h = Math.round(h * .9); }
   lx.drawImage(s, rd(x - w / 2 - camX), rd(y - h - camY + 1 - (frame & 1)), w, h);
 }
@@ -255,14 +253,14 @@ function renderScreen() {
   }
   if (P.hp > 0) {
     const [px, py] = toS(P.x, P.y);
-    txt(P.name, px, py - 33 * ZOOM * sprScale(P.spr) - 4, fs, '#ffffff');
+    txt(P.name, px, py - 30 * ZOOM * sprScale(P.spr) - 4, fs, '#ffffff');
     const w = 16 * ZOOM, fr = P.hp / P.maxHp;
     ctx.fillStyle = '#05060f'; ctx.fillRect(px - w / 2 - 2, py + 4, w + 4, 7);
     ctx.fillStyle = '#3a0d14'; ctx.fillRect(px - w / 2, py + 6, w, 3);
     ctx.fillStyle = fr > .5 ? '#59d66b' : fr > .25 ? '#ffd23f' : '#e8433a'; ctx.fillRect(px - w / 2, py + 6, w * fr, 3);
   }
   drawObjLabels(fs - 1);
-  if (G.buddy && !P.fused && P.hp > 0) { const [bx, by] = toS(G.buddy.x, G.buddy.y); txt(CHAR[G.buddy.id].name, bx, by - 33 * ZOOM * sprScale(G.buddy.id) * .85 - 2, fs - 1, '#9fd8ff'); }
+  if (G.buddy && !P.fused && P.hp > 0) { const [bx, by] = toS(G.buddy.x, G.buddy.y); txt(CHAR[G.buddy.id].name, bx, by - 30 * ZOOM * sprScale(G.buddy.id) * .85 - 2, fs - 1, '#9fd8ff'); }
   // números de daño
   for (const n of G.nums) {
     const [x, y] = toS(n.x, n.y); ctx.globalAlpha = Math.min(1, n.life * 3);
@@ -570,7 +568,7 @@ function renderMenuBG(dt) {
   }
   menu.walkers.sort((a, b) => a.y - b.y);
   for (const w of menu.walkers) {
-    w.x += (w.dir * w.sp - 22) * dt; w.ft += dt; if (w.ft > .11) { w.ft = 0; w.fr = (w.fr + 1) & 3; }
+    w.x += (w.dir * w.sp - 22) * dt; w.ft += dt; if (w.ft > .16) { w.ft = 0; w.fr ^= 1; }
     drawShadow(w.x, w.y, 7);
     if (SPR[w.id].aura) drawAura(w.x, w.y, 28 * sprScale(w.id), SPR[w.id].aura, t + w.x, false);
     drawEnt(w.id, w.x, w.y, sprScale(w.id), w.dir, w.fr, '', false, 2);
@@ -589,7 +587,6 @@ function render(dt) {
   // el mundo se dibuja directamente en la pantalla, escalado: se mueve de píxel en píxel de pantalla
   const smooth = inGame && save.opts.smooth !== false && !perfLow;
   RDK = smooth ? ZOOM * DPR : 1;
-  { const k = Math.round(RDK); HDF = !smooth || Math.abs(RDK - k) > .01 ? 1 : [3, 2].find(f => f <= k && k % f === 0) || 1; }
   ctx.setTransform(DPR * ZOOM, 0, 0, DPR * ZOOM, 0, 0); ctx.imageSmoothingEnabled = false;
   if (smooth) renderWorld(dt);
   else { lx = lcx; lcx.setTransform(1, 0, 0, 1, 0, 0); lcx.imageSmoothingEnabled = false; if (inGame) renderWorld(dt); else renderMenuBG(dt); lx = ctx; ctx.drawImage(lc, 0, 0); }
@@ -787,7 +784,6 @@ let lastOpt = {};
 function startRun(cid, si, opt = {}) {
   audioInit(); lastOpt = opt;
   newRun(cid, si, opt);
-  if (HDF > 1) for (const v of [0, 1, 2]) for (let fr = 0; fr < 4; fr++) for (const fl of [false, true]) getSpriteV(cid, fr, fl, '', v, HDF); // precarga el jugador para evitar tirones
   state = 'play'; showScreen(null);
   if (G.endless) banner('∞ SUPERVIVENCIA', `${G.stage.place} · Aguanta todo lo que puedas`);
   else banner(G.stage.name.toUpperCase() + (G.diff.id ? ' · ' + G.diff.name.toUpperCase() : ''), `${G.stage.place} · Sobrevive 10 minutos y derrota al jefe final`);
