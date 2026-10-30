@@ -238,16 +238,20 @@ function visibleProps(st, camX, camY) {
   return out;
 }
 function drawProp(p, st, camX, camY, fade) {
-  const s = getPropSprite(p.type, st, p.v), w = s.c.width, h = s.c.height, X = Math.round(p.x - w / 2 - camX), Y = Math.round(p.y - h - camY + 1);
-  if (s.shadow) { lx.fillStyle = 'rgba(0,0,0,.25)'; lx.beginPath(); lx.ellipse(Math.round(p.x - camX + 2), Math.round(p.y - camY), s.shadow, s.shadow * .3, 0, 0, TAU); lx.fill(); }
+  const s = getPropSprite(p.type, st, p.v), w = s.c.width, h = s.c.height, X = rd(p.x - w / 2 - camX), Y = rd(p.y - h - camY + 1);
+  if (s.shadow) { lx.fillStyle = 'rgba(0,0,0,.25)'; lx.beginPath(); lx.ellipse(rd(p.x - camX + 2), rd(p.y - camY), s.shadow, s.shadow * .3, 0, 0, TAU); lx.fill(); }
   if (s.glow) { lx.globalAlpha = .18 + Math.sin(performance.now() / 400 + p.x) * .06; lx.fillStyle = s.glow; lx.beginPath(); lx.arc(X + w / 2, Y + h * .6, w * .7, 0, TAU); lx.fill(); lx.globalAlpha = 1; }
   if (fade) lx.globalAlpha = .45;
   lx.drawImage(s.c, X, Y);
   lx.globalAlpha = 1;
 }
 function drawBG(stage, camX, camY) {
-  const x0 = Math.floor(camX / CH), y0 = Math.floor(camY / CH), x1 = Math.floor((camX + VW) / CH), y1 = Math.floor((camY + VH) / CH);
-  for (let cy = y0; cy <= y1; cy++) for (let cx = x0; cx <= x1; cx++) lx.drawImage(getChunk(stage, cx, cy), cx * CH - camX, cy * CH - camY);
+  // el suelo se compone en la capa pequeña con la cámara entera y se pega desplazado la fracción que falta
+  const ix = Math.floor(camX), iy = Math.floor(camY), x0 = Math.floor(ix / CH), y0 = Math.floor(iy / CH), x1 = Math.floor((ix + VW + 1) / CH), y1 = Math.floor((iy + VH + 1) / CH);
+  if (lx === lcx) { for (let cy = y0; cy <= y1; cy++) for (let cx = x0; cx <= x1; cx++) lx.drawImage(getChunk(stage, cx, cy), cx * CH - camX, cy * CH - camY); return; }   // modo clásico
+  lcx.setTransform(1, 0, 0, 1, 0, 0); lcx.imageSmoothingEnabled = false;
+  for (let cy = y0; cy <= y1; cy++) for (let cx = x0; cx <= x1; cx++) lcx.drawImage(getChunk(stage, cx, cy), cx * CH - ix, cy * CH - iy);
+  lx.drawImage(lc, ix - camX, iy - camY);
 }
 
 /* ---------- ambiente: sombras de nubes, partículas, tinte y viñeta ---------- */
@@ -257,7 +261,7 @@ function drawCloudShadows(stage, camX, camY, t) {
   lx.fillStyle = 'rgba(10,10,40,.10)';
   for (let i = 0; i < 4; i++) {
     const sp = 9 + i * 3, ox = (t * sp + i * 400) % 1400 - 700, cxw = Math.floor(camX / 700) * 700 + ox + i * 260, cyw = camY + ((i * 173) % VH);
-    for (const dx of [0, 700, -700]) { const X = Math.round(cxw + dx - camX), Y = Math.round(cyw - camY); if (X < -160 || X > VW + 160) continue; lx.beginPath(); lx.ellipse(X, Y, 90 + i * 14, 34 + i * 6, 0, 0, TAU); lx.fill(); lx.beginPath(); lx.ellipse(X + 50, Y - 10, 60, 26, 0, 0, TAU); lx.fill(); }
+    for (const dx of [0, 700, -700]) { const X = rd(cxw + dx - camX), Y = rd(cyw - camY); if (X < -160 || X > VW + 160) continue; lx.beginPath(); lx.ellipse(X, Y, 90 + i * 14, 34 + i * 6, 0, 0, TAU); lx.fill(); lx.beginPath(); lx.ellipse(X + 50, Y - 10, 60, 26, 0, 0, TAU); lx.fill(); }
   }
 }
 function drawAtmosphere(stage, dt) {

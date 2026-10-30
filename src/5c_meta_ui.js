@@ -207,13 +207,13 @@ function drawRunInfo(small, y) {
 function drawEventWorld(t) {
   const ev = G.ev; if (!ev) return;
   if (ev.k === 'supply') {
-    const x = Math.round(ev.x - camX), y = Math.round(ev.y - camY);
+    const x = rd(ev.x - camX), y = rd(ev.y - camY);
     lx.globalAlpha = .18 + Math.sin(t * 5) * .05; circ(ev.x, ev.y, ev.R, '#59d66b'); lx.globalAlpha = .9;
     lx.strokeStyle = '#a8f0b0'; lx.lineWidth = 1; lx.beginPath(); lx.arc(x, y, ev.R, 0, TAU); lx.stroke();
     lx.strokeStyle = '#ffd23f'; lx.lineWidth = 2; lx.beginPath(); lx.arc(x, y, ev.R + 3, -Math.PI / 2, -Math.PI / 2 + ev.prog / ev.need * TAU); lx.stroke(); lx.globalAlpha = 1;
     lx.drawImage(makeIcon('cap', '#ffd23f'), x - 6, y - 8 + Math.round(Math.sin(t * 4) * 2));
   } else if (ev.k === 'tourney') {
-    const x = Math.round(ev.x - camX), y = Math.round(ev.y - camY);
+    const x = rd(ev.x - camX), y = rd(ev.y - camY);
     lx.globalAlpha = .1; circ(ev.x, ev.y, ev.R, '#e8d8b0'); lx.globalAlpha = .8;
     lx.strokeStyle = '#ffd23f'; lx.lineWidth = 2; lx.setLineDash([6, 4]); lx.beginPath(); lx.arc(x, y, ev.R, 0, TAU); lx.stroke(); lx.setLineDash([]); lx.globalAlpha = 1;
     for (let i = 0; i < 4; i++) { const a = i / 4 * TAU + Math.PI / 4, px = Math.round(x + Math.cos(a) * ev.R), py = Math.round(y + Math.sin(a) * ev.R); lx.fillStyle = '#3a2a1a'; lx.fillRect(px, py - 12, 1, 12); lx.fillStyle = i % 2 ? '#e8433a' : '#ffd23f'; lx.fillRect(px + 1, py - 12, 5, 3); }
