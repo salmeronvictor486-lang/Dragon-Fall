@@ -221,6 +221,127 @@ function gridToCanvasHD(g, pal, f) {
 }
 // Proporciones de partida: torso y piernas un poco más largos (menos cabezón)
 function tallGrid(g) { const o = []; g.forEach((r, i) => { o.push(r); if (i === 16 || i === 22 || i === 23) o.push(r.slice()); }); return o; }
+/* =================== CUERPOS DIBUJADOS POR PIEZAS =================== */
+/* En partida (modo suave) el cuerpo no sale de la plantilla de 16x26: se dibuja por piezas (torso, hombros, brazos con
+   codo y mano, piernas con rodilla y botas) a la resolución de la pantalla, con la ropa de cada guerrero, en tres
+   vistas y con un paso de 4 fotogramas. La cabeza y el pelo vienen de la plantilla ampliada y los ojos se redibujan. */
+const BODY_ROLES = {   // qué letra de la paleta va en cada pieza según el tipo de ropa
+  gi: { top: 'G', chest: 'U', sh: 'G', armU: 'G', armL: 'S', wrist: 'U', hand: 'S', belt: 'B', pants: 'P', boots: 'O', thigh: 1.65, calf: 1.25 },
+  armor: { top: 'X', chest: 'X', sh: 'x', armU: 'U', armL: 'U', wrist: 'Y', hand: 'Y', belt: 'x', pants: 'U', boots: 'Y', thigh: 1.4, calf: 1.15, pads: 1 },
+  suit: { top: 'G', chest: 'X', sh: 'G', armU: 'G', armL: 'G', wrist: 'G', hand: 'S', belt: 'G', pants: 'G', boots: 'O', thigh: 1.35, calf: 1.1, panel: 1 },
+  fat: { top: 'G', chest: 'S', sh: 'G', armU: 'S', armL: 'S', wrist: 'U', hand: 'S', belt: 'B', pants: 'P', boots: 'O', thigh: 2.0, calf: 1.35, belly: 1, wide: 1 },
+  cape: { top: 'G', chest: 'U', sh: 'X', armU: 'S', armL: 'S', wrist: 'U', hand: 'S', belt: 'B', pants: 'P', boots: 'O', thigh: 1.65, calf: 1.25, cape: 1 },
+};
+const lowC = c => c && c === c.toUpperCase() && !NO_SHADE.has(c) ? c.toLowerCase() : c;
+// Lienzo de letras en coordenadas de la plantilla (x 0..16, y desde la fila 14) rasterizado a f píxeles por unidad
+function bodyCanvas(f) {
+  const W = 16 * f, H = 15 * f, g = Array.from({ length: H }, () => Array(W).fill(null));
+  const span = (x0, y0, x1, y1, fn) => { const a = Math.max(0, Math.floor(x0 * f)), b = Math.min(W - 1, Math.ceil(x1 * f)), c = Math.max(0, Math.floor((y0 - 14) * f)), d = Math.min(H - 1, Math.ceil((y1 - 14) * f)); for (let py = c; py <= d; py++) for (let px = a; px <= b; px++) { const bx = (px + .5) / f, by = 14 + (py + .5) / f; if (fn(bx, by)) g[py][px] = fn.ch; } };
+  const api = {
+    g,
+    ell(cx, cy, rx, ry, ch) { if (!ch) return; const fn = (x, y) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1; fn.ch = ch; span(cx - rx, cy - ry, cx + rx, cy + ry, fn); },
+    limb(x1, y1, x2, y2, r1, r2, ch) {   // cápsula que se estrecha de r1 a r2
+      if (!ch) return; const dx = x2 - x1, dy = y2 - y1, l2 = dx * dx + dy * dy || 1e-6;
+      const fn = (x, y) => { let t = ((x - x1) * dx + (y - y1) * dy) / l2; t = t < 0 ? 0 : t > 1 ? 1 : t; const r = r1 + (r2 - r1) * t; return (x - x1 - t * dx) ** 2 + (y - y1 - t * dy) ** 2 <= r * r; }; fn.ch = ch;
+      const m = Math.max(r1, r2); span(Math.min(x1, x2) - m, Math.min(y1, y2) - m, Math.max(x1, x2) + m, Math.max(y1, y2) + m, fn);
+    },
+    poly(pts, ch) {
+      if (!ch) return; const fn = (x, y) => { let ins = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) ins = !ins; } return ins; }; fn.ch = ch;
+      span(Math.min(...pts.map(p => p[0])), Math.min(...pts.map(p => p[1])), Math.max(...pts.map(p => p[0])), Math.max(...pts.map(p => p[1])), fn);
+    },
+    rect(x0, y0, x1, y1, ch) { if (!ch) return; const fn = (x, y) => x >= x0 && x <= x1 && y >= y0 && y <= y1; fn.ch = ch; span(x0, y0, x1, y1, fn); },
+  };
+  return api;
+}
+function drawBody(def, frame, view, f, tail) {
+  const R = BODY_ROLES[def.body || 'gi'] || BODY_ROLES.gi, C = bodyCanvas(f), s = Math.sin(frame * Math.PI / 2), back = view === 1;
+  const wag = Math.sin(frame * Math.PI / 2) * .5, drawTail = () => { if (!tail) return;
+    if (view === 2) { C.limb(6.2, 20, 3.8, 21.6 + wag * .4, .75, .6, tail); C.limb(3.8, 21.6 + wag * .4, 2.6, 19.6, .6, .5, tail); }
+    else if (back) { C.limb(8, 20.2, 8.6 + wag, 23.8, .8, .65, tail); C.limb(8.6 + wag, 23.8, 10.8 + wag, 24.6, .65, .5, tail); }
+    else { C.limb(10.5, 20.6, 13.0, 22.2 + wag * .5, .7, .6, tail); C.limb(13.0, 22.2 + wag * .5, 13.6, 20.2, .6, .5, tail); } };
+  if (view !== 1) drawTail();
+  const T = R.top, hip = 20.2, foot = 28.6;
+  if (view === 2) {   // ---------- perfil (mirando a la derecha)
+    const a = s * .5, leg = (x0, ang, lo) => {
+      const kx = x0 + Math.sin(ang) * 3.7, ky = hip + Math.cos(ang) * 3.7, bend = ang < 0 ? .5 : .15, ax = kx + Math.sin(ang * .4 - bend) * 2.8 + .3, ay = Math.min(foot - .9, ky + 2.8);
+      const p = lo ? lowC(R.pants) : R.pants, o = lo ? lowC(R.boots) : R.boots;
+      C.limb(x0, hip, kx, ky, R.thigh, R.calf + .1, p); C.limb(kx, ky, ax, ay - .6, R.calf + .1, R.calf, p);
+      C.limb(ax, ay - 1.3, ax, ay, 1.05, 1.05, o); C.ell(ax + .7, ay + .25, 1.55, .62, o);
+    };
+    const arm = (ang, lo) => {
+      const sx = 8.3, sy = 15.2, ex = sx + Math.sin(ang) * 2.5, ey = sy + Math.cos(ang) * 2.5, wx = ex + Math.sin(ang + .45) * 2, wy = ey + Math.cos(ang + .45) * 2;
+      const L = c => lo ? lowC(c) : c;
+      if (!lo) { C.limb(sx, sy, ex, ey, 1.15 + 1.2 / f, 1.0 + 1.2 / f, 'K'); C.limb(ex, ey, wx, wy, 1.0 + 1.2 / f, .9 + 1.2 / f, 'K'); }
+      C.limb(sx, sy, ex, ey, 1.15, 1.0, L(R.armU)); C.limb(ex, ey, wx, wy, 1.0, .9, L(R.armL));
+      C.limb(wx - Math.sin(ang + .45) * .5, wy - Math.cos(ang + .45) * .5, wx, wy, .96, .96, L(R.wrist)); C.ell(wx + Math.sin(ang + .45) * .5, wy + Math.cos(ang + .45) * .6, .86, .86, L(R.hand));
+    };
+    if (R.cape) C.poly([[6.6, 14.4], [8.2, 14.4], [6.2, 27.4], [2.6, 27.4], [3.6, 22]], 'X');
+    arm(a * .9, true); leg(7.6, -a, true);
+    C.rect(7.2, 13.4, 9.0, 14.8, 'S');
+    C.poly(R.wide ? [[5.4, 14.3], [10.2, 14.3], [12.0, 16.6], [11.4, 20.2], [5.4, 20.2], [4.6, 16.2]] : [[6.0, 14.3], [10.0, 14.3], [11.2, 16.2], [10.5, 20.0], [5.8, 20.0], [5.2, 16.0]], T);
+    if (R.belly) C.ell(9.8, 18.1, 2.4, 2.8, R.chest);
+    if (R.chest !== T && !R.belly) C.poly([[9.0, 14.3], [9.9, 14.3], [10.3, 15.6]], R.chest);
+    if (R.pads) C.ell(7.6, 14.9, 1.8, 1.2, R.sh);
+    C.rect(R.wide ? 5.3 : 5.8, 19.3, R.wide ? 11.5 : 10.6, 20.5, R.belt);
+    if (!R.belly) { const ang = a, kx = 8.2 + Math.sin(ang) * 3.7, ky = hip + Math.cos(ang) * 3.7; C.limb(8.2, hip, kx, ky, R.thigh + 1.2 / f, R.calf + .1 + 1.2 / f, 'K'); }
+    leg(8.2, a, false); arm(-a * .9, false);
+    if (R.cape) C.ell(7.8, 14.8, 1.5, 1.0, 'X');
+  } else {   // ---------- de frente o de espaldas
+    const lift = (side) => Math.max(0, s * side) * .8, legs = side => {
+      const x0 = 8 + side * (R.wide ? 2.2 : 1.8), kx = x0 + side * .1, ky = 24 - lift(side) * .7, ax = x0 + side * .2, ay = 26.6 - lift(side);
+      C.limb(x0, hip, kx, ky, R.thigh, R.calf + .1, R.pants); C.limb(kx, ky, ax, ay - .5, R.calf + .1, R.calf, R.pants);
+      C.limb(ax, ay - .9, ax, ay + .9, 1.15, 1.15, R.boots); C.ell(ax + side * .15, ay + 1.35, 1.35, .7, R.boots);
+    };
+    const arms = side => {
+      const k = R.wide ? .6 : 0, sw = -s * side * .35, sx = 8 + side * (3.9 + k), sy = 15.1, ex = 8 + side * (4.6 + k), ey = 17.7 + sw, wx = 8 + side * (4.8 + k), wy = 19.4 + sw, o = 1.2 / f;
+      C.limb(sx, sy, ex, ey, 1.15 + o, 1.02 + o, 'K'); C.limb(ex, ey, wx, wy, 1.02 + o, .92 + o, 'K');
+      C.limb(sx, sy, ex, ey, 1.15, 1.02, R.armU); C.limb(ex, ey, wx, wy, 1.02, .92, R.armL);
+      C.limb(wx, wy - .65, wx, wy, .98, .98, R.wrist); C.ell(wx, wy + .75, .9, .9, R.hand);
+    };
+    if (R.cape && !back) C.poly([[3.5, 14.6], [12.5, 14.6], [13.6, 27.4], [2.4, 27.4]], 'X');
+    legs(-1); legs(1);
+    C.rect(7, 13.4, 9, 14.8, 'S');
+    C.poly(R.wide ? [[3.4, 14.3], [12.6, 14.3], [13.2, 16.2], [12.4, 20.3], [3.6, 20.3], [2.8, 16.2]] : [[4.0, 14.2], [12.0, 14.2], [12.5, 15.8], [11.1, 20.0], [4.9, 20.0], [3.5, 15.8]], T);
+    if (R.belly && !back) C.ell(8, 18.4, 3.9, 3.1, R.chest);
+    if (!back && R.chest !== T && !R.belly && !R.panel) C.poly([[6.5, 14.3], [9.5, 14.3], [8, 16.5]], R.chest);
+    if (!back && R.panel) C.ell(8, 15.9, 2.3, 1.3, R.chest);
+    C.rect(R.wide ? 3.6 : 4.8, 19.3, R.wide ? 12.4 : 11.2, 20.5, R.belt);
+    if (!back && R.belt === 'B') C.rect(8.6, 20.4, 9.5, 21.4, R.belt);
+    arms(-1); arms(1);
+    if (R.pads) { C.ell(4.2, 14.9, 1.7, 1.15, R.sh); C.ell(11.8, 14.9, 1.7, 1.15, R.sh); }
+    else { const k = R.wide ? .6 : 0; C.ell(4.1 - k, 15.0, 1.3, 1.1, R.sh); C.ell(11.9 + k, 15.0, 1.3, 1.1, R.sh); }
+    if (R.cape && back) C.poly([[3.6, 14.2], [12.4, 14.2], [13.6, 27.0], [2.4, 27.0]], 'X');
+    if (R.cape) { C.ell(4.3, 14.8, 1.6, 1.1, 'X'); C.ell(11.7, 14.8, 1.6, 1.1, 'X'); }
+  }
+  if (view === 1) drawTail();
+  return C.g;
+}
+// Ojos de anime: blanco almendrado, iris con pupila y línea de pestañas (se dibujan encima de la cara ampliada)
+function animeEyes(G, base, f) {
+  const at = (y, x) => base[y] && base[y][x];
+  for (let y = 8; y <= 11; y++) for (let x = 0; x < 15; x++) {
+    if (at(y, x) !== 'W' || at(y, x + 1) !== 'E' || at(y - 1, x) === 'W') continue;
+    const cx = x + 1, cy = y + 1, put = (px, py, ch) => { const r = G[py]; if (!r || px < 0 || px >= r.length) return; const c = r[px]; if (c && 'SsWEKMR'.includes(c)) r[px] = ch; };
+    for (let py = Math.floor((cy - 1.5) * f); py < Math.ceil((cy + 1.3) * f); py++) for (let px = Math.floor((cx - 1.3) * f); px < Math.ceil((cx + 1.3) * f); px++) {
+      const bx = (px + .5) / f - cx, by = (py + .5) / f - cy;
+      const inEye = (bx / 1.08) ** 2 + (by / 1.18) ** 2 <= 1, lash = (bx / 1.22) ** 2 + ((by + .1) / 1.32) ** 2 <= 1 && by < -.72;
+      if (lash) put(px, py, 'K');
+      else if (inEye) put(px, py, ((bx - .18) / .66) ** 2 + ((by - .1) / .98) ** 2 <= 1 ? 'E' : 'W');
+    }
+  }
+}
+// Sprite de partida completo: cabeza de la plantilla ampliada + cuerpo por piezas + retoques (colas, espadas...)
+function buildHD(def, frame, view, f) {
+  const base = view === 1 ? gridBack(def, frame & 1) : view === 2 ? gridSide(def, frame & 1) : buildGrid(def, frame & 1);
+  const head = scaleGrid(base.slice(0, 14), f);
+  if (view !== 1 && def.eyes !== 'smile' && def.face !== 'ape') animeEyes(head, base, f);
+  // cola: si la plantilla trae una cola (añadido abajo a la derecha) se dibuja como una cola curva según la vista
+  let tail = null; if (def.x) parseRows(def.x).forEach((r, y) => { if (y >= 20 && y <= 25) for (let x = 12; x < 16; x++) if (r[x] !== '.' && r[x] !== '_') tail = r[x]; });
+  const body = drawBody(def, frame, view, f, tail), G = head.concat(body);
+  // la parte baja de la cabeza (cuello, barba) y los añadidos de la plantilla por debajo de la fila 14 se mantienen si caen fuera del cuerpo
+  if (def.x) parseRows(def.x).forEach((r, y) => { if (y < 14 || (tail && y >= 20) || (view === 2 && y > 16)) return; const ty = y + (y > 16) + (y > 22) + (y > 23); for (let x = 0; x < 16; x++) { const ch = r[x]; if (ch === '.' || ch === '_') continue; const vx = view === 2 ? null : (view === 1 && 'T'.includes(ch) ? 15 - x : x); if (vx === null && ch === 'T') continue; for (let dy = 0; dy < f; dy++) for (let dx = 0; dx < f; dx++) { const py = ty * f + dy, px = (vx ?? x) * f + dx; if (G[py] && !G[py][px]) G[py][px] = ch; } } });
+  return G;
+}
 // Sprite con vista y detalle: view 0 frente, 1 espaldas, 2 perfil · f factor de detalle
 function getSpriteV(id, frame, flip, variant, view, f) {
   const key = 'v' + id + '|' + frame + '|' + (flip ? 1 : 0) + '|' + variant + '|' + view + '|' + f;
@@ -233,8 +354,8 @@ function getSpriteV(id, frame, flip, variant, view, f) {
     x.drawImage(base, 0, 0);
     if (variant) { x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-atop'; x.globalAlpha = variant === 'white' ? .5 : variant === 'black' ? 1 : .55; x.fillStyle = variant === 'black' ? '#000000' : variant === 'white' ? '#ffffff' : variant; x.fillRect(0, 0, c.width, c.height); }
   } else {
-    const def = SPR[id] || SPR.goku, g = tallGrid(view === 1 ? gridBack(def, frame) : view === 2 ? gridSide(def, frame) : buildGrid(def, frame));
-    c = f > 1 ? gridToCanvasHD(scaleGrid(g, f), def.pal || {}, f) : gridToCanvas(g, def.pal || {});
+    const def = SPR[id] || SPR.goku, fr = frame & 1;
+    c = f > 1 ? gridToCanvasHD(buildHD(def, frame, view, f), def.pal || {}, f) : gridToCanvas(tallGrid(view === 1 ? gridBack(def, fr) : view === 2 ? gridSide(def, fr) : buildGrid(def, fr)), def.pal || {});
     if (!c.f) c.f = 1;
   }
   sprCache.set(key, c); return c;
