@@ -255,14 +255,14 @@ function renderScreen() {
   }
   if (P.hp > 0) {
     const [px, py] = toS(P.x, P.y);
-    txt(P.name, px, py - 30 * ZOOM * sprScale(P.spr) - 4, fs, '#ffffff');
+    txt(P.name, px, py - 33 * ZOOM * sprScale(P.spr) - 4, fs, '#ffffff');
     const w = 16 * ZOOM, fr = P.hp / P.maxHp;
     ctx.fillStyle = '#05060f'; ctx.fillRect(px - w / 2 - 2, py + 4, w + 4, 7);
     ctx.fillStyle = '#3a0d14'; ctx.fillRect(px - w / 2, py + 6, w, 3);
     ctx.fillStyle = fr > .5 ? '#59d66b' : fr > .25 ? '#ffd23f' : '#e8433a'; ctx.fillRect(px - w / 2, py + 6, w * fr, 3);
   }
   drawObjLabels(fs - 1);
-  if (G.buddy && !P.fused && P.hp > 0) { const [bx, by] = toS(G.buddy.x, G.buddy.y); txt(CHAR[G.buddy.id].name, bx, by - 30 * ZOOM * sprScale(G.buddy.id) * .85 - 2, fs - 1, '#9fd8ff'); }
+  if (G.buddy && !P.fused && P.hp > 0) { const [bx, by] = toS(G.buddy.x, G.buddy.y); txt(CHAR[G.buddy.id].name, bx, by - 33 * ZOOM * sprScale(G.buddy.id) * .85 - 2, fs - 1, '#9fd8ff'); }
   // números de daño
   for (const n of G.nums) {
     const [x, y] = toS(n.x, n.y); ctx.globalAlpha = Math.min(1, n.life * 3);
