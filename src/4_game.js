@@ -122,7 +122,7 @@ function spawnEnemy(id, x, y, isElite) {
   const hm = enemyHpMul();
   const e = {
     id, spr: d.vars ? pick(d.vars) : id, name: d.name, x, y, hp: d.hp * hm, maxHp: d.hp * hm, spd: d.spd * rand(.9, 1.1), dmg: d.dmg * enemyDmgMul(), xp: d.xp,
-    r: 5 * sc, scale: sc, h: 31 * sc, ai: d.ai || 'chase', elite: !!(d.elite || isElite), boss: false,
+    r: 5 * sc, scale: sc, h: 28 * sc, ai: d.ai || 'chase', elite: !!(d.elite || isElite), boss: false,
     flash: 0, stun: 0, kx: 0, ky: 0, ft: Math.random(), frame: 0, face: -1, hitT: {}, shootT: rand(2, 5), dead: false,
   };
   G.enemies.push(e);
@@ -134,7 +134,7 @@ function spawnBoss(id) {
   const [x, y] = spawnPos(Math.max(VW, VH) * .55);
   const cyc = G.endless ? 1 + G.bossCycle * .6 : 1, hp = d.hp * G.diff.hp * cyc;
   const e = {
-    id, spr, name: d.name, x, y, hp, maxHp: hp, spd: d.spd, dmg: d.dmg * G.diff.dmg * (G.endless ? 1 + G.bossCycle * .25 : 1), xp: 60 + G.si * 40, r: 6 * sc, scale: sc, h: 31 * sc, ai: 'boss',
+    id, spr, name: d.name, x, y, hp, maxHp: hp, spd: d.spd, dmg: d.dmg * G.diff.dmg * (G.endless ? 1 + G.bossCycle * .25 : 1), xp: 60 + G.si * 40, r: 6 * sc, scale: sc, h: 28 * sc, ai: 'boss',
     elite: true, boss: true, final: !!d.final && !G.endless, flash: 0, stun: 0, kx: 0, ky: 0, ft: 0, frame: 0, face: -1, hitT: {}, atkT: 2.5, dash: null, dead: false, aura: SPR[spr] && SPR[spr].aura || '#ff4a4a',
   };
   G.enemies.push(e); G.boss = e;
@@ -189,7 +189,7 @@ function updateEnemies(dt) {
   const far2 = (Math.hypot(VW, VH) * .85) ** 2;
   for (const e of G.enemies) {
     if (e.dead) continue;
-    e.flash -= dt; e.ft += dt; if (e.ft > .14) { e.ft = 0; e.frame = (e.frame + 1) & 3; }
+    e.flash -= dt; e.ft += dt; if (e.ft > .22) { e.ft = 0; e.frame ^= 1; }
     let dx = P.x - e.x, dy = P.y - e.y; const d = Math.hypot(dx, dy) || 1; dx /= d; dy /= d;
     let mvx = 0, mvy = 0;
     if (e.stun > 0) { e.stun -= dt; }
@@ -318,7 +318,7 @@ function updatePlayer(dt) {
   else if (P.moving) { if (Math.abs(mx) > .05) P.face = mx > 0 ? 1 : -1; P.view = viewOf(mx, my, P.view); }
   else if (P.still > .12) P.view = 0;
   P.x += mx * P.spd * dt; P.y += my * P.spd * dt;
-  P.ft += dt; if (P.ft > (P.moving ? .1 : .4)) { P.ft = 0; P.frame = P.moving ? (P.frame + 1) & 3 : 0; }
+  P.ft += dt; if (P.ft > (P.moving ? .14 : .4)) { P.ft = 0; P.frame = P.moving ? P.frame ^ 1 : 0; }
   P.inv -= dt; P.immortal -= dt; P.shieldT -= dt; P.spT -= dt; G.hurtT = (G.hurtT || 0) - dt;
   if (P.rage && (P.rage.t -= dt) <= 0) { P.rage = null; recalc(); }
   for (const q of G.spq) if ((q.t -= dt) <= 0) q.fn();
