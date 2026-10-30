@@ -99,6 +99,126 @@ function getSprite(id, frame = 0, flip = false, variant = '') {
   sprCache.set(key, c);
   return c;
 }
+/* =================== VISTAS Y DETALLE =================== */
+/* Cada guerrero tiene tres vistas generadas a partir de su plantilla: de frente (0), de espaldas (1) y de perfil
+   mirando a la derecha (2; a la izquierda se voltea). Para la partida se dibujan además a más resolución
+   (factor f = píxeles de pantalla por píxel del mundo) con un suavizado de pixel art y un sombreado más fino. */
+const FACE_CH = new Set(['S', 's', 'W', 'E', 'K', 'M']);
+const cloneGrid = g => g.map(r => r.slice());
+function isHairy(g) { let n = 0; for (let y = 0; y < 13; y++) for (const c of g[y]) if (c === 'H' || c === 'h' || c === 'L') n++; return n >= 14; }
+// De espaldas: la cara se cubre de pelo (o de piel si es calvo) y la ropa pierde los detalles del pecho
+function gridBack(def, frame) {
+  const g = cloneGrid(buildGrid(def, frame)), hairy = isHairy(g), body = def.body || 'gi';
+  for (let y = 5; y <= 13; y++) for (let x = 0; x < 16; x++) {
+    const c = g[y][x]; if (!c || !(FACE_CH.has(c) || c === 'r')) continue;
+    if (y === 13) { g[y][x] = 's'; continue; }
+    g[y][x] = hairy && y <= 12 ? (y >= 11 ? 'h' : 'H') : (c === 's' ? 's' : 'S');
+  }
+  for (let y = 14; y < 26; y++) for (let x = 0; x < 16; x++) {
+    const c = g[y][x]; if (!c) continue;
+    if (body === 'gi' && y <= 15 && c === 'U') g[y][x] = 'G';
+    else if (body === 'suit' && y <= 16 && c === 'X') g[y][x] = 'G';
+    else if (body === 'fat' && y <= 18 && c === 'S' && x > 2 && x < 13) g[y][x] = 'G';
+    else if (body === 'cape' && y <= 23 && x >= 2 && x <= 13) g[y][x] = y === 23 ? 'x' : 'X';
+  }
+  return g;
+}
+// De perfil (mirando a la derecha): media cabeza por detrás y media de cara con un ojo y nariz, torso estrecho,
+// un brazo que se balancea y piernas que dan zancadas
+function gridSide(def, frame) {
+  const F = buildGrid(def, 0), B = gridBack(def, 0), g = Array.from({ length: SH_ }, () => Array(SW_).fill(null)), body = def.body || 'gi';
+  for (let y = 0; y < 14; y++) for (let x = 0; x < 16; x++) g[y][x] = x < 8 ? B[y][x] : F[y][x];
+  if (g[10][12] && FACE_CH.has(g[10][12]) && !g[10][13]) g[10][13] = 'S';
+  if (g[9][12] && !g[9][13] && FACE_CH.has(g[9][12])) g[9][13] = 's';
+  const lo = body === 'fat' ? 3 : 4, hi = body === 'fat' ? 12 : 11;
+  for (let y = 14; y < 22; y++) for (let x = lo; x <= hi; x++) g[y][x] = F[y][x];
+  if (body === 'cape') for (let y = 15; y <= 23; y++) for (let x = 2; x <= 4; x++) g[y][x] = x === 2 ? 'x' : 'X';
+  // brazo cercano (copiado del brazo de frente): adelante y atrás al andar
+  // (la columna de atrás va en minúscula = sombreada, para que el brazo se distinga del pecho)
+  const arm = [16, 17, 18, 19].map(y => F[y][3] || F[y][2]);
+  arm.forEach((c, i) => { if (!c) return; const y = 16 + i, x = frame === 1 ? 8 + Math.min(i, 2) : 7, lc = c === c.toUpperCase() && !NO_SHADE.has(c) ? c.toLowerCase() : c; g[y][x] = lc; g[y][x + 1] = c; });
+  // rasgos de la cara un poco hacia delante (perfil)
+  for (let y = 9; y <= 12; y++) for (let x = 11; x >= 8; x--) { const c = g[y][x]; if (c && 'WEM'.includes(c) && g[y][x + 1] && FACE_CH.has(g[y][x + 1]) && x + 1 <= 12) { g[y][x + 1] = c; g[y][x] = 'S'; } }
+  // piernas
+  const P = F[22][5] || 'P', P2 = F[23][5] || P, O = F[24][5] || 'O', put = (y, a, b, c) => { for (let x = a; x <= b; x++) g[y][x] = c; };
+  if (frame === 1) { put(22, 5, 10, P); put(23, 4, 6, P2); put(23, 9, 11, P2); put(24, 3, 5, O); put(24, 10, 12, O); put(25, 3, 6, O); put(25, 10, 13, O); }
+  else { put(22, 6, 9, P); put(23, 6, 9, P2); put(24, 6, 9, O); put(25, 6, 10, O); }
+  return g;
+}
+// Escalado de pixel art (Scale2x / Scale3x) sobre la rejilla de letras: suaviza bordes sin emborronar
+function scale2x(g) {
+  const H = g.length, W = g[0].length, o = Array.from({ length: H * 2 }, () => Array(W * 2).fill(null)), at = (y, x) => y < 0 || x < 0 || y >= H || x >= W ? null : g[y][x];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const P = g[y][x], A = at(y - 1, x), B = at(y, x + 1), C = at(y, x - 1), D = at(y + 1, x);
+    o[2 * y][2 * x] = C === A && C !== D && A !== B ? A : P; o[2 * y][2 * x + 1] = A === B && A !== C && B !== D ? B : P;
+    o[2 * y + 1][2 * x] = D === C && D !== B && C !== A ? C : P; o[2 * y + 1][2 * x + 1] = B === D && B !== A && D !== C ? D : P;
+  }
+  return o;
+}
+function scale3x(g) {
+  const H = g.length, W = g[0].length, o = Array.from({ length: H * 3 }, () => Array(W * 3).fill(null)), at = (y, x) => y < 0 || x < 0 || y >= H || x >= W ? null : g[y][x];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const A = at(y - 1, x - 1), B = at(y - 1, x), C = at(y - 1, x + 1), D = at(y, x - 1), E = g[y][x], F = at(y, x + 1), G = at(y + 1, x - 1), Hh = at(y + 1, x), I = at(y + 1, x + 1);
+    let e = [E, E, E, E, E, E, E, E, E];
+    if (B !== Hh && D !== F) {
+      e[0] = D === B ? D : E; e[1] = (D === B && E !== C) || (B === F && E !== A) ? B : E; e[2] = B === F ? F : E;
+      e[3] = (D === B && E !== G) || (D === Hh && E !== A) ? D : E; e[5] = (B === F && E !== I) || (Hh === F && E !== C) ? F : E;
+      e[6] = D === Hh ? D : E; e[7] = (D === Hh && E !== I) || (Hh === F && E !== G) ? Hh : E; e[8] = Hh === F ? F : E;
+    }
+    for (let i = 0; i < 9; i++) o[3 * y + (i / 3 | 0)][3 * x + i % 3] = e[i];
+  }
+  return o;
+}
+function scaleGrid(g, f) { return f === 2 ? scale2x(g) : f === 3 ? scale3x(g) : f === 4 ? scale2x(scale2x(g)) : f === 6 ? scale2x(scale3x(g)) : g; }
+// Pintado a alta resolución: luz arriba-izquierda y sombra abajo-derecha en una franja fina, sombra bajo el pelo
+// y la ropa, brillo en los ojos y contorno tintado
+function gridToCanvasHD(g, pal, f) {
+  const H = g.length, W = g[0].length, ol = f >= 4 ? 2 : 1, c = document.createElement('canvas'); c.width = W + ol * 2; c.height = H + ol * 2;
+  const x = c.getContext('2d'), filled = (yy, xx) => yy >= 0 && yy < H && xx >= 0 && xx < W && g[yy][xx], band = Math.max(1, Math.round(f * .6));
+  const run = (y, xx, dy, dx) => { for (let k = 1; k <= band; k++) if (!filled(y + dy * k, xx + dx * k)) return true; return false; };
+  for (let y = -ol; y < H + ol; y++) for (let xx = -ol; xx < W + ol; xx++) {
+    if (filled(y, xx)) continue;
+    let nb = null; for (let k = 1; k <= ol && !nb; k++) for (const [dy, dx] of [[-k, 0], [k, 0], [0, -k], [0, k]]) if (filled(y + dy, xx + dx)) { nb = [y + dy, xx + dx]; break; }
+    if (!nb) continue;
+    x.fillStyle = mixHex(OUTLINE, shadeC(colorOf(g[nb[0]][nb[1]], pal), -.55), .35); x.fillRect(xx + ol, y + ol, 1, 1);
+  }
+  for (let y = 0; y < H; y++) for (let xx = 0; xx < W; xx++) {
+    const ch = g[y][xx]; if (!ch) continue;
+    let col = colorOf(ch, pal); const U = ch.toUpperCase();
+    if (U === 'E' && g[y - 1] && g[y - 1][xx] !== ch && g[y][xx - 1] !== ch) col = mixHex(col, '#ffffff', .75);
+    else if (!NO_SHADE.has(U)) {
+      const up = run(y, xx, -1, 0), lf = run(y, xx, 0, -1), dn = run(y, xx, 1, 0), rt = run(y, xx, 0, 1);
+      let chDn = false; for (let k = 1; k <= band; k++) { const n = filled(y + k, xx); if (n && g[y + k][xx] !== ch) { chDn = true; break; } }
+      if (up && !dn) col = shadeC(col, .24);
+      else if (lf && !rt) col = shadeC(col, .1);
+      else if (dn || rt) col = shadeC(col, -.22);
+      else if (chDn && 'HSGPXU'.includes(ch)) col = shadeC(col, -.12);
+    }
+    x.fillStyle = col; x.fillRect(xx + ol, y + ol, 1, 1);
+  }
+  c.f = f; return c;
+}
+// Sprite con vista y detalle: view 0 frente, 1 espaldas, 2 perfil · f factor de detalle
+function getSpriteV(id, frame, flip, variant, view, f) {
+  if (!view && f <= 1) return getSprite(id, frame, flip, variant);
+  const key = 'v' + id + '|' + frame + '|' + (flip ? 1 : 0) + '|' + variant + '|' + view + '|' + f;
+  let c = sprCache.get(key); if (c) return c;
+  if (flip || variant) {
+    const base = getSpriteV(id, frame, false, '', view, f);
+    c = document.createElement('canvas'); c.width = base.width; c.height = base.height; c.f = base.f;
+    const x = c.getContext('2d');
+    if (flip) { x.translate(c.width, 0); x.scale(-1, 1); }
+    x.drawImage(base, 0, 0);
+    if (variant) { x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-atop'; x.globalAlpha = variant === 'white' ? .5 : variant === 'black' ? 1 : .55; x.fillStyle = variant === 'black' ? '#000000' : variant === 'white' ? '#ffffff' : variant; x.fillRect(0, 0, c.width, c.height); }
+  } else {
+    const def = SPR[id] || SPR.goku, g = view === 1 ? gridBack(def, frame) : view === 2 ? gridSide(def, frame) : buildGrid(def, frame);
+    c = f > 1 ? gridToCanvasHD(scaleGrid(g, f), def.pal || {}, f) : gridToCanvas(g, def.pal || {});
+    if (!c.f) c.f = 1;
+  }
+  sprCache.set(key, c); return c;
+}
+// Vista según el movimiento (con margen para que no parpadee en diagonal)
+function viewOf(mx, my, prev) { const ax = Math.abs(mx), ay = Math.abs(my); if (ax < .05 && ay < .05) return prev || 0; return ay > ax * 1.25 ? (my < 0 ? 1 : 0) : ax > ay * .8 ? 2 : (prev || 0); }
 function sprScale(id) { return (SPR[id] && SPR[id].scale) || 1; }
 /* Dibuja un sprite en un canvas de UI escalado */
 function paintSprite(cv, id, opts = {}) {

@@ -5,9 +5,12 @@ let camX = 0, camY = 0;
 const shadeMemo = new Map();
 function sh(c, a) { const k = c + a; let v = shadeMemo.get(k); if (!v) { v = shade(c, a); shadeMemo.set(k, v); } return v; }
 function circ(x, y, r, col) { lx.fillStyle = col; lx.beginPath(); lx.arc(rd(x - camX), rd(y - camY), Math.max(.5, r), 0, TAU); lx.fill(); }
-function drawEnt(spr, x, y, sc, face, frame, variant, squash) {
-  const s = getSprite(spr, frame, face < 0, variant || '');
-  let w = Math.round(s.width * sc), h = Math.round(s.height * sc);
+// view: 0 de frente, 1 de espaldas, 2 de perfil. En modo suave el sprite tiene más detalle (HDF píxeles por píxel del mundo)
+let HDF = 1;
+function drawEnt(spr, x, y, sc, face, frame, variant, squash, view) {
+  const s = getSpriteV(spr, frame, face < 0, variant || '', view || 0, HDF), k = sc / (s.f || 1);
+  let w = s.width * k, h = s.height * k;
+  if (HDF === 1) { w = Math.round(w); h = Math.round(h); }
   if (squash) { w = Math.round(w * 1.12); h = Math.round(h * .9); }
   lx.drawImage(s, rd(x - w / 2 - camX), rd(y - h - camY + 1 - (frame === 1 ? 1 : 0)), w, h);
 }
@@ -116,7 +119,7 @@ function renderWorld(dt) {
   ents.sort((a, b) => a.y - b.y);
   for (const e of ents) {
     if (e.obj) { drawObj(e.obj, t); continue; }
-    if (e.bud) { drawEnt(e.bud.id, e.bud.x, e.bud.y, sprScale(e.bud.id) * .85, e.bud.face, e.bud.frame, '', false); continue; }
+    if (e.bud) { drawEnt(e.bud.id, e.bud.x, e.bud.y, sprScale(e.bud.id) * .85, e.bud.face, e.bud.frame, '', false, e.bud.view); continue; }
     if (e.prop) {
       const pr = e.prop, ps = getPropSprite(pr.type, G.stage.id, pr.v);
       const behind = P.y < pr.y && P.y > pr.y - ps.c.height && Math.abs(P.x - pr.x) < ps.c.width / 2 + 4;
@@ -125,7 +128,7 @@ function renderWorld(dt) {
     if (e === P) {
       if (P.aura || P.rage) drawAura(P.x, P.y, 28, P.rage ? P.rage.col : P.aura, t, P.formIdx >= 2 || !!P.rage);
       const blink = P.inv > 0 && Math.floor(t * 20) % 2 === 0;
-      if (!blink) drawEnt(P.spr, P.x, P.y, sprScale(P.spr), P.face, P.frame, (G.hurtT || 0) > .1 ? '#ff6a6a' : '', (G.hurtT || 0) > .15);
+      if (!blink) drawEnt(P.spr, P.x, P.y, sprScale(P.spr), P.face, P.frame, (G.hurtT || 0) > .1 ? '#ff6a6a' : '', (G.hurtT || 0) > .15, P.view);
       if (P.immortal > 0) { lx.globalAlpha = .4; circ(P.x, P.y - 12, 16, '#ffd23f'); lx.globalAlpha = 1; }
       if (P.shieldT > 0 && (P.shieldT > .6 || Math.floor(t * 12) % 2)) { lx.globalAlpha = .28; circ(P.x, P.y - 11, 18, '#9fd8ff'); lx.globalAlpha = .7; lx.strokeStyle = '#e6f6ff'; lx.lineWidth = 1; lx.beginPath(); lx.arc(rd(P.x - camX), rd(P.y - 11 - camY), 18, 0, TAU); lx.stroke(); lx.globalAlpha = 1; }
       continue;
@@ -133,8 +136,8 @@ function renderWorld(dt) {
     if (e.x < camX - 60 || e.x > camX + VW + 60 || e.y < camY - 20 || e.y > camY + VH + 120) continue;
     if (e.boss) drawAura(e.x, e.y, e.h, e.aura, t + e.x, true);
     else if (e.elite) drawAura(e.x, e.y, e.h, '#ff7a3a', t + e.x, false);
-    if (e.dash && e.dash.warn > 0 && Math.floor(t * 16) % 2) { drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, '#ff4040'); continue; }
-    drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, e.flash > 0 && !e.boss ? 'white' : '', e.flash > 0 && !e.boss);
+    if (e.dash && e.dash.warn > 0 && Math.floor(t * 16) % 2) { drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, '#ff4040', false, e.view); continue; }
+    drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, e.flash > 0 && !e.boss ? 'white' : '', e.flash > 0 && !e.boss, e.view);
     if (e.stun > 0 && !e.boss) { lx.fillStyle = '#fff6a0'; lx.fillRect(rd(e.x - camX + Math.sin(t * 8) * 4), rd(e.y - e.h - camY - 2), 2, 2); }
   }
   // proyectiles
@@ -570,7 +573,7 @@ function renderMenuBG(dt) {
     w.x += (w.dir * w.sp - 22) * dt; w.ft += dt; if (w.ft > .16) { w.ft = 0; w.fr ^= 1; }
     drawShadow(w.x, w.y, 7);
     if (SPR[w.id].aura) drawAura(w.x, w.y, 28 * sprScale(w.id), SPR[w.id].aura, t + w.x, false);
-    drawEnt(w.id, w.x, w.y, sprScale(w.id), w.dir, w.fr);
+    drawEnt(w.id, w.x, w.y, sprScale(w.id), w.dir, w.fr, '', false, 2);
   }
   menu.walkers = menu.walkers.filter(w => w.x > -60 && w.x < VW + 60);
   // héroes del título
@@ -586,6 +589,7 @@ function render(dt) {
   // el mundo se dibuja directamente en la pantalla, escalado: se mueve de píxel en píxel de pantalla
   const smooth = inGame && save.opts.smooth !== false && !perfLow;
   RDK = smooth ? ZOOM * DPR : 1;
+  { const k = Math.round(RDK); HDF = !smooth || Math.abs(RDK - k) > .01 ? 1 : [6, 4, 3, 2].find(f => f <= k && k % f === 0) || 1; }
   ctx.setTransform(DPR * ZOOM, 0, 0, DPR * ZOOM, 0, 0); ctx.imageSmoothingEnabled = false;
   if (smooth) renderWorld(dt);
   else { lx = lcx; lcx.setTransform(1, 0, 0, 1, 0, 0); lcx.imageSmoothingEnabled = false; if (inGame) renderWorld(dt); else renderMenuBG(dt); lx = ctx; ctx.drawImage(lc, 0, 0); }
