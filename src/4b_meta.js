@@ -29,7 +29,8 @@ function updateBuddy(dt) {
   const B = G.buddy; if (!B || P.fused) return;
   const tx = P.x - P.face * 16, ty = P.y + 3, dx = tx - B.x, dy = ty - B.y, d = Math.hypot(dx, dy);
   if (d > 160) { B.x = tx; B.y = ty; }
-  else if (d > 2) { const sp = Math.min(d * 6, P.spd * 1.6) * dt; B.x += dx / d * sp; B.y += dy / d * sp; B.face = dx > .5 ? 1 : dx < -.5 ? -1 : B.face; B.view = viewOf(dx, dy, B.view); }
+  else if (d > 2) { const sp = Math.min(d * 6, P.spd * 1.6) * dt; B.x += dx / d * sp; B.y += dy / d * sp; B.face = dx > .5 ? 1 : dx < -.5 ? -1 : B.face; B.view = viewOf(dx, dy, B.view); B.still = 0; }
+  else if ((B.still = (B.still || 0) + dt) > .2) B.view = 0;
   B.ft += dt; if (B.ft > (d > 4 ? .14 : .4)) { B.ft = 0; B.frame = d > 4 ? B.frame ^ 1 : 0; }
   B.atkT -= dt;
   if (B.atkT <= 0) {

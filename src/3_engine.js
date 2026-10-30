@@ -47,7 +47,7 @@ function shadeC(c, a) { const k = c + a; let v = shadeCache.get(k); if (v === un
 function mixHex(a, b, t) { const A = hexRgb(a), B = hexRgb(b); return rgbHex(A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, A[2] + (B[2] - A[2]) * t); }
 /* Pinta la rejilla con volumen: luz arriba-izquierda, sombra abajo-derecha y contorno tintado */
 function gridToCanvas(g, pal) {
-  const c = document.createElement('canvas'); c.width = SW_ + 2; c.height = SH_ + 2;
+  const c = document.createElement("canvas"); c.width = g[0].length + 2; c.height = g.length + 2;
   const x = c.getContext('2d');
   const H = g.length, W = g[0].length;
   const filled = (yy, xx) => yy >= 0 && yy < H && xx >= 0 && xx < W && g[yy][xx];
@@ -176,6 +176,11 @@ function gridToCanvasHD(g, pal, f) {
   const H = g.length, W = g[0].length, ol = f >= 4 ? 2 : 1, c = document.createElement('canvas'); c.width = W + ol * 2; c.height = H + ol * 2;
   const x = c.getContext('2d'), filled = (yy, xx) => yy >= 0 && yy < H && xx >= 0 && xx < W && g[yy][xx], band = Math.max(1, Math.round(f * .6));
   const run = (y, xx, dy, dx) => { for (let k = 1; k <= band; k++) if (!filled(y + dy * k, xx + dx * k)) return true; return false; };
+  // posición de cada píxel dentro de su tramo horizontal y vertical del mismo color (para dar volumen redondeado)
+  const U = Array.from({ length: H }, () => new Float32Array(W)), V = Array.from({ length: H }, () => new Float32Array(W));
+  for (let y = 0; y < H; y++) for (let xx = 0; xx < W;) { const ch = g[y][xx]; if (!ch) { xx++; continue; } let e = xx; while (e < W && g[y][e] === ch) e++; for (let i = xx; i < e; i++) U[y][i] = (i - xx + .5) / (e - xx); xx = e; }
+  for (let xx = 0; xx < W; xx++) for (let y = 0; y < H;) { const ch = g[y][xx]; if (!ch) { y++; continue; } let e = y; while (e < H && g[e][xx] === ch) e++; for (let i = y; i < e; i++) V[i][xx] = (i - y + .5) / (e - y); y = e; }
+  const near = (y, xx, ch, d) => { for (let k = 1; k <= d; k++) for (const [dy, dx] of [[-k, 0], [0, -k], [k, 0], [0, k]]) { const n = filled(y + dy, xx + dx); if (n && n !== ch) return n; } return null; };
   for (let y = -ol; y < H + ol; y++) for (let xx = -ol; xx < W + ol; xx++) {
     if (filled(y, xx)) continue;
     let nb = null; for (let k = 1; k <= ol && !nb; k++) for (const [dy, dx] of [[-k, 0], [k, 0], [0, -k], [0, k]]) if (filled(y + dy, xx + dx)) { nb = [y + dy, xx + dx]; break; }
@@ -184,23 +189,40 @@ function gridToCanvasHD(g, pal, f) {
   }
   for (let y = 0; y < H; y++) for (let xx = 0; xx < W; xx++) {
     const ch = g[y][xx]; if (!ch) continue;
-    let col = colorOf(ch, pal); const U = ch.toUpperCase();
-    if (U === 'E' && g[y - 1] && g[y - 1][xx] !== ch && g[y][xx - 1] !== ch) col = mixHex(col, '#ffffff', .75);
-    else if (!NO_SHADE.has(U)) {
+    let col = colorOf(ch, pal); const Up = ch.toUpperCase();
+    if (Up === 'E') {
+      // iris con degradado, pupila y brillo
+      const v = V[y][xx], u = U[y][xx];
+      if (g[y - 1] && g[y - 1][xx] !== ch && g[y][xx - 1] !== ch) col = mixHex(col, '#ffffff', .8);
+      else if (v > .35 && v < .75 && u > .2 && u < .8) col = mixHex(col, '#05030a', .7);
+      else col = shadeC(col, v < .35 ? -.3 : .18);
+    } else if (!NO_SHADE.has(Up)) {
+      // volumen: más luz a la izquierda y arriba de cada forma, en bandas como el pixel art
+      let L = .2 * (.5 - U[y][xx]) + .14 * (.5 - V[y][xx]);
       const up = run(y, xx, -1, 0), lf = run(y, xx, 0, -1), dn = run(y, xx, 1, 0), rt = run(y, xx, 0, 1);
+      if (up && !dn) L += .2; else if (lf && !rt) L += .08; else if (dn || rt) L -= .18;
       let chDn = false; for (let k = 1; k <= band; k++) { const n = filled(y + k, xx); if (n && g[y + k][xx] !== ch) { chDn = true; break; } }
-      if (up && !dn) col = shadeC(col, .24);
-      else if (lf && !rt) col = shadeC(col, .1);
-      else if (dn || rt) col = shadeC(col, -.22);
-      else if (chDn && 'HSGPXU'.includes(ch)) col = shadeC(col, -.12);
+      if (chDn && 'HSGPXU'.includes(ch)) L -= .1;
+      const other = near(y, xx, ch, 1); if (other && !'WEKMR'.includes(other.toUpperCase())) L -= .07;   // línea interior entre piezas
+      if (Up === 'S') { for (let k = 1; k <= f; k++) { const n = filled(y - k, xx); if (n === 'H' || n === 'h') { L -= .14; break; } } }   // sombra del pelo en la frente
+      let shine = 0;
+      if (Up === 'H') {   // brillo de anime: una franja clara rota en la parte alta del pelo
+        const v = V[y][xx], u = U[y][xx];
+        if (v > .2 && v < .38 && u > .15 && u < .75 && ((xx / f | 0) + (y / f | 0)) % 3) shine = 1;
+      }
+      L = Math.round(L / .07) * .07;   // bandas
+      if (L > .01) col = shadeC(col, Math.min(.45, L)); else if (L < -.01) col = shadeC(col, Math.max(-.45, L));
+      if (shine) { const [r, gg, bb] = hexRgb(col); col = r + gg + bb < 240 ? mixHex(col, '#9fb2ff', .42) : shadeC(col, .38); }
+      if (Up === 'S' && ch === 'S') { const e = near(y, xx, ch, f * 2); if (e === 'E' || e === 'W') { const below = filled(y - f, xx); if (below === 'E' || below === 'W' || filled(y - f * 2, xx) === 'E') col = mixHex(col, '#ff8f8f', .16); } }   // rubor
     }
     x.fillStyle = col; x.fillRect(xx + ol, y + ol, 1, 1);
   }
   c.f = f; return c;
 }
+// Proporciones de partida: torso y piernas un poco más largos (menos cabezón)
+function tallGrid(g) { const o = []; g.forEach((r, i) => { o.push(r); if (i === 16 || i === 22 || i === 23) o.push(r.slice()); }); return o; }
 // Sprite con vista y detalle: view 0 frente, 1 espaldas, 2 perfil · f factor de detalle
 function getSpriteV(id, frame, flip, variant, view, f) {
-  if (!view && f <= 1) return getSprite(id, frame, flip, variant);
   const key = 'v' + id + '|' + frame + '|' + (flip ? 1 : 0) + '|' + variant + '|' + view + '|' + f;
   let c = sprCache.get(key); if (c) return c;
   if (flip || variant) {
@@ -211,14 +233,14 @@ function getSpriteV(id, frame, flip, variant, view, f) {
     x.drawImage(base, 0, 0);
     if (variant) { x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-atop'; x.globalAlpha = variant === 'white' ? .5 : variant === 'black' ? 1 : .55; x.fillStyle = variant === 'black' ? '#000000' : variant === 'white' ? '#ffffff' : variant; x.fillRect(0, 0, c.width, c.height); }
   } else {
-    const def = SPR[id] || SPR.goku, g = view === 1 ? gridBack(def, frame) : view === 2 ? gridSide(def, frame) : buildGrid(def, frame);
+    const def = SPR[id] || SPR.goku, g = tallGrid(view === 1 ? gridBack(def, frame) : view === 2 ? gridSide(def, frame) : buildGrid(def, frame));
     c = f > 1 ? gridToCanvasHD(scaleGrid(g, f), def.pal || {}, f) : gridToCanvas(g, def.pal || {});
     if (!c.f) c.f = 1;
   }
   sprCache.set(key, c); return c;
 }
 // Vista según el movimiento (con margen para que no parpadee en diagonal)
-function viewOf(mx, my, prev) { const ax = Math.abs(mx), ay = Math.abs(my); if (ax < .05 && ay < .05) return prev || 0; return ay > ax * 1.25 ? (my < 0 ? 1 : 0) : ax > ay * .8 ? 2 : (prev || 0); }
+function viewOf(mx, my, prev) { const ax = Math.abs(mx), ay = Math.abs(my); if (ax < .05 && ay < .05) return 0; return ay > ax * 1.25 ? (my < 0 ? 1 : 0) : ax > ay * .8 ? 2 : (prev || 0); }
 function sprScale(id) { return (SPR[id] && SPR[id].scale) || 1; }
 /* Dibuja un sprite en un canvas de UI escalado */
 function paintSprite(cv, id, opts = {}) {
