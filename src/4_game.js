@@ -244,7 +244,7 @@ function killEnemy(e, w) {
   if (e.dead) return;
   e.dead = true; G.kills++;
   if (G.fusionPair && !P.fused && G.fuse < G.fuseNeed && ++G.fuse >= G.fuseNeed) { floatText(FINE_PTR ? '¡FUSIÓN LISTA! PULSA 2' : '¡FUSIÓN LISTA!', '#ffd23f'); sfx('ball'); }
-  if (e.elite && !e.boss) hitstop(.04);
+  if (e.elite && !e.boss) hitstop(.02);
   const luck = P.luck;
   burst(e.x, e.y - e.h / 2, e.boss ? 40 : e.elite ? 16 : 5, e.boss ? e.aura : '#ffffff', e.boss ? 3 : 1.4);
   if (G.fx.length < 280) G.fx.push({ k: 'poof', x: e.x, y: e.y - e.h * .4, r: e.r * 1.6, life: .38, max: .38 });
@@ -287,7 +287,7 @@ function dropBall(x, y) {
 function hurtPlayer(d) {
   if (P.inv > 0 || P.immortal > 0 || P.shieldT > 0 || G.endT >= 0) return;
   d = Math.max(1, d - P.armor);
-  P.hp -= d; P.inv = .5; G.shake = Math.max(G.shake, .18); G.hurtT = .25; sfx('hurt'); vibrate(25); hitstop(.025);
+  P.hp -= d; P.inv = .5; G.shake = Math.max(G.shake, .18); G.hurtT = .25; sfx('hurt'); vibrate(25);
   if (P.hp <= 0) {
     if (P.revive > 0) {
       P.revive--; P.hp = P.maxHp * .6; P.inv = 2.5; sfx('heal');
@@ -599,7 +599,7 @@ function spPow() { return P.might * (1 + G.lvl * .08) * SP_MUL; }
 function useSpecial() {
   if (state !== 'play' || !G || G.intro || P.hp <= 0 || G.endT >= 0 || P.spT > 0) return;
   const sp = curSpecial(); if (!sp) return;
-  P.spT = sp.cd; G.stat.specials++; hitstop(.05); vibrate(20); sfx('trans'); G.flash = Math.max(G.flash, .2);
+  P.spT = sp.cd; G.stat.specials++; vibrate(20); sfx('trans'); G.flash = Math.max(G.flash, .2);
   G.fx.push({ k: 'ring', x: P.x, y: P.y - 10, r0: 4, r1: 46, life: .45, max: .45, col: sp.col });
   floatText(sp.name.toUpperCase(), sp.col);
   for (const [k, o] of sp.fx) SPFX[k](o, sp.col);
@@ -773,8 +773,18 @@ function update(dt) {
   if (G.pendingLv > 0 && state === 'play') openLevelUp();
 }
 let lastT = performance.now();
+// Si con el movimiento suave el equipo no llega a 45 fps durante 4 s, se pasa al modo clásico en esta sesión
+const perfWin = { t: 0, n: 0 };
+function perfWatch(raw) {
+  if (perfLow || save.opts.smooth === false || state !== 'play' || !G || G.t < 3 || document.hidden || raw > .25) { perfWin.t = perfWin.n = 0; return; }
+  perfWin.t += raw; perfWin.n++;
+  if (perfWin.t < 4) return;
+  if (perfWin.t / perfWin.n > 1 / 45) { perfLow = true; banner('MODO RENDIMIENTO', 'Movimiento clásico para que vaya más fluido'); }
+  perfWin.t = perfWin.n = 0;
+}
 function loop(now) {
-  const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
+  const raw = (now - lastT) / 1000, dt = Math.min(.05, raw); lastT = now;
+  perfWatch(raw);
   if (typeof pollPad === 'function') pollPad(dt);
   if (state === 'play' && G) update(dt);
   render(dt);

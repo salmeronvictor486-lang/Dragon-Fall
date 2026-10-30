@@ -316,7 +316,7 @@ function musicSet(on) {
 /* =================== GUARDADO =================== */
 const SAVE_KEY = 'dragonfall_save_v1';
 let saveKey = SAVE_KEY;   // invitado; con cuenta: SAVE_KEY + '_' + uid
-function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, pid: '', streak: { last: '', n: 0 }, daily: { day: '', bought: {} }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true, vib: true, voice: true, cardStyle: '3d' }, clearedD: {}, stats: defStats(), acc: { lvl: 1, xp: 0 }, missions: { day: '', list: [], bonus: 0 }, ach: {}, titles: { novato: 1 }, title: 'novato', buddy: '', diff: 0, mode: 'saga', rankSent: {}, lang: '', cards: {}, sim: {} }; }
+function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, pid: '', streak: { last: '', n: 0 }, daily: { day: '', bought: {} }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true, vib: true, voice: true, cardStyle: '3d', smooth: true }, clearedD: {}, stats: defStats(), acc: { lvl: 1, xp: 0 }, missions: { day: '', list: [], bonus: 0 }, ach: {}, titles: { novato: 1 }, title: 'novato', buddy: '', diff: 0, mode: 'saga', rankSent: {}, lang: '', cards: {}, sim: {} }; }
 function defStats() { return { wins: 0, time: 0, specials: 0, bosses: 0, boxes: 0, events: 0, fusions: 0, shenron: 0, evos: 0, trans: 0, zeniRun: 0, daily: 0, bestKills: 0, bestInf: 0, bestInfT: 0, shrines: 0, chests: 0, crates: 0, healed: 0, packs: 0, play: 0, chars: {} }; }
 function normalizeSave(o) {
   const s = Object.assign(defSave(), o || {});
@@ -385,7 +385,10 @@ function moveVec() {
 
 /* =================== CANVAS =================== */
 const cv = $('#game'), ctx = cv.getContext('2d');
-const lc = document.createElement('canvas'), lx = lc.getContext('2d');
+// lc: capa pequeña (un píxel por píxel del mundo) para el suelo y el fondo del menú; se amplía de un solo golpe.
+// lx: donde se dibuja el mundo. En partida es la propia pantalla, escalada a píxeles del mundo.
+const lc = document.createElement('canvas'), lcx = lc.getContext('2d');
+let lx = ctx;
 let SWd = 0, SHd = 0, DPR = 1, ZOOM = 2, VW = 320, VH = 180;
 function resize() {
   DPR = Math.min(2, window.devicePixelRatio || 1); SWd = innerWidth; SHd = innerHeight;
@@ -393,8 +396,11 @@ function resize() {
   const z = Math.min(Math.min(SWd, SHd) / 225, Math.max(SWd, SHd) / 400);
   ZOOM = z >= 2 ? Math.floor(z) : Math.max(1, Math.round(z * 2) / 2);
   VW = Math.ceil(SWd / ZOOM); VH = Math.ceil(SHd / ZOOM);
-  lc.width = VW; lc.height = VH;
+  lc.width = VW + 2; lc.height = VH + 2;
 }
+// Redondea a píxeles de pantalla (no del mundo): todo se mueve de píxel en píxel real sin perder el aspecto pixel art
+let RDK = 1, perfLow = false;   // RDK: subdivisiones de píxel del mundo; perfLow: modo clásico automático si el equipo no llega
+function rd(v) { return Math.round(v * RDK) / RDK; }
 addEventListener('resize', resize); resize();
 cv.addEventListener('pointerdown', e => {
   audioInit();

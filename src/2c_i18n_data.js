@@ -1437,7 +1437,8 @@ const TR = {
   'Demonio': ['Dimoni', 'Demon'],
   'Dragón oscuro': ['Drac fosc', 'Shadow dragon'],
   'Galáctico': ['Galàctic', 'Galactic'],
-  'Completa 5 sagas': ['Completa 5 sagues', 'Complete 5 sagas'], 'Consigue todos los guerreros': ['Aconsegueix tots els guerrers', 'Get every warrior'],
+  'Completa 5 sagas': ['Completa 5 sagues', 'Complete 5 sagas'],
+  'Movimiento suave (quítalo si el juego va lento)': ['Moviment suau (treu-lo si el joc va lent)', 'Smooth motion (turn it off if the game runs slowly)'], 'MODO RENDIMIENTO': ['MODE RENDIMENT', 'PERFORMANCE MODE'], 'Movimiento clásico para que vaya más fluido': ['Moviment clàssic perquè vagi més fluid', 'Classic motion so it runs more smoothly'], 'Consigue todos los guerreros': ['Aconsegueix tots els guerrers', 'Get every warrior'],
   'Toda la historia': ['Tota la història', 'The whole story'],
   'Completa las 10 sagas': ['Completa les 10 sagues', 'Complete all 10 sagas'],
 };

@@ -4,12 +4,12 @@
 let camX = 0, camY = 0;
 const shadeMemo = new Map();
 function sh(c, a) { const k = c + a; let v = shadeMemo.get(k); if (!v) { v = shade(c, a); shadeMemo.set(k, v); } return v; }
-function circ(x, y, r, col) { lx.fillStyle = col; lx.beginPath(); lx.arc(Math.round(x - camX), Math.round(y - camY), Math.max(.5, r), 0, TAU); lx.fill(); }
+function circ(x, y, r, col) { lx.fillStyle = col; lx.beginPath(); lx.arc(rd(x - camX), rd(y - camY), Math.max(.5, r), 0, TAU); lx.fill(); }
 function drawEnt(spr, x, y, sc, face, frame, variant, squash) {
   const s = getSprite(spr, frame, face < 0, variant || '');
   let w = Math.round(s.width * sc), h = Math.round(s.height * sc);
   if (squash) { w = Math.round(w * 1.12); h = Math.round(h * .9); }
-  lx.drawImage(s, Math.round(x - w / 2 - camX), Math.round(y - h - camY + 1 - (frame === 1 ? 1 : 0)), w, h);
+  lx.drawImage(s, rd(x - w / 2 - camX), rd(y - h - camY + 1 - (frame === 1 ? 1 : 0)), w, h);
 }
 /* Cristales de ki y monedas */
 const gemCache = new Map();
@@ -37,22 +37,22 @@ const shadowCache = new Map();
 function drawShadow(x, y, r) {
   r = Math.max(2, Math.round(r)); let c = shadowCache.get(r);
   if (!c) { c = document.createElement('canvas'); c.width = r * 2 + 2; c.height = Math.ceil(r * .8) + 2; const g = c.getContext('2d'); g.fillStyle = 'rgba(0,0,0,.28)'; g.beginPath(); g.ellipse(r + 1, c.height / 2, r, r * .4, 0, 0, TAU); g.fill(); shadowCache.set(r, c); }
-  lx.drawImage(c, Math.round(x - camX - r - 1), Math.round(y - camY - c.height / 2));
+  lx.drawImage(c, rd(x - camX - r - 1), rd(y - camY - c.height / 2));
 }
 function drawAura(x, y, h, col, t, big) {
   lx.globalCompositeOperation = 'lighter';
   lx.globalAlpha = .22 + Math.sin(t * 12) * .05; lx.fillStyle = col;
-  lx.beginPath(); lx.ellipse(Math.round(x - camX), Math.round(y - h * .5 - camY), h * .42, h * .62, 0, 0, TAU); lx.fill();
+  lx.beginPath(); lx.ellipse(rd(x - camX), rd(y - h * .5 - camY), h * .42, h * .62, 0, 0, TAU); lx.fill();
   const n = big ? 22 : 12;
   for (let i = 0; i < n; i++) {
     const ph = (t * 1.6 + i / n) % 1, px = x + Math.sin(i * 2.4 + t * 4) * h * .32, py = y - ph * h * 1.15;
-    lx.globalAlpha = (1 - ph) * .8; lx.fillRect(Math.round(px - camX), Math.round(py - camY), big ? 3 : 2, big ? 4 : 3);
+    lx.globalAlpha = (1 - ph) * .8; lx.fillRect(rd(px - camX), rd(py - camY), big ? 3 : 2, big ? 4 : 3);
   }
   lx.globalAlpha = 1; lx.globalCompositeOperation = 'source-over';
 }
 function drawBeam(x, y, ang, len, wd, col, frac) {
   const w = Math.max(1.5, wd * (.35 + .65 * frac) * (1 + Math.sin(performance.now() / 25) * .08));
-  lx.save(); lx.translate(Math.round(x - camX), Math.round(y - camY)); lx.rotate(ang);
+  lx.save(); lx.translate(rd(x - camX), rd(y - camY)); lx.rotate(ang);
   lx.fillStyle = col; lx.globalAlpha = .35; lx.fillRect(0, -w * .75, len, w * 1.5);
   lx.globalAlpha = 1; lx.fillStyle = sh(col, -.25); lx.fillRect(0, -w / 2, len, w); lx.fillStyle = col; lx.fillRect(0, -w / 2 + 1, len, Math.max(1, w - 2));
   lx.fillStyle = sh(col, .55); lx.fillRect(0, -w * .3, len, w * .6);
@@ -69,14 +69,15 @@ function drawGlowBall(x, y, r, col) {
 const GEMCOL = [[100, '#ffd23f'], [20, '#ff4a6a'], [5, '#59d66b'], [0, '#5fc8ff']];
 function renderWorld(dt) {
   const shk = save.opts.shake ? G.shake : 0;
-  camX = Math.round(P.x - VW / 2 + (Math.random() - .5) * shk * 10);
-  camY = Math.round(P.y - 12 - VH / 2 + (Math.random() - .5) * shk * 10);
+  // cámara en fracciones de píxel del mundo (un píxel de pantalla): el desplazamiento es suave aunque el mundo se vea pixelado
+  camX = rd(P.x - VW / 2 + (Math.random() - .5) * shk * 10);
+  camY = rd(P.y - 12 - VH / 2 + (Math.random() - .5) * shk * 10);
   drawBG(G.stage.id, camX, camY);
   const t = G.t;
   drawCloudShadows(G.stage.id, camX, camY, t);
   // cristales de ki
   for (const g of G.gems) {
-    const col = GEMCOL.find(c => g.v >= c[0])[1], gx = Math.round(g.x - camX), gy = Math.round(g.y - camY);
+    const col = GEMCOL.find(c => g.v >= c[0])[1], gx = rd(g.x - camX), gy = rd(g.y - camY);
     if (gx < -6 || gy < -6 || gx > VW + 6 || gy > VH + 6) continue;
     const sp = gemSprite(col, g.v >= 20), bob = Math.round(Math.sin(t * 4 + g.x * .3));
     lx.fillStyle = 'rgba(0,0,0,.22)'; lx.fillRect(gx - 2, gy + 3, 5, 1);
@@ -85,7 +86,7 @@ function renderWorld(dt) {
   }
   // objetos
   for (const p of G.picks) {
-    const bob = Math.round(Math.sin(p.t * 5) * 1.5), px = Math.round(p.x - camX), py = Math.round(p.y - camY) + bob;
+    const bob = rd(Math.sin(p.t * 5) * 1.5), px = rd(p.x - camX), py = rd(p.y - camY) + bob;
     drawShadow(p.x, p.y + 6, 4);
     if (p.k === 'ball') { lx.globalAlpha = .4 + Math.sin(p.t * 6) * .2; circ(p.x, p.y + bob, 9, '#ff8a1c'); lx.globalAlpha = 1; drawDragonBall(lx, px, py, 5, p.v); }
     else if (p.k === 'capsule') { lx.globalAlpha = .35; circ(p.x, p.y + bob, 12, '#ffd23f'); lx.globalAlpha = 1; lx.drawImage(makeIcon('cap', '#fff'), px - 9, py - 9, 18, 18); }
@@ -101,7 +102,7 @@ function renderWorld(dt) {
   if (auraW) {
     const R = 30 * wstats(auraW).area, col = auraW.evo ? '#dfe6ff' : '#ffd23f';
     lx.globalAlpha = .18 + Math.sin(t * 6) * .04; circ(P.x, P.y - 6, R, col); lx.globalAlpha = .6;
-    lx.strokeStyle = col; lx.lineWidth = 1; lx.beginPath(); lx.arc(Math.round(P.x - camX), Math.round(P.y - 6 - camY), Math.max(.5, R), 0, TAU); lx.stroke(); lx.globalAlpha = 1;
+    lx.strokeStyle = col; lx.lineWidth = 1; lx.beginPath(); lx.arc(rd(P.x - camX), rd(P.y - 6 - camY), Math.max(.5, R), 0, TAU); lx.stroke(); lx.globalAlpha = 1;
   }
   drawObjsGround(t);
   drawEventWorld(t);
@@ -126,7 +127,7 @@ function renderWorld(dt) {
       const blink = P.inv > 0 && Math.floor(t * 20) % 2 === 0;
       if (!blink) drawEnt(P.spr, P.x, P.y, sprScale(P.spr), P.face, P.frame, (G.hurtT || 0) > .1 ? '#ff6a6a' : '', (G.hurtT || 0) > .15);
       if (P.immortal > 0) { lx.globalAlpha = .4; circ(P.x, P.y - 12, 16, '#ffd23f'); lx.globalAlpha = 1; }
-      if (P.shieldT > 0 && (P.shieldT > .6 || Math.floor(t * 12) % 2)) { lx.globalAlpha = .28; circ(P.x, P.y - 11, 18, '#9fd8ff'); lx.globalAlpha = .7; lx.strokeStyle = '#e6f6ff'; lx.lineWidth = 1; lx.beginPath(); lx.arc(Math.round(P.x - camX), Math.round(P.y - 11 - camY), 18, 0, TAU); lx.stroke(); lx.globalAlpha = 1; }
+      if (P.shieldT > 0 && (P.shieldT > .6 || Math.floor(t * 12) % 2)) { lx.globalAlpha = .28; circ(P.x, P.y - 11, 18, '#9fd8ff'); lx.globalAlpha = .7; lx.strokeStyle = '#e6f6ff'; lx.lineWidth = 1; lx.beginPath(); lx.arc(rd(P.x - camX), rd(P.y - 11 - camY), 18, 0, TAU); lx.stroke(); lx.globalAlpha = 1; }
       continue;
     }
     if (e.x < camX - 60 || e.x > camX + VW + 60 || e.y < camY - 20 || e.y > camY + VH + 120) continue;
@@ -134,7 +135,7 @@ function renderWorld(dt) {
     else if (e.elite) drawAura(e.x, e.y, e.h, '#ff7a3a', t + e.x, false);
     if (e.dash && e.dash.warn > 0 && Math.floor(t * 16) % 2) { drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, '#ff4040'); continue; }
     drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, e.flash > 0 && !e.boss ? 'white' : '', e.flash > 0 && !e.boss);
-    if (e.stun > 0 && !e.boss) { lx.fillStyle = '#fff6a0'; lx.fillRect(Math.round(e.x - camX + Math.sin(t * 8) * 4), Math.round(e.y - e.h - camY - 2), 2, 2); }
+    if (e.stun > 0 && !e.boss) { lx.fillStyle = '#fff6a0'; lx.fillRect(rd(e.x - camX + Math.sin(t * 8) * 4), rd(e.y - e.h - camY - 2), 2, 2); }
   }
   // proyectiles
   for (const p of G.projs) {
@@ -144,18 +145,18 @@ function renderWorld(dt) {
       lx.globalAlpha = 1; drawGlowBall(p.x, p.y, p.r, p.col);
     } else if (p.k === 'beam') drawBeam(P.x, PY(), p.ang, p.len, p.wd, p.col, p.life / p.max);
     else if (p.k === 'disc') {
-      const x = Math.round(p.x - camX), y = Math.round(p.y - camY);
+      const x = rd(p.x - camX), y = rd(p.y - camY);
       lx.fillStyle = sh(p.col, -.3); lx.beginPath(); lx.ellipse(x, y, p.r + 1, p.r * .45 + 1, 0, 0, TAU); lx.fill();
       lx.fillStyle = p.col; lx.beginPath(); lx.ellipse(x, y, p.r, p.r * .42, 0, 0, TAU); lx.fill();
       lx.fillStyle = '#ffffff'; lx.fillRect(x - Math.round(p.r * .7 * Math.abs(Math.cos(p.spin))), y, Math.max(1, Math.round(p.r * 1.4 * Math.abs(Math.cos(p.spin)))), 1);
     } else if (p.k === 'aoe') {
-      const x = Math.round(p.x - camX), y = Math.round(p.y - camY);
+      const x = rd(p.x - camX), y = rd(p.y - camY);
       if (p.delay > 0) { lx.strokeStyle = p.col; lx.globalAlpha = .5; lx.lineWidth = 1; tri(x, y, p.r * .9); lx.stroke(); lx.globalAlpha = 1; }
       else { const f = p.life / p.max; lx.globalAlpha = f; lx.fillStyle = p.col; tri(x, y, p.r * (1.2 - f * .3)); lx.fill(); lx.fillStyle = '#ffffff'; tri(x, y, p.r * .5 * f); lx.fill(); lx.globalAlpha = 1; }
     } else if (p.k === 'genki') {
       lx.globalAlpha = .35; circ(p.x, p.y, p.r * 1.35, p.col); lx.globalAlpha = 1;
       circ(p.x, p.y, p.r + 1, '#2a6ab8'); circ(p.x, p.y, p.r, p.col); circ(p.x, p.y, p.r * .72, '#d6f2ff'); circ(p.x - p.r * .25, p.y - p.r * .25, p.r * .3, '#ffffff');
-      if (p.charge > 0) for (let i = 0; i < 6; i++) { const a = Math.random() * TAU, d = p.r + rand(6, 26); lx.fillStyle = '#bfe8ff'; lx.fillRect(Math.round(p.x + Math.cos(a) * d - camX), Math.round(p.y + Math.sin(a) * d - camY), 1, 1); }
+      if (p.charge > 0) for (let i = 0; i < 6; i++) { const a = Math.random() * TAU, d = p.r + rand(6, 26); lx.fillStyle = '#bfe8ff'; lx.fillRect(rd(p.x + Math.cos(a) * d - camX), rd(p.y + Math.sin(a) * d - camY), 1, 1); }
     }
   }
   // orbitales
@@ -164,28 +165,28 @@ function renderWorld(dt) {
   for (const f of G.fx) {
     if (f.delay > 0) continue;
     const fr = f.life / f.max;
-    if (f.k === 'p') { lx.globalAlpha = Math.min(1, fr * 2); lx.fillStyle = f.col; lx.fillRect(Math.round(f.x - camX), Math.round(f.y - camY), f.s, f.s); lx.globalAlpha = 1; }
-    else if (f.k === 'ring') { lx.globalAlpha = fr; lx.strokeStyle = f.col; lx.lineWidth = Math.max(1, 4 * fr); lx.beginPath(); lx.arc(Math.round(f.x - camX), Math.round(f.y - camY), Math.max(.5, f.r0 + (f.r1 - f.r0) * (1 - fr)), 0, TAU); lx.stroke(); lx.globalAlpha = 1; }
+    if (f.k === 'p') { lx.globalAlpha = Math.min(1, fr * 2); lx.fillStyle = f.col; lx.fillRect(rd(f.x - camX), rd(f.y - camY), f.s, f.s); lx.globalAlpha = 1; }
+    else if (f.k === 'ring') { lx.globalAlpha = fr; lx.strokeStyle = f.col; lx.lineWidth = Math.max(1, 4 * fr); lx.beginPath(); lx.arc(rd(f.x - camX), rd(f.y - camY), Math.max(.5, f.r0 + (f.r1 - f.r0) * (1 - fr)), 0, TAU); lx.stroke(); lx.globalAlpha = 1; }
     else if (f.k === 'boom') {
       const big = f.r > 45, rr = Math.max(.5, f.r * (1.15 - fr * .35));
-      if (big) { lx.globalAlpha = fr * .22; circ(f.x, f.y, rr, f.col); lx.globalAlpha = fr; lx.strokeStyle = sh(f.col, .4); lx.lineWidth = 2; lx.beginPath(); lx.arc(Math.round(f.x - camX), Math.round(f.y - camY), rr, 0, TAU); lx.stroke(); lx.globalAlpha = fr * .8; circ(f.x, f.y, 10 * fr, '#ffffff'); }
+      if (big) { lx.globalAlpha = fr * .22; circ(f.x, f.y, rr, f.col); lx.globalAlpha = fr; lx.strokeStyle = sh(f.col, .4); lx.lineWidth = 2; lx.beginPath(); lx.arc(rd(f.x - camX), rd(f.y - camY), rr, 0, TAU); lx.stroke(); lx.globalAlpha = fr * .8; circ(f.x, f.y, 10 * fr, '#ffffff'); }
       else { lx.globalAlpha = fr * .75; circ(f.x, f.y, rr, f.col); lx.globalAlpha = fr * .9; circ(f.x, f.y, rr * .7, sh(f.col, .5)); circ(f.x, f.y, f.r * .4 * fr, '#ffffff'); }
       lx.globalAlpha = 1;
     }
     else if (f.k === 'ray') {
       if (f.kind === 'makanko') {
         drawBeam(f.x, f.y, f.ang, f.len, f.wd * .5, f.col, fr);
-        lx.save(); lx.translate(Math.round(f.x - camX), Math.round(f.y - camY)); lx.rotate(f.ang); lx.fillStyle = '#c8a0ff';
+        lx.save(); lx.translate(rd(f.x - camX), rd(f.y - camY)); lx.rotate(f.ang); lx.fillStyle = '#c8a0ff';
         for (let i = 0; i < f.len; i += 2) lx.fillRect(i, Math.round(Math.sin(i * .35 + f.life * 40) * f.wd * 1.1), 2, 2);
         lx.restore();
       } else if (f.kind === 'candy') {
-        lx.save(); lx.translate(Math.round(f.x - camX), Math.round(f.y - camY)); lx.rotate(f.ang); lx.globalAlpha = fr;
+        lx.save(); lx.translate(rd(f.x - camX), rd(f.y - camY)); lx.rotate(f.ang); lx.globalAlpha = fr;
         for (let i = 0; i < f.len; i += 2) { const o = Math.sin(i * .25 + f.life * 50) * f.wd * .6; lx.fillStyle = f.col; lx.fillRect(i, Math.round(o - 1.5), 2, 3); lx.fillStyle = '#fff'; lx.fillRect(i, Math.round(o), 2, 1); }
         lx.restore(); lx.globalAlpha = 1;
       } else drawBeam(f.x, f.y, f.ang, f.len, f.wd, f.col, fr);
     }
     else if (f.k === 'slash') {
-      const x = Math.round(f.x - camX), y = Math.round(f.y - camY);
+      const x = rd(f.x - camX), y = rd(f.y - camY);
       lx.globalAlpha = fr;
       if (f.evo) {
         for (let i = 0; i < f.L; i += 2) { const u = i / f.L, yy = Math.sin(u * 9 + f.life * 30) * f.H * .3; const xx = x - f.dir * f.L / 2 + f.dir * i; circ(xx + camX, y + yy + camY, 4 * (1 - u * .5), u > .85 ? '#fff4a0' : '#ffd23f'); }
@@ -197,16 +198,16 @@ function renderWorld(dt) {
       lx.globalAlpha = 1;
     }
     else if (f.k === 'arc') {
-      const x = Math.round(f.x - camX), y = Math.round(f.y - camY), rr = f.r * (1.05 - fr * .15);
+      const x = rd(f.x - camX), y = rd(f.y - camY), rr = f.r * (1.05 - fr * .15);
       lx.globalAlpha = fr; lx.strokeStyle = f.col; lx.lineWidth = 5; lx.beginPath(); lx.arc(x, y, Math.max(.5, rr), f.ang - f.half, f.ang + f.half); lx.stroke();
       lx.strokeStyle = '#ffffff'; lx.lineWidth = 2; lx.beginPath(); lx.arc(x, y, Math.max(.5, rr - 1), f.ang - f.half * .8, f.ang + f.half * .8); lx.stroke(); lx.globalAlpha = 1;
     }
     else if (f.k === 'hakai') {
-      lx.globalAlpha = fr; for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + f.life * 12, d = f.r * (1 - fr) + 2; lx.fillStyle = i % 2 ? '#b06bff' : '#f0d8ff'; lx.fillRect(Math.round(f.x + Math.cos(a) * d - camX), Math.round(f.y + Math.sin(a) * d - camY), 2, 2); }
+      lx.globalAlpha = fr; for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + f.life * 12, d = f.r * (1 - fr) + 2; lx.fillStyle = i % 2 ? '#b06bff' : '#f0d8ff'; lx.fillRect(rd(f.x + Math.cos(a) * d - camX), rd(f.y + Math.sin(a) * d - camY), 2, 2); }
       lx.globalAlpha = 1;
     }
     else if (f.k === 'spark') {
-      const x = Math.round(f.x - camX), y = Math.round(f.y - camY), s = Math.round((1 - fr) * 4) + 1, c = f.crit ? '#ffd23f' : '#ffffff';
+      const x = rd(f.x - camX), y = rd(f.y - camY), s = rd((1 - fr) * 4) + 1, c = f.crit ? '#ffd23f' : '#ffffff';
       lx.fillStyle = c; lx.fillRect(x - s, y, s * 2 + 1, 1); lx.fillRect(x, y - s, 1, s * 2 + 1); if (fr > .5) { lx.fillRect(x - 1, y - 1, 3, 3); }
     }
     else if (f.k === 'poof') {
@@ -214,14 +215,14 @@ function renderWorld(dt) {
       for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + f.x; circ(f.x + Math.cos(a) * rr * .6, f.y + Math.sin(a) * rr * .45 - (1 - fr) * 4, rr * .45 * (.6 + fr * .4), i % 2 ? '#e8e4f0' : '#c8c4d8'); }
       lx.globalAlpha = 1;
     }
-    else if (f.k === 'pillar') { lx.globalCompositeOperation = 'lighter'; lx.globalAlpha = fr * .8; lx.fillStyle = f.col; const w = 26 * fr + 4; lx.fillRect(Math.round(P.x - w / 2 - camX), 0, Math.round(w), Math.round(P.y - camY)); lx.fillStyle = '#ffffff'; lx.fillRect(Math.round(P.x - w / 6 - camX), 0, Math.round(w / 3), Math.round(P.y - camY)); lx.globalAlpha = 1; lx.globalCompositeOperation = 'source-over'; }
-    else if (f.k === 'candy') { const x = Math.round(f.x - camX), y = Math.round(f.y - camY - (1 - fr) * 10); lx.globalAlpha = fr; lx.fillStyle = '#ff8ac8'; lx.fillRect(x - 3, y - 2, 6, 4); lx.fillStyle = '#ffd6ec'; lx.fillRect(x - 5, y - 1, 2, 2); lx.fillRect(x + 3, y - 1, 2, 2); lx.globalAlpha = 1; }
+    else if (f.k === 'pillar') { lx.globalCompositeOperation = 'lighter'; lx.globalAlpha = fr * .8; lx.fillStyle = f.col; const w = 26 * fr + 4; lx.fillRect(rd(P.x - w / 2 - camX), 0, rd(w), rd(P.y - camY)); lx.fillStyle = '#ffffff'; lx.fillRect(rd(P.x - w / 6 - camX), 0, rd(w / 3), rd(P.y - camY)); lx.globalAlpha = 1; lx.globalCompositeOperation = 'source-over'; }
+    else if (f.k === 'candy') { const x = rd(f.x - camX), y = rd(f.y - camY - (1 - fr) * 10); lx.globalAlpha = fr; lx.fillStyle = '#ff8ac8'; lx.fillRect(x - 3, y - 2, 6, 4); lx.fillStyle = '#ffd6ec'; lx.fillRect(x - 5, y - 1, 2, 2); lx.fillRect(x + 3, y - 1, 2, 2); lx.globalAlpha = 1; }
   }
   // balas enemigas
   for (const b of G.eprojs) {
     if (b.k === 'beam') {
       if (b.warn > 0) {
-        lx.globalAlpha = .35 + .35 * (Math.floor(b.warn * 12) % 2); lx.save(); lx.translate(Math.round(b.x - camX), Math.round(b.y - camY)); lx.rotate(b.ang);
+        lx.globalAlpha = .35 + .35 * (Math.floor(b.warn * 12) % 2); lx.save(); lx.translate(rd(b.x - camX), rd(b.y - camY)); lx.rotate(b.ang);
         lx.fillStyle = '#ff2a2a'; lx.fillRect(0, -1, b.len, 2); lx.globalAlpha = .12; lx.fillRect(0, -b.w / 2, b.len, b.w); lx.restore(); lx.globalAlpha = 1;
       } else drawBeam(b.x, b.y, b.ang, b.len, b.w, b.col, b.life / .5);
     } else { circ(b.x, b.y, b.r + 1, OUTLINE); circ(b.x, b.y, b.r, b.col); circ(b.x, b.y, b.r * .45, '#ffffff'); }
@@ -550,15 +551,15 @@ function renderMenuBG(dt) {
   if (!menu.pano || menu.pano.W !== VW || menu.pano.H !== VH) menu.pano = buildPano();
   const pn = menu.pano; camX = 0; camY = 0;
   lx.drawImage(pn.sky, 0, 0);
-  for (const cl of pn.clouds) { const xx = ((cl.off + t * cl.sp) % (VW + cl.c.width)) - cl.c.width; lx.drawImage(cl.c, Math.round(xx), cl.y); }
+  for (const cl of pn.clouds) { const xx = ((cl.off + t * cl.sp) % (VW + cl.c.width)) - cl.c.width; lx.drawImage(cl.c, rd(xx), cl.y); }
   // Goku en la nube Kinton
-  const kt = (t % 16) / 16, kx = -40 + kt * (VW + 80), ky = Math.round(VH * .3 + Math.sin(t * 2) * 3);
+  const kt = (t % 16) / 16, kx = -40 + kt * (VW + 80), ky = rd(VH * .3 + Math.sin(t * 2) * 3);
   if (kt < .9) {
-    for (let i = 1; i < 8; i++) { lx.globalAlpha = .5 - i * .06; lx.fillStyle = '#ffe680'; lx.fillRect(Math.round(kx - i * 7), ky + 5 + (i % 2), 5, 2); } lx.globalAlpha = 1;
-    const gs = getSprite('goku', 0, false); lx.drawImage(gs, 0, 0, 18, 22, Math.round(kx - 9), ky - 16, 18, 22); lx.drawImage(kintonSprite(), Math.round(kx - 15), ky);
+    for (let i = 1; i < 8; i++) { lx.globalAlpha = .5 - i * .06; lx.fillStyle = '#ffe680'; lx.fillRect(rd(kx - i * 7), ky + 5 + (i % 2), 5, 2); } lx.globalAlpha = 1;
+    const gs = getSprite('goku', 0, false); lx.drawImage(gs, 0, 0, 18, 22, rd(kx - 9), ky - 16, 18, 22); lx.drawImage(kintonSprite(), rd(kx - 15), ky);
   }
-  for (const L of pn.layers) { const o = Math.round((t * L.sp) % L.c.width); lx.drawImage(L.c, -o, 0); lx.drawImage(L.c, L.c.width - o, 0); }
-  const go = Math.round((t * 22) % pn.ground.width); lx.drawImage(pn.ground, -go, 0); lx.drawImage(pn.ground, pn.ground.width - go, 0);
+  for (const L of pn.layers) { const o = rd((t * L.sp) % L.c.width); lx.drawImage(L.c, -o, 0); lx.drawImage(L.c, L.c.width - o, 0); }
+  const go = rd((t * 22) % pn.ground.width); lx.drawImage(pn.ground, -go, 0); lx.drawImage(pn.ground, pn.ground.width - go, 0);
   // guerreros caminando
   if (menu.walkers.length < 6 && Math.random() < dt * 1.2) {
     const dir = Math.random() < .5 ? 1 : -1, id = pick(PARADE);
@@ -576,16 +577,19 @@ function renderMenuBG(dt) {
   if (state === 'title' && VW > 330) {
     const sc = Math.min(3, VH / 90), gy = VH - 6;
     [['goku_ssj', VW * .14, 1], ['vegeta_ssj', VW * .86, -1]].forEach(([id, x, f]) => {
-      drawShadow(x, gy, 10 * sc); drawAura(x, gy, 28 * sc, '#ffd43a', t * 1.2 + x, true); drawEnt(id, x, gy + Math.round(Math.sin(t * 2 + x) * 1.5), sc, f, 0);
+      drawShadow(x, gy, 10 * sc); drawAura(x, gy, 28 * sc, '#ffd43a', t * 1.2 + x, true); drawEnt(id, x, gy + rd(Math.sin(t * 2 + x) * 1.5), sc, f, 0);
     });
   }
 }
 function render(dt) {
-  lx.imageSmoothingEnabled = false;
   const inGame = G && P && ['play', 'levelup', 'paused', 'shenron', 'capsule', 'over', 'shrine'].includes(state);
-  if (inGame) renderWorld(dt); else renderMenuBG(dt);
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(lc, 0, 0, VW * ZOOM, VH * ZOOM);
+  // el mundo se dibuja directamente en la pantalla, escalado: se mueve de píxel en píxel de pantalla
+  const smooth = inGame && save.opts.smooth !== false && !perfLow;
+  RDK = smooth ? ZOOM * DPR : 1;
+  ctx.setTransform(DPR * ZOOM, 0, 0, DPR * ZOOM, 0, 0); ctx.imageSmoothingEnabled = false;
+  if (smooth) renderWorld(dt);
+  else { lx = lcx; lcx.setTransform(1, 0, 0, 1, 0, 0); lcx.imageSmoothingEnabled = false; if (inGame) renderWorld(dt); else renderMenuBG(dt); lx = ctx; ctx.drawImage(lc, 0, 0); }
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.imageSmoothingEnabled = false; ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   if (inGame) renderScreen();
   if (state === 'shenron') drawShenron(performance.now() / 1000);
 }
@@ -1031,7 +1035,7 @@ function renderDex() {
 /* ---------- Cápsulas ---------- */
 /* ---------- Opciones ---------- */
 function renderOpts() {
-  const L = [['sfx', 'Efectos de sonido'], ['music', 'Música'], ['names', 'Nombre de todos los enemigos'], ['dmg', 'Números de daño'], ['shake', 'Temblor de pantalla'], ['vib', 'Vibración (móvil)'], ['voice', 'Voces al abrir cajas (Kamehameha)']];
+  const L = [['sfx', 'Efectos de sonido'], ['music', 'Música'], ['names', 'Nombre de todos los enemigos'], ['dmg', 'Números de daño'], ['shake', 'Temblor de pantalla'], ['vib', 'Vibración (móvil)'], ['voice', 'Voces al abrir cajas (Kamehameha)'], ['smooth', 'Movimiento suave (quítalo si el juego va lento)']];
   const box = $('#optList'); box.innerHTML = '';
   L.forEach(([k, n]) => {
     const row = document.createElement('div'); row.className = 'opt';

@@ -136,7 +136,7 @@ function pickBoon(i) {
 function drawObjsGround(t) {
   for (const o of G.objs) {
     if (o.gone || (o.k !== 'fountain' && o.k !== 'shrine')) continue;
-    const x = Math.round(o.x - camX), y = Math.round(o.y - camY);
+    const x = rd(o.x - camX), y = rd(o.y - camY);
     if (x < -40 || y < -40 || x > VW + 40 || y > VH + 40) continue;
     if (o.k === 'fountain') {
       lx.fillStyle = '#4a4f68'; lx.beginPath(); lx.ellipse(x, y, o.R + 3, (o.R + 3) * .55, 0, 0, TAU); lx.fill();
@@ -166,7 +166,7 @@ function drawObjsGround(t) {
   }
 }
 function drawObj(o, t) {
-  const x = Math.round(o.x - camX), y = Math.round(o.y - camY), R = (c, a, b, w, h) => { lx.fillStyle = c; lx.fillRect(x + a, y + b, w, h); };
+  const x = rd(o.x - camX), y = rd(o.y - camY), R = (c, a, b, w, h) => { lx.fillStyle = c; lx.fillRect(x + a, y + b, w, h); };
   if (o.k === 'crate') {
     if (o.v === 0) { // caja Capsule Corp
       R('#2a2a38', -7, -11, 14, 11); R('#e8e2d0', -6, -10, 12, 9); R('#f6f2e6', -6, -10, 12, 2); R('#c8c0a8', -6, -3, 12, 2);
