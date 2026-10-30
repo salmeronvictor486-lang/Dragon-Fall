@@ -204,6 +204,7 @@ function updateEnemies(dt) {
       e.shootT -= dt; if (e.shootT <= 0 && d < 200 && G.eprojs.length < 90) { e.shootT = rand(3.5, 5.5); enemyShoot(e, Math.atan2(P.y - 8 - (e.y - e.h * .5), P.x - e.x), 95, e.dmg * .8, 3.5, e.elite ? '#ffb03a' : '#ff5a3a'); }
     } else { mvx = dx * e.spd; mvy = dy * e.spd; if (e.elite && e.ai === 'tank' && d < 160) { e.shootT -= dt; if (e.shootT <= 0) { e.shootT = 3; for (let i = 0; i < 10; i++) enemyShoot(e, i / 10 * TAU, 80, e.dmg * .6, 4, '#ff8a3a'); } } }
     if (Math.abs(mvx) > .1) e.face = mvx > 0 ? 1 : -1;
+    e.view = viewOf(mvx, mvy, e.view);
     e.x += (mvx + e.kx) * dt; e.y += (mvy + e.ky) * dt;
     e.kx *= .86; e.ky *= .86;
     // separación
@@ -308,7 +309,7 @@ function shockwave(R, dmg) {
 function updatePlayer(dt) {
   const [mx, my] = moveVec();
   P.moving = mx !== 0 || my !== 0;
-  if (P.moving) { const d = Math.hypot(mx, my); P.dirx = mx / d; P.diry = my / d; if (Math.abs(mx) > .05) P.face = mx > 0 ? 1 : -1; }
+  if (P.moving) { const d = Math.hypot(mx, my); P.dirx = mx / d; P.diry = my / d; if (Math.abs(mx) > .05) P.face = mx > 0 ? 1 : -1; P.view = viewOf(mx, my, P.view); }
   P.x += mx * P.spd * dt; P.y += my * P.spd * dt;
   P.ft += dt; if (P.ft > (P.moving ? .14 : .4)) { P.ft = 0; P.frame = P.moving ? P.frame ^ 1 : 0; }
   P.inv -= dt; P.immortal -= dt; P.shieldT -= dt; P.spT -= dt; G.hurtT = (G.hurtT || 0) - dt;

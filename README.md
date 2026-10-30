@@ -74,6 +74,8 @@ Hordas sorpresa, cápsulas que defender, un **Torneo de Artes Marciales** en mit
 
 Del **Goku niño, el Maestro Roshi y Tao Pai Pai** de Dragon Ball a **Broly, Janemba y Bojack** de las películas, los **Super Saiyan 4 y los Dragones Oscuros** de GT, **Champa, Vados, Moro, Granolah y los Gamma** de Super y **Gomah y los Majin** de Daima. Cada uno tiene su ataque inicial, su técnica especial y sus estadísticas, y muchos se transforman durante la partida (Goku llega al **Super Saiyan 4** en GT y en Daima).
 
+Todos se ven **de frente, de espaldas y de perfil** según hacia dónde se mueven, con su paso de andar en cada vista, y en partida se dibujan con más detalle que en los menús.
+
 | Rareza | Guerreros | Ejemplos |
 |:--|:--:|:--|
 | 🟡 **Legendario** | 16 | Gogeta SSJ4, Janemba, Omega Shenron, Champa, Gomah |
