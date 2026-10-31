@@ -22,6 +22,7 @@ function L(s) {
   if (LANG === 'es' || s == null) return s;
   s = String(s);
   if (!/[A-Za-zÀ-ÿ¡¿]/.test(s)) return s;
+  if (capsOut.has(s)) return s;   // ya traducido y sin tildes en mayúscula (ver pxCaps)
   const m = trMemo.get(s); if (m !== undefined) return m;
   if (trOut.has(s)) return s;   // ya es una traducción (el observador ve nuestros propios cambios)
   const r = trRaw(s);
@@ -69,6 +70,28 @@ function trNode(n) {
     if (c.nodeType === 3) { const p = c.parentNode; if (p && p.nodeName !== 'SCRIPT' && p.nodeName !== 'STYLE') { const t = L(c.data); if (t !== c.data) c.data = t; } }
     else for (const a of TR_ATTR) if (c.hasAttribute(a)) { const v = c.getAttribute(a), t = L(v); if (t !== v) c.setAttribute(a, t); }
   }
+}
+/* La fuente pixel (Press Start 2P) dibuja las mayúsculas con tilde casi como minúsculas («éPICO», «CAíDO»):
+   en esa fuente se escriben sin tilde. Vale para el HTML y para todo lo que se pinta en canvas. */
+const CAP_ACC = /[ÁÀÉÈÍÏÓÒÚÜ]/g, CAP_MAP = { Á: 'A', À: 'A', É: 'E', È: 'E', Í: 'I', Ï: 'I', Ó: 'O', Ò: 'O', Ú: 'U', Ü: 'U' };
+const pxCaps = s => typeof s === 'string' && CAP_ACC.test(s) ? (CAP_ACC.lastIndex = 0, s.replace(CAP_ACC, c => CAP_MAP[c])) : s;
+for (const fn of ['fillText', 'strokeText']) {
+  const orig = CanvasRenderingContext2D.prototype[fn];
+  CanvasRenderingContext2D.prototype[fn] = function (t, ...a) { return orig.call(this, this.font.includes('Press') ? pxCaps(t) : t, ...a); };
+}
+const pxFontCache = new WeakMap(), capsOut = new Set();
+function isPxEl(el) { let v = pxFontCache.get(el); if (v === undefined) { v = /Press Start/.test(getComputedStyle(el).fontFamily); pxFontCache.set(el, v); } return v; }
+function capsText(t) { const p = t.parentNode; if (p && p.nodeType === 1 && p.nodeName !== 'SCRIPT' && p.nodeName !== 'STYLE' && isPxEl(p)) { const v = pxCaps(t.data); if (v !== t.data) { if (capsOut.size > 4000) capsOut.clear(); capsOut.add(v); t.data = v; } } }
+function capsNode(n) {
+  if (n.nodeType === 3) return capsText(n);
+  if (n.nodeType !== 1 || n.nodeName === 'SCRIPT' || n.nodeName === 'STYLE') return;
+  const w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT); let c; while ((c = w.nextNode())) capsText(c);
+}
+// Va después del traductor (los observadores se avisan en orden de creación): así se traduce con la tilde y luego se quita
+function startCaps() {
+  capsNode(document.body);
+  new MutationObserver(ms => { for (const m of ms) { if (m.type === 'characterData') capsText(m.target); else m.addedNodes.forEach(capsNode); } })
+    .observe(document.body, { childList: true, subtree: true, characterData: true });
 }
 function startI18n() {
   if (LANG === 'es') return;

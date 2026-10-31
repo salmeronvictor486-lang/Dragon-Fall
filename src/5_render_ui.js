@@ -211,6 +211,10 @@ function renderWorld(dt) {
       const x = rd(f.x - camX), y = rd(f.y - camY), s = rd((1 - fr) * 4) + 1, c = f.crit ? '#ffd23f' : '#ffffff';
       lx.fillStyle = c; lx.fillRect(x - s, y, s * 2 + 1, 1); lx.fillRect(x, y - s, 1, s * 2 + 1); if (fr > .5) { lx.fillRect(x - 1, y - 1, 3, 3); }
     }
+    else if (f.k === 'die') {   // el enemigo se aplasta en blanco y desaparece
+      const sp = getSpriteV(f.spr, 0, f.face < 0, 'white', f.view), w = Math.round(sp.width * f.sc * (1 + (1 - fr) * .6)), h = Math.round(sp.height * f.sc * fr);
+      if (h > 0) { lx.globalAlpha = Math.min(1, fr * 1.6); lx.drawImage(sp, rd(f.x - w / 2 - camX), rd(f.y - h - camY + 1), w, h); lx.globalAlpha = 1; }
+    }
     else if (f.k === 'poof') {
       lx.globalAlpha = fr * .85; const rr = f.r * (1.2 - fr * .6);
       for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + f.x; circ(f.x + Math.cos(a) * rr * .6, f.y + Math.sin(a) * rr * .45 - (1 - fr) * 4, rr * .45 * (.6 + fr * .4), i % 2 ? '#e8e4f0' : '#c8c4d8'); }
@@ -263,8 +267,9 @@ function renderScreen() {
   if (G.buddy && !P.fused && P.hp > 0) { const [bx, by] = toS(G.buddy.x, G.buddy.y); txt(CHAR[G.buddy.id].name, bx, by - 30 * ZOOM * sprScale(G.buddy.id) * .85 - 2, fs - 1, '#9fd8ff'); }
   // números de daño
   for (const n of G.nums) {
-    const [x, y] = toS(n.x, n.y); ctx.globalAlpha = Math.min(1, n.life * 3);
-    txt(String(n.v), x, y, n.crit ? fs + 3 : fs, n.crit ? '#ffd23f' : '#ffffff'); ctx.globalAlpha = 1;
+    // salen con un pequeño rebote y los críticos más grandes
+    const [x, y] = toS(n.x, n.y), age = .7 - n.life, pop = age < .12 ? 1 + (1 - age / .12) * .7 : 1; ctx.globalAlpha = Math.min(1, n.life * 3);
+    txt(String(n.v), x, y, Math.round((n.crit ? fs + 4 : fs) * pop), n.crit ? '#ffd23f' : '#ffffff'); ctx.globalAlpha = 1;
   }
   for (const f of G.fx) if (f.k === 'text') { const [x, y] = toS(f.x, f.y); ctx.globalAlpha = Math.min(1, f.life * 2); txt(f.t, x, y, fs + 2, f.col); ctx.globalAlpha = 1; }
   // flash / daño
@@ -400,9 +405,13 @@ function drawHUD(small) {
   // --- barra de experiencia
   const bh = Math.round(22 * f);
   draw9(ctx, 'slot', 0, 0, SWd, bh, S);
-  const ix = 4 * S, iy = 4 * S, iw = SWd - 8 * S, ih = bh - 8 * S, fr = clamp(G.xp / G.xpNext, 0, 1);
+  // la barra se llena con suavidad y su borde brilla mientras recoges gemas
+  const ix = 4 * S, iy = 4 * S, iw = SWd - 8 * S, ih = bh - 8 * S, tg = clamp(G.xp / G.xpNext, 0, 1);
+  if (G.xpShow == null || tg < G.xpShow - .02) G.xpShow = tg; else G.xpShow += (tg - G.xpShow) * Math.min(1, 12 / 60);
+  const fr = G.xpShow, glow = Math.min(1, (tg - fr) * 20 + .25);
   const gx = ctx.createLinearGradient(0, iy, 0, iy + ih); gx.addColorStop(0, '#9fd8ff'); gx.addColorStop(.45, '#3aa0ff'); gx.addColorStop(1, '#1e5aa8');
   ctx.fillStyle = gx; ctx.fillRect(ix, iy, iw * fr, ih);
+  if (fr > .005) { ctx.globalAlpha = glow; ctx.fillStyle = '#e8f7ff'; ctx.fillRect(ix + iw * fr - 3 * S, iy, 3 * S, ih); ctx.globalAlpha = 1; }
   ctx.fillStyle = 'rgba(13,7,22,.5)'; for (let i = 1; i < 10; i++) ctx.fillRect(ix + iw * i / 10, iy, 2, ih);
   txt(`NV ${G.lvl}`, SWd - 12, bh / 2 + 1, small ? 7 : 9, '#ffffff', 'right');
   // --- ficha del guerrero
@@ -816,7 +825,7 @@ $('#bQuit').onclick = async () => { if (await ask('¿Abandonar la partida? Conse
 
 /* ---------- subir de nivel ---------- */
 function openLevelUp() {
-  state = 'levelup'; showScreen('levelup'); sfx('lvl');
+  state = 'levelup'; showScreen('levelup');
   G.choices = buildChoices(P.luck >= 1.5 ? 4 : 3);
   renderChoices();
 }

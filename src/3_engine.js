@@ -328,7 +328,7 @@ function sfx(n) {
     case 'beam': tone(220, .4, 'sawtooth', .07, 400); noise(.35, .05, 1200); break;
     case 'hit': tone(200, .05, 'square', .04, -80); break;
     case 'kill': noise(.08, .06, 1500); break;
-    case 'gem': tone(1200 + Math.random() * 300, .05, 'triangle', .06, 300); break;
+    case 'gem': { AU.gc = now - (AU.gl || 0) < 500 ? Math.min((AU.gc || 0) + 1, 16) : 0; AU.gl = now; tone(880 * Math.pow(1.045, AU.gc), .06, 'triangle', .06, 250); break; } // seguidas suben de tono
     case 'lvl': [523, 659, 784, 1046].forEach((f, i) => tone(f, .12, 'square', .08, 0, i * .07)); break;
     case 'hurt': tone(160, .18, 'sawtooth', .12, -90); break;
     case 'boom': noise(.45, .18, 120); tone(90, .4, 'sine', .25, -50); break;
