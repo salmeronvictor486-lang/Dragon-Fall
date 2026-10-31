@@ -718,7 +718,12 @@ function renderSelect() {
     c.forms.forEach(f => { const el = document.createElement('div'); el.className = 'form'; const cc = document.createElement('canvas'); cc.width = 18; cc.height = 28; paintSprite(cc, f.spr); el.appendChild(cc); el.insertAdjacentHTML('beforeend', `<div>Nv ${f.lv}</div>`); el.title = f.name; if (!un) cc.style.filter = 'grayscale(.8) brightness(.7)'; fb.appendChild(el); });
   }
   const act = $('#selAction');
-  if (un) { act.innerHTML = `<button class="btn primary" style="width:100%">ELEGIR SAGA ▶</button>`; act.firstChild.onclick = () => { save.lastChar = selChar; persist(); go('stages'); }; }
+  if (un) {
+    const dn = dupCount(c.id), z = REFUND[c.rar];
+    act.innerHTML = `<button class="btn primary" style="width:100%">ELEGIR SAGA ▶</button>${dn ? `<button class="btn gold sell" style="width:100%;margin-top:8px">CAMBIAR 1 REPETIDO · +${fmtNum(z)} ZENIS</button><p class="muted" style="text-align:center;margin-top:4px">Repetidos: ${dn}</p>` : ''}`;
+    act.firstChild.onclick = () => { save.lastChar = selChar; persist(); go('stages'); };
+    if (dn) act.querySelector('.sell').onclick = async () => { if (await ask(`¿Cambiar 1 repetido por ${fmtNum(z)} zenis? Este guerrero perderá 1★ de poder.`, 'SÍ, CAMBIAR')) { sellDup(c.id); renderSelect(); } };
+  }
   else if (c.unlock.cost) {
     const can = save.zeni >= c.unlock.cost;
     act.innerHTML = `<p class="muted">🔒 ${c.unlock.txt}</p><button class="btn gold" style="width:100%;margin-top:8px" ${can ? '' : 'disabled'}>COMPRAR · ${fmtNum(c.unlock.cost)} ZENIS</button>`;

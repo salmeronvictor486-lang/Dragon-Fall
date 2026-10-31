@@ -34,6 +34,13 @@ function grantChar(c) {
   if (st < MAX_STARS) { save.owned[c.id] = st + 1; return { kind: 'star', stars: st + 1 }; }
   save.zeni += REFUND[c.rar]; return { kind: 'refund', z: REFUND[c.rar] };
 }
+/* Cambiar repetidos por zenis: cada estrella por encima de 1★ es un repetido y vale lo mismo que un reembolso de su rareza */
+const dupCount = id => Math.max(0, (save.owned[id] || 0) - 1);
+function sellDup(id, n = 1) {
+  const k = Math.min(n, dupCount(id)); if (!k) return 0;
+  const z = REFUND[CHAR[id].rar] * k; save.owned[id] -= k; save.zeni += z; persist(); sfx('ball'); return z;
+}
+const allDups = () => CHARS.filter(c => dupCount(c.id) > 0);
 
 /* ---------- días y semillas ---------- */
 function dayKey(d = new Date()) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
@@ -153,6 +160,16 @@ function renderShop2() {
     dailyOffers().forEach(o => dd.querySelector('.offers').appendChild(offerCard(o, false)));
     body.appendChild(dd);
   } else {
+    const dups = allDups(), dn = dups.reduce((a, c) => a + dupCount(c.id), 0), dz = dups.reduce((a, c) => a + dupCount(c.id) * REFUND[c.rar], 0);
+    const ds = document.createElement('div'); ds.className = 'panel shopsec';
+    ds.innerHTML = `<div class="sechd"><b class="px gold">CAMBIAR REPETIDOS</b><span class="muted">${dn ? `Tienes ${dn} repetidos · valen ${fmtNum(dz)} zenis` : 'No tienes repetidos'}</span></div>
+      <p class="muted" style="margin:6px 0">Cada repetido le da una estrella de poder a su guerrero. Si prefieres zenis, cámbialos aquí o uno a uno desde la ficha del guerrero.</p>
+      <button class="btn gold" ${dn ? '' : 'disabled'}>CAMBIAR TODOS · +${fmtNum(dz)} ZENIS</button>`;
+    ds.querySelector('button').onclick = async () => {
+      if (!(await ask(`¿Cambiar todos los repetidos por ${fmtNum(dz)} zenis? Tus guerreros volverán a 1★.`, 'SÍ, CAMBIAR'))) return;
+      allDups().forEach(c => sellDup(c.id, MAX_STARS)); renderShop2();
+    };
+    body.appendChild(ds);
     const grid = document.createElement('div'); grid.className = 'boxgrid';
     BOXES.forEach(b => {
       const el = document.createElement('div'); el.className = 'cap boxc'; el.style.setProperty('--bc', b.col);
@@ -336,6 +353,10 @@ function showResult(c, res, box, pay) {
   $('#rvText').innerHTML = `${rarTag(c.rar)}<div class="nm">${c.name}</div>${msg}`;
   const again = box && (pay === 'ticket' ? save.tickets[box.id] > 0 : pay === 'zeni' && save.zeni >= box.price);
   $('#rvBtns').innerHTML = `${again ? `<button class="btn primary" id="rvAgain">OTRA${pay === 'ticket' ? ' GRATIS' : ' · ' + fmtNum(box.price)}</button>` : ''}<button class="btn" id="rvPlay">JUGAR CON ${c.name.toUpperCase()}</button><button class="btn" id="rvBack">VOLVER A LA TIENDA</button>`;
+  if (res.kind === 'star') {
+    $('#rvBtns').insertAdjacentHTML('afterbegin', `<button class="btn gold" id="rvSell">CAMBIAR POR +${fmtNum(REFUND[c.rar])} ZENIS</button>`);
+    $('#rvSell').onclick = () => { const z = sellDup(c.id); $('#rvSell').remove(); if (z) $('#rvText').querySelector('.gold').textContent = `Cambiado por +${fmtNum(z)} zenis`; };
+  }
   if (again) $('#rvAgain').onclick = () => openBox(box, pay);
   $('#rvPlay').onclick = () => { kmhStop(); selChar = c.id; save.lastChar = c.id; persist(); go('select'); };
   $('#rvBack').onclick = () => { kmhStop(); go('gacha'); };
