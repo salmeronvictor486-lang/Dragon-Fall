@@ -151,7 +151,7 @@ function poolPick() {
 }
 function director(dt) {
   const t = G.t;
-  const target = Math.min(330, (10 + t * .38 + G.si * 10) * G.diff.spawn) * (G.boss ? .6 : 1) * (G.ev && G.ev.k === 'tourney' ? .35 : 1) * (1 + .25 * G.curse);
+  const target = Math.min(330, (16 + t * .4 + G.si * 10) * G.diff.spawn) * (G.boss ? .6 : 1) * (G.ev && G.ev.k === 'tourney' ? .35 : 1) * (1 + .25 * G.curse);
   G.spawnT -= dt;
   if (G.spawnT <= 0) {
     G.spawnT = .45;
@@ -249,6 +249,7 @@ function killEnemy(e, w) {
   const luck = P.luck;
   burst(e.x, e.y - e.h / 2, e.boss ? 40 : e.elite ? 16 : 5, e.boss ? e.aura : '#ffffff', e.boss ? 3 : 1.4);
   if (G.fx.length < 280) G.fx.push({ k: 'poof', x: e.x, y: e.y - e.h * .4, r: e.r * 1.6, life: .38, max: .38 });
+  if (!e.boss && G.fx.length < 300) G.fx.push({ k: 'die', spr: e.spr, x: e.x, y: e.y, sc: e.scale, face: e.face, view: e.view, life: .2, max: .2 });
   sfx('kill');
   const candy = w && w.id === 'candy' && !e.boss;
   if (candy) { G.fx.push({ k: 'candy', x: e.x, y: e.y - 6, life: .6, max: .6 }); }
@@ -778,7 +779,11 @@ function update(dt) {
   if (G.boss && G.boss.dead) G.boss = null;
   if (G.endT >= 0) { G.endT -= dt; if (G.endT < 0) endRun(false); return; }
   if (G.victoryT >= 0) { G.victoryT -= dt; if (G.victoryT < 0) { endRun(true); return; } }
-  if (G.pendingLv > 0 && state === 'play') openLevelUp();
+  // subir de nivel: un instante de luz dorada alrededor del guerrero antes de elegir mejora
+  if (G.pendingLv > 0 && state === 'play') {
+    if (G.luT == null) { G.luT = .35; sfx('lvl'); G.fx.push({ k: 'ring', x: P.x, y: P.y - 10, r0: 6, r1: 90, life: .35, max: .35, col: '#ffd23f' }, { k: 'ring', x: P.x, y: P.y - 10, r0: 2, r1: 50, life: .3, max: .3, col: '#fffbe0' }); burst(P.x, P.y - 12, 18, '#ffd23f', 1.6); }
+    else if ((G.luT -= dt) <= 0) { G.luT = null; openLevelUp(); }
+  }
 }
 let lastT = performance.now();
 // Si con el movimiento suave el equipo no llega a 45 fps durante 4 s, se pasa al modo clásico en esta sesión

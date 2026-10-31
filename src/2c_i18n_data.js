@@ -1496,5 +1496,5 @@ function sumL(s) { return s.split(' · ').map(L).join(' · '); }
 function caArt(s) { return /^(Saga|Jocs)/.test(s) ? (s.startsWith('Jocs') ? 'els ' : 'la ') + s : /^Torneig/.test(s) ? 'el ' + s : s; }
 for (const k in TR) { I18N.ca[k] = TR[k][0]; I18N.en[k] = TR[k][1]; }
 for (const [re, p] of I18N_PATTERNS) { I18N_PAT.ca.push([re, p.ca]); I18N_PAT.en.push([re, p.en]); }
-startI18n();
+startI18n(); startCaps();
 </script>

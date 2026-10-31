@@ -762,9 +762,9 @@ const STAGES = [
    up: lo que suma cada nivel (2..7)  evo: pasiva requerida y mejora */
 const MAXW = 7, MAXP = 5;
 const WEAPONS = {
-  kamehameha: { name: 'Kamehameha', col: '#5fd0ff', icon: 'beam', desc: 'Onda de energía que sale disparada hacia el enemigo más cercano.', base: { dmg: 16, cd: 2.4, n: 1, area: 1, life: .5 }, up: [{ dmg: 6 }, { area: .2 }, { cd: -.3 }, { dmg: 8 }, { area: .25 }, { dmg: 10, cd: -.2 }],
+  kamehameha: { name: 'Kamehameha', col: '#5fd0ff', icon: 'beam', desc: 'Onda de energía que sale disparada hacia el enemigo más cercano.', base: { dmg: 16, cd: 1.8, n: 1, area: 1, life: .5 }, up: [{ dmg: 6 }, { area: .2 }, { cd: -.3 }, { dmg: 8 }, { area: .25 }, { dmg: 10, cd: -.2 }],
     evo: { with: 'kaioken', name: 'Kamehameha x10', desc: 'Dispara hacia delante y hacia atrás, enorme y devastador.', mod: { dmg: 30, area: .5, cd: -.4 } } },
-  galick: { name: 'Galick Ho', col: '#b06bff', icon: 'beam', desc: 'Rayo púrpura dirigido al enemigo más cercano.', base: { dmg: 18, cd: 2.2, n: 1, area: 1, life: .45 }, up: [{ dmg: 6 }, { n: 1 }, { area: .2 }, { dmg: 8 }, { cd: -.3 }, { dmg: 12 }],
+  galick: { name: 'Galick Ho', col: '#b06bff', icon: 'beam', desc: 'Rayo púrpura dirigido al enemigo más cercano.', base: { dmg: 18, cd: 1.7, n: 1, area: 1, life: .45 }, up: [{ dmg: 6 }, { n: 1 }, { area: .2 }, { dmg: 8 }, { cd: -.3 }, { dmg: 12 }],
     evo: { with: 'gravedad', name: 'Final Flash', desc: 'Un haz colosal que lo arrasa todo.', mod: { dmg: 40, area: 1, cd: .3 } } },
   masenko: { name: 'Masenko', col: '#ffe14a', icon: 'ball', desc: 'Gran esfera que atraviesa a varios enemigos.', base: { dmg: 14, cd: 1.5, n: 1, area: 1, spd: 190, pierce: 4, life: 2 }, up: [{ dmg: 5 }, { pierce: 3 }, { n: 1 }, { area: .25 }, { dmg: 8 }, { n: 1 }],
     evo: { with: 'zenkai', name: 'Kamehameha Padre-Hijo', desc: 'Esferas gigantes que no se detienen ante nada.', mod: { dmg: 22, pierce: 99, area: .6 } } },

@@ -27,7 +27,7 @@ const obf = process.argv.includes('--plain') ? code : JavaScriptObfuscator.obfus
   stringArray: true,
   stringArrayEncoding: [],        // sin base64: con codificación el juego iba 2-4 veces más lento
   stringArrayThreshold: .5,
-  reservedStrings: ['^#[0-9a-fA-F]{3,8}$', '^rgba?\\(', '^(source-over|lighter|middle|center|left|right|round|play|levelup|paused|boss|beam|ball|spark|text|ring|boom|poof|p|disc|orbital|hakai|candy|pillar|ray|slash|arc)$'],
+  reservedStrings: ['^#[0-9a-fA-F]{3,8}$', '^rgba?\\(', '^(source-over|lighter|middle|center|left|right|round|play|levelup|paused|boss|beam|ball|spark|text|ring|boom|poof|die|p|disc|orbital|hakai|candy|pillar|ray|slash|arc)$'],
   stringArrayCallsTransform: false,
   stringArrayRotate: true,
   stringArrayShuffle: true,
