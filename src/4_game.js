@@ -13,7 +13,7 @@ function newRun(cid, si, opt = {}) {
     enemies: [], projs: [], eprojs: [], gems: [], picks: [], fx: [], nums: [],
     bossIdx: 0, boss: null, balls: [], spawnT: .5, eliteT: 55, waveT: 95, pendingLv: 0,
     rerolls: save.shop.reroll || 0, intro: null,
-    diff: DIFFS[opt.endless ? 0 : opt.diff || 0], endless: !!opt.endless, bossCycle: 0, nextBossT: 0, hs: 0,
+    diff: DIFFS[0], endless: !!opt.endless, bossCycle: 0, nextBossT: 0, hs: 0,
     ev: null, evT: 95, moonDone: 0, fuse: 0, fuseNeed: 150, fusionPair: null, buddy: null,
     stat: { specials: 0, events: 0, fusions: 0, evos: 0, trans: 0, shenron: 0, buddySp: 0, crates: 0, chests: 0, shrines: 0, healed: 0 },
     objs: [], objT: 0, curse: 0,

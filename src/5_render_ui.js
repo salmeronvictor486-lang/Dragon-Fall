@@ -758,36 +758,28 @@ function stagePreview(cv2, st) {
 }
 function renderStages() {
   const mode = save.mode === 'inf' && endlessUnlocked() ? 'inf' : 'saga';
-  if (mode === 'saga' && !STAGES.some((s, i) => diffUnlocked(i, save.diff))) save.diff = 0;
   const mt = $('#modeTabs'); mt.innerHTML = '';
   [['saga', 'SAGAS'], ['inf', '∞ SUPERVIVENCIA']].forEach(([k, n]) => {
     const b = document.createElement('button'); b.className = 'btn small' + (mode === k ? ' on' : ''); b.textContent = n;
     if (k === 'inf' && !endlessUnlocked()) { b.disabled = true; b.textContent += ' 🔒'; b.title = 'Completa la Saga Saiyan para desbloquearlo'; }
     b.onclick = () => { save.mode = k; persist(); sfx('click'); renderStages(); }; mt.appendChild(b);
   });
-  const db = $('#diffBar'); db.innerHTML = ''; db.hidden = mode !== 'saga';
-  if (mode === 'saga') DIFFS.forEach(d => {
-    const b = document.createElement('button'); b.className = 'btn small' + (save.diff === d.id ? ' on' : ''); b.style.setProperty('--dc', d.col);
-    const ok = STAGES.some((s, i) => diffUnlocked(i, d.id)); b.disabled = !ok; b.textContent = d.name.toUpperCase() + (ok ? '' : ' 🔒');
-    if (!ok) b.title = d.id === 1 ? 'Completa una saga en Normal' : 'Completa una saga en Difícil';
-    b.onclick = () => { save.diff = d.id; persist(); sfx('click'); renderStages(); }; db.appendChild(b);
-  });
+  $('#diffBar').hidden = true;
   $('#modeInfo').innerHTML = mode === 'inf'
     ? `Aguanta todo lo que puedas: los enemigos no paran de hacerse más fuertes y los jefes vuelven una y otra vez. Tu récord: <b class="gold">${fmtNum(save.stats.bestInf)}</b> puntos. Elige el escenario.`
-    : DIFFS[save.diff].desc + (save.diff ? ` Primera victoria en cada saga: <b class="gold">${DIFF_PRIZE[save.diff].txt}</b>.` : ' Al completar una saga se desbloquea en Difícil.');
+    : DIFFS[0].desc;
   const g = $('#stageGrid'); g.innerHTML = '';
   STAGES.forEach((st, i) => {
-    const un = mode === 'inf' ? stageUnlocked(i) : diffUnlocked(i, save.diff), b = document.createElement('button');
-    b.className = 'stage' + (un ? '' : ' locked') + (mode === 'saga' && (save.diff ? save.clearedD[st.id + ':' + save.diff] : save.cleared[st.id]) ? ' done' : '');
+    const un = stageUnlocked(i), b = document.createElement('button');
+    b.className = 'stage' + (un ? '' : ' locked') + (mode === 'saga' && save.cleared[st.id] ? ' done' : '');
     const cv2 = document.createElement('canvas'); cv2.width = 240; cv2.height = 66; stagePreview(cv2, st);
     if (!un) cv2.style.filter = 'grayscale(1) brightness(.5)';
     b.appendChild(cv2);
     const best = save.best[st.id];
-    const lockTxt = mode === 'inf' || save.diff === 0 ? '🔒 Completa la saga anterior' : `🔒 Complétala antes en ${DIFFS[save.diff - 1].name}`;
-    const dd = DIFFS.map(d => `<span style="--c:${d.col}" class="${(d.id ? save.clearedD[st.id + ':' + d.id] : save.cleared[st.id]) ? '' : 'no'}">${d.name}</span>`).join('');
+    const lockTxt = '🔒 Completa la saga anterior';
     b.insertAdjacentHTML('beforeend', `<div class="in"><div class="t">${i + 1}. ${st.name}</div><div class="s">${st.place}</div><div class="s" style="color:#cfd6f5">${un ? st.desc : lockTxt}</div>
-      <div class="s">Jefes: ${st.bosses.map(b => save.seen[b[1]] ? BOSSES[b[1]].name : '???').join(' · ')}</div>${best && mode === 'saga' ? `<div class="s gold">Récord: ${fmtTime(best.t)} · Nv ${best.lvl}</div>` : ''}${mode === 'saga' ? `<div class="dd">${dd}</div>` : ''}</div>`);
-    b.onclick = () => { if (un) startRun(selChar, i, mode === 'inf' ? { endless: true } : { diff: save.diff }); };
+      <div class="s">Jefes: ${st.bosses.map(b => save.seen[b[1]] ? BOSSES[b[1]].name : '???').join(' · ')}</div>${best && mode === 'saga' ? `<div class="s gold">Récord: ${fmtTime(best.t)} · Nv ${best.lvl}</div>` : ''}</div>`);
+    b.onclick = () => { if (un) startRun(selChar, i, mode === 'inf' ? { endless: true } : {}); };
     b.onmouseenter = () => { if (un) menu.stage = st.id; };
     g.appendChild(b);
   });
@@ -800,7 +792,7 @@ function startRun(cid, si, opt = {}) {
   newRun(cid, si, opt);
   state = 'play'; showScreen(null);
   if (G.endless) banner('∞ SUPERVIVENCIA', `${G.stage.place} · Aguanta todo lo que puedas`);
-  else banner(G.stage.name.toUpperCase() + (G.diff.id ? ' · ' + G.diff.name.toUpperCase() : ''), `${G.stage.place} · Sobrevive 10 minutos y derrota al jefe final`);
+  else banner(G.stage.name.toUpperCase(), `${G.stage.place} · Sobrevive 10 minutos y derrota al jefe final`);
   musicSet(true); lastT = performance.now();
 }
 function pauseGame() { if (state !== 'play') return; state = 'paused'; showScreen('pause'); renderPause(); }
@@ -941,18 +933,14 @@ function endRun(win, quit) {
   const before = new Set(CHARS.filter(isUnlocked).map(c => c.id));
   const lockedBefore = STAGES.filter((s, i) => !stageUnlocked(i));
   const st = G.stage, D = G.diff;
-  let bonus = win ? Math.round(500 * (G.si + 1) * [1, 2, 4][D.id]) : 0;
+  let bonus = win ? Math.round(500 * (G.si + 1)) : 0;
   const earned = Math.floor(G.zeni * D.zeni + bonus);
   save.zeni += earned; save.kills += G.kills; save.runs++; save.maxTime = Math.max(save.maxTime, G.t);
   G.killedBosses.forEach(b => save.bosses[b] = 1);
   const tk = [];
-  if (win && D.id === 0) {
+  if (win) {
     save.cleared[st.id] = 1;
     const b = save.best[st.id]; if (!b || G.t < b.t) save.best[st.id] = { t: G.t, lvl: G.lvl, c: G.cid };
-  } else if (win) {
-    const key = st.id + ':' + D.id;
-    if (!save.clearedD[key]) { const pz = DIFF_PRIZE[D.id]; save.tickets[pz.t] = (save.tickets[pz.t] || 0) + pz.n; tk.push(pz.txt + ' (primera victoria en ' + D.name + ')'); }
-    save.clearedD[key] = 1;
   }
   save.tut = 1;
   if (win) { if (!save.gifts[st.id]) { save.gifts[st.id] = 1; save.tickets.g++; tk.push('Cápsula Dorada'); } save.tickets.n++; tk.push('Cápsula Normal'); }
@@ -968,13 +956,12 @@ function endRun(win, quit) {
   const tot = P.weapons.reduce((a, w) => a + w.dealt, 0) || 1;
   $('#overPanel').innerHTML = `<h2 class="px" style="font-size:22px;color:${win ? 'var(--gold)' : 'var(--red)'}">${G.endless ? 'FIN DE LA SUPERVIVENCIA' : win ? '¡VICTORIA!' : quit ? 'RETIRADA' : 'HAS CAÍDO'}</h2>
    <canvas id="overPed" class="pedestal" width="72" height="84" style="align-self:center;width:108px;height:126px"></canvas>
-   <p style="text-align:center" class="muted">${P.name} · ${G.endless ? '∞ Supervivencia · ' + st.place : st.name}${D.id ? ' · ' + D.name : ''}</p>
+   <p style="text-align:center" class="muted">${P.name} · ${G.endless ? '∞ Supervivencia · ' + st.place : st.name}</p>
    <div class="stats">${G.endless ? `<span>Puntuación</span><b class="gold">${fmtNum(runScore())}</b>` : ''}<span>Tiempo</span><b>${fmtTime(G.t)}</b><span>Nivel</span><b>${G.lvl}</b><span>Bajas</span><b>${fmtNum(G.kills)}</b><span>Jefes derrotados</span><b>${G.killedBosses.length}</b><span>Zenis</span><b class="gold">+${fmtNum(earned)}${bonus ? ` (bonus ${fmtNum(bonus)})` : ''}</b></div>
    <table class="dmgtable">${P.weapons.slice().sort((a, b) => b.dealt - a.dealt).map(w => `<tr><td>${wname(w)} ${w.evo ? '★' : 'Nv ' + w.lvl} <span class="muted">${Math.round(w.dealt / tot * 100)}%</span></td><td>${fmtNum(w.dealt)}</td></tr>`).join('')}</table>
    ${newly.map(c => `<div class="unlock">🔓 ¡Nuevo guerrero desbloqueado: <b class="gold">${c.name}</b>!</div>`).join('')}
    ${tk.map(n => `<div class="unlock">🎁 Premio: <b class="gold">${n}</b> gratis (ábrela en TIENDA → CAJAS)</div>`).join('')}
    ${nextStage ? `<div class="unlock">🗺️ ¡Nueva saga desbloqueada: <b class="gold">${nextStage.name}</b>!</div>` : ''}
-   ${win && D.id < 2 && !save.clearedD[st.id + ':' + (D.id + 1)] ? `<div class="unlock">🔥 ¡Dificultad ${DIFFS[D.id + 1].name} desbloqueada en esta saga!</div>` : ''}
    ${overExtras(res, true)}
    <div class="row wrap center" style="margin-top:6px"><button class="btn primary" id="bRetry">REINTENTAR</button><button class="btn" id="bOther">OTRO GUERRERO</button><button class="btn" id="bMenu">MENÚ</button></div>`;
   paintPedestal($('#overPed'), Object.assign({}, CHAR[G.cid], { id: P.spr }), true);

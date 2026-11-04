@@ -1,13 +1,9 @@
 <script>
 /* =================== DIFICULTADES Y MODOS =================== */
+// Una sola dificultad, y es muy difícil: enemigos más duros, que pegan más y llegan en mayor número
 const DIFFS = [
-  { id: 0, name: 'Normal', col: '#59d66b', hp: 1, dmg: 1, spawn: 1, zeni: 1, xp: 1, desc: 'La experiencia de siempre.' },
-  { id: 1, name: 'Difícil', col: '#ffb03a', hp: 1.7, dmg: 1.4, spawn: 1.2, zeni: 1.6, xp: 1.3, desc: 'Enemigos más duros y más numerosos. Zenis x1,6.' },
-  { id: 2, name: 'Pesadilla', col: '#e8433a', hp: 2.8, dmg: 1.9, spawn: 1.4, zeni: 2.5, xp: 1.6, desc: 'Solo para guerreros de élite. Zenis x2,5.' },
+  { id: 0, name: 'Muy difícil', col: '#e8433a', hp: 1.8, dmg: 1.5, spawn: 1.25, zeni: 1.6, xp: 1.3, desc: 'Solo hay una dificultad, y es muy difícil: los enemigos aguantan más, pegan más fuerte y no paran de llegar. Zenis x1,6.' },
 ];
-// Premio la primera vez que completas una saga en esa dificultad
-const DIFF_PRIZE = { 1: { t: 'g', n: 2, txt: '2 Cápsulas Doradas' }, 2: { t: 'gods', n: 1, txt: 'Caja Divina' } };
-function diffUnlocked(si, d) { const id = STAGES[si].id; return d === 0 ? stageUnlocked(si) : d === 1 ? !!save.cleared[id] : !!save.clearedD[id + ':1']; }
 function endlessUnlocked() { return !!save.cleared.saiyan; }
 function runScore() { return Math.round(G.kills + G.t * 5 + G.killedBosses.length * 300 + G.lvl * 10); }
 
@@ -192,8 +188,6 @@ const ACHIEVEMENTS = [
   { id: 's1', name: 'El primer Saiyan', desc: 'Completa la Saga Saiyan', v: () => save.cleared.saiyan ? 1 : 0, g: 1, rw: { t: 'g' } },
   { id: 's5', name: 'Héroe del multiverso', desc: 'Completa 5 sagas', v: () => STAGES.filter(s => save.cleared[s.id]).length, g: 5, rw: { z: 3000, title: 'heroe' } },
   { id: 's10', name: 'Toda la historia', desc: 'Completa las 10 sagas', v: () => STAGES.filter(s => save.cleared[s.id]).length, g: 10, rw: { z: 8000, t: 'gods' } },
-  { id: 'd1', name: 'Sin miedo', desc: 'Completa una saga en Difícil', v: () => Object.keys(save.clearedD).filter(k => k.endsWith(':1')).length, g: 1, rw: { z: 1500 } },
-  { id: 'd2', name: 'Pesadilla superada', desc: 'Completa una saga en Pesadilla', v: () => Object.keys(save.clearedD).filter(k => k.endsWith(':2')).length, g: 1, rw: { t: 'gods', title: 'leyenda' } },
   { id: 'b1', name: 'Cazajefes', desc: 'Derrota a 25 jefes', v: () => save.stats.bosses, g: 25, rw: { z: 1000 } },
   { id: 'b2', name: 'Cazador de dioses', desc: 'Derrota a 100 jefes', v: () => save.stats.bosses, g: 100, rw: { z: 3000, title: 'cazadioses' } },
   { id: 'c1', name: 'Coleccionista', desc: 'Consigue 10 guerreros', v: () => CHARS.filter(isUnlocked).length, g: 10, rw: { z: 600 } },
