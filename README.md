@@ -53,8 +53,8 @@ Lleva un **compañero** que lucha a tu lado. Si es la pareja correcta, llena el 
 <tr>
 <td valign="top">
 
-### 🔥 Dificultad a tu medida
-**Normal, Difícil y Pesadilla**, con más zenis cuanto más duro. Y para los valientes, **∞ Supervivencia**: sin final, con jefes que vuelven una y otra vez.
+### 🔥 Una sola dificultad: muy difícil
+Nada de modos fáciles: los enemigos aguantan más, pegan más fuerte y no paran de llegar. Y para los valientes, **∞ Supervivencia**: sin final, con jefes que vuelven una y otra vez.
 
 </td>
 <td valign="top">

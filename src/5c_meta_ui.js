@@ -190,7 +190,6 @@ function drawRunInfo(small, y) {
   // dificultad / Supervivencia y evento activo, centrados bajo el tiempo (o la barra del jefe)
   let yy = y;
   if (G.endless) { txt('∞ ' + fmtNum(runScore()) + ' PTS', SWd / 2, yy + 8, small ? 7 : 9, '#9fd8ff', 'center'); yy += 18; }
-  else if (G.diff.id) { txt(G.diff.name.toUpperCase(), SWd / 2, yy + 8, small ? 6 : 7, G.diff.col, 'center'); yy += 16; }
   if (G.curse) { txt('MALDICIÓN x' + G.curse, SWd / 2, yy + 8, small ? 6 : 7, '#c89bff', 'center'); yy += 16; }
   const ev = G.ev; if (!ev) return;
   const w = Math.min(320, SWd * .8), h = small ? 40 : 46, x = (SWd - w) / 2;
