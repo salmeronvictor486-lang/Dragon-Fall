@@ -495,7 +495,7 @@ CHARS.forEach(c => { if (c.unlock && !c.unlock.cost) c.unlock.txt += ' o consíg
   ['omega', 'Omega Shenron', 'Dragones Oscuros', 'L', 'genkidama', 'El dragón oscuro más poderoso: absorbió las siete Bolas de Dragón.', { might: .12, maxHp: 30 }, [], 'omega_b', 'Derrota a Omega Shenron en Dragon Ball GT o consíguelo en la Tienda'],
 ].forEach(([id, name, saga, rar, weapon, desc, mods, forms, boss, txt]) => CHARS.push({ id, name, saga, rar, weapon, desc, hp: RAR[rar].hp, mods, forms, unlock: { boss, txt } }));
 const CHAR = Object.fromEntries(CHARS.map(c => [c.id, c]));
-/* ---------------- TÉCNICAS ESPECIALES (una por guerrero, tecla 1 o botón) ---------------- */
+/* ---------------- TÉCNICAS ESPECIALES (una por guerrero, Espacio/Q o botón) ---------------- */
 // fx: lista de efectos [tipo, parámetros] que se encadenan. dmg escala con nivel y poder.
 const SPECIALS = {
   goku: { name: 'Teletransporte + Kamehameha', cd: 18, col: '#5fd0ff', desc: 'Aparece junto al enemigo más cercano y suelta un Kamehameha enorme.', fx: [['dash', { dist: 80, dmg: 30 }], ['beam', { len: 280, wd: 30, dmg: 30, life: .9 }]] },

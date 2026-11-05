@@ -29,11 +29,11 @@
 
 ## 💥 Aguanta. Sube de nivel. Transfórmate.
 
-Llegan los Saibaman. Luego los soldados de Freezer, los Cell Jr., los esbirros de Babidi y los guerreros de los otros universos. **Oleadas enormes de enemigos**, y tú solo tienes que moverte: tus ataques salen solos.
+Llegan los Saibaman. Luego los soldados de Freezer, los Cell Jr., los esbirros de Babidi y los guerreros de los otros universos. **Oleadas enormes de enemigos**, y tú decides cuándo lanzar cada técnica desde tu **barra de habilidades**.
 
 Recoge ki, sube de nivel y elige mejoras hasta montar tu combinación definitiva. Junta un ataque al máximo con su pasiva para **evolucionarlo** (Kamehameha + Kaio-ken = **Kamehameha x10**). Llega al nivel justo y **transfórmate**: Goku pasa de Super Saiyan a SSJ3, SSJ Blue y **Ultra Instinto**.
 
-Reúne las **7 Bolas de Dragón** y Shenron te concederá un deseo. Y si el jefe final se te resiste, pulsa **1** y suelta tu técnica especial.
+Reúne las **7 Bolas de Dragón** y Shenron te concederá un deseo. Y si el jefe final se te resiste, pulsa **Espacio** y suelta tu técnica especial.
 
 <table>
 <tr>
@@ -167,11 +167,12 @@ Se juega igual de bien en el móvil: arrastra el dedo para moverte y toca el bot
 | Acción | ⌨️ Teclado | 📱 Móvil | 🎮 Mando |
 |:--|:--|:--|:--|
 | Moverse | WASD / flechas | Arrastrar el dedo | Stick o cruceta |
-| Técnica especial | **1** (o Espacio, E, Q) | Botón redondo | A |
-| Fusión | **2** (o F) | Botón de fusión | X / Y |
+| Técnicas de la barra | **1 – 6** (mantén para repetir) | Tocar su casilla | B, X, Y, LB, RB, RT |
+| Técnica especial | **Espacio** (o E, Q) | Botón redondo | A |
+| Fusión | **F** | Botón de fusión | LT / Select |
 | Pausa | Esc / P | Botón `II` | Start |
 
-Los ataques normales se lanzan solos contra el enemigo más cercano.
+Cada ataque que consigues ocupa una casilla de la **barra de abajo** (hasta 6). Se lanza con su número, apunta solo al enemigo más cercano y después se **recarga**. El Aura de Ki y la Barrera de Ki se quedan activas unos segundos al lanzarlas. Si prefieres que todo se lance solo, activa **Disparo automático** en Opciones.
 
 ## 💾 Tu progreso, a salvo
 

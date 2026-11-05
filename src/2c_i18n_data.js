@@ -65,7 +65,15 @@ const TR = {
   'Cómo se juega:': ['Com es juga:', 'How to play:'],
   'muévete con': ['mou-te amb', 'move with'],
   'flechas': ['fletxes', 'arrow keys'],
-  'o arrastrando el dedo. Los ataques salen solos. Recoge orbes de ki para subir de nivel, elige mejoras y combina ataques al máximo con su pasiva para': ['o arrossegant el dit. Els atacs surten sols. Recull orbes de ki per pujar de nivell, tria millores i combina atacs al màxim amb la seva passiva per', 'or by dragging your finger. Attacks fire on their own. Collect ki orbs to level up, choose upgrades and combine maxed attacks with their passive to'],
+  'o arrastrando el dedo. Lanza tus técnicas con las teclas': ['o arrossegant el dit. Llança les teves tècniques amb les tecles', 'or by dragging your finger. Cast your techniques with keys'],
+  'o tocándolas en la barra de abajo; cada una tiene su recarga. Recoge orbes de ki para subir de nivel, elige mejoras y combina ataques al máximo con su pasiva para': ['o tocant-les a la barra de baix; cadascuna té la seva recàrrega. Recull orbes de ki per pujar de nivell, tria millores i combina atacs al màxim amb la seva passiva per', 'or by tapping them on the bottom bar; each one has its own cooldown. Collect ki orbs to level up, choose upgrades and combine maxed attacks with their passive to'],
+  ', o con el botón redondo. Pausa con': [', o amb el botó rodó. Pausa amb', ', or the round button. Pause with'],
+  'Lanza tus técnicas con las teclas 1-6 o tocando su casilla en la barra de abajo.': ['Llança les teves tècniques amb les tecles 1-6 o tocant la seva casella a la barra de baix.', 'Cast your techniques with keys 1-6 or by tapping their slot on the bottom bar.'],
+  'Pulsa Espacio o Q (o toca el botón redondo) para usar la técnica especial de tu guerrero.': ['Prem Espai o Q (o toca el botó rodó) per fer servir la tècnica especial del teu guerrer.', 'Press Space or Q (or tap the round button) to use your warrior’s special technique.'],
+  'Técnica especial · tecla Espacio/Q o botón · recarga # s': ['Tècnica especial · tecla Espai/Q o botó · recàrrega # s', 'Special technique · Space/Q key or button · cooldown # s'],
+  'Disparo automático (las técnicas se lanzan solas)': ['Tret automàtic (les tècniques es llancen soles)', 'Auto-fire (techniques cast on their own)'],
+  'PULSA # PARA LANZAR TU TÉCNICA': ['PREM # PER LLANÇAR LA TEVA TÈCNICA', 'PRESS # TO CAST YOUR TECHNIQUE'],
+  'TOCA LA CASILLA PARA LANZAR TU TÉCNICA': ['TOCA LA CASELLA PER LLANÇAR LA TEVA TÈCNICA', 'TAP THE SLOT TO CAST YOUR TECHNIQUE'],
   'evolucionarlos': ['fer-los evolucionar', 'evolve them'],
   'Cada guerrero tiene su': ['Cada guerrer té la seva', 'Each warrior has their own'],
   'técnica especial': ['tècnica especial', 'special technique'],
@@ -1438,6 +1446,7 @@ const TR = {
 // Patrones para textos con nombres o datos dentro (se traducen las partes)
 const PAT = (ca, en) => ({ ca, en });
 const I18N_PATTERNS = [
+  [/^TECLA (\d): (.+)$/, PAT(m => `TECLA ${m[1]}: ${L(m[2])}`, m => `KEY ${m[1]}: ${L(m[2])}`)],
   [/^Aparece: (.+)$/, PAT(m => 'Apareix: ' + L(m[1]), m => 'Appears: ' + L(m[1]))],
   [/^Consigue a (.+)\.$/, PAT(m => `Aconsegueix ${L(m[1])}.`, m => `Get ${L(m[1])}.`)],
   [/^Se desbloquea al llegar al nivel (\d+) con (.+)\.$/, PAT(m => `Es desbloqueja en arribar al nivell ${m[1]} amb ${L(m[2])}.`, m => `Unlocks at level ${m[1]} with ${L(m[2])}.`)],
