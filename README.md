@@ -167,12 +167,15 @@ Se juega igual de bien en el móvil: arrastra el dedo para moverte y toca el bot
 | Acción | ⌨️ Teclado | 📱 Móvil | 🎮 Mando |
 |:--|:--|:--|:--|
 | Moverse | WASD / flechas | Arrastrar el dedo | Stick o cruceta |
-| Técnicas de la barra | **1 – 6** (mantén para repetir) | Tocar su casilla | B, X, Y, LB, RB, RT |
+| Técnicas de la barra | **1 – 5** (mantén para repetir) | Tocar su casilla | B, X, Y, LB, RB |
+| Esquiva | **Shift** (o C) | Botón ESQUIVA | RT |
 | Técnica especial | **Espacio** (o E, Q) | Botón redondo | A |
 | Fusión | **F** | Botón de fusión | LT / Select |
 | Pausa | Esc / P | Botón `II` | Start |
 
-Cada ataque que consigues ocupa una casilla de la **barra de abajo** (hasta 6). Se lanza con su número, apunta solo al enemigo más cercano y después se **recarga**. El Aura de Ki y la Barrera de Ki se quedan activas unos segundos al lanzarlas. Si prefieres que todo se lance solo, activa **Disparo automático** en Opciones.
+El ataque con el que empieza tu guerrero se **dispara solo** (casilla AUTO). Cada técnica nueva que consigues ocupa una casilla de la **barra de abajo** (hasta 5 más): se lanza con su número, apunta sola al enemigo más cercano, pega un **25 % más** por lanzarla a mano y después se **recarga**. El Aura de Ki y la Barrera de Ki se quedan activas unos segundos al lanzarlas. Si prefieres que todo se lance solo, activa **Disparo automático** en Opciones.
+
+La **esquiva** te lanza unos metros y te hace invulnerable un instante (recarga de 2,2 s). Úsala contra los enemigos que **parpadean en rojo**: van a embestirte. Y cada jefe que derrotas te da una **mejora gratis**.
 
 ## 💾 Tu progreso, a salvo
 

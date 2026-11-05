@@ -134,7 +134,7 @@ function renderWorld(dt) {
     if (e.x < camX - 60 || e.x > camX + VW + 60 || e.y < camY - 20 || e.y > camY + VH + 120) continue;
     if (e.boss) drawAura(e.x, e.y, e.h, e.aura, t + e.x, true);
     else if (e.elite) drawAura(e.x, e.y, e.h, '#ff7a3a', t + e.x, false);
-    if (e.dash && e.dash.warn > 0 && Math.floor(t * 16) % 2) { drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, '#ff4040', false, e.view); continue; }
+    if (((e.dash && e.dash.warn > 0) || (e.lunge && e.lunge.w > 0)) && Math.floor(t * 16) % 2) { drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, '#ff4040', false, e.view); continue; }
     drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, e.flash > 0 && !e.boss ? 'white' : '', e.flash > 0 && !e.boss, e.view);
     if (e.stun > 0 && !e.boss) { lx.fillStyle = '#fff6a0'; lx.fillRect(rd(e.x - camX + Math.sin(t * 8) * 4), rd(e.y - e.h - camY - 2), 2, 2); }
   }
@@ -210,6 +210,10 @@ function renderWorld(dt) {
     else if (f.k === 'spark') {
       const x = rd(f.x - camX), y = rd(f.y - camY), s = rd((1 - fr) * 4) + 1, c = f.crit ? '#ffd23f' : '#ffffff';
       lx.fillStyle = c; lx.fillRect(x - s, y, s * 2 + 1, 1); lx.fillRect(x, y - s, 1, s * 2 + 1); if (fr > .5) { lx.fillRect(x - 1, y - 1, 3, 3); }
+    }
+    else if (f.k === 'ghost') {   // estela de la esquiva
+      const sp = getSpriteV(f.spr, f.frame, f.face < 0, '#7fd0ff', f.view), w = Math.round(sp.width * sprScale(f.spr)), h = Math.round(sp.height * sprScale(f.spr));
+      lx.globalAlpha = fr * .55; lx.drawImage(sp, rd(f.x - w / 2 - camX), rd(f.y - h - camY + 1), w, h); lx.globalAlpha = 1;
     }
     else if (f.k === 'die') {   // el enemigo se aplasta en blanco y desaparece
       const sp = getSpriteV(f.spr, 0, f.face < 0, 'white', f.view), w = Math.round(sp.width * f.sc * (1 + (1 - fr) * .6)), h = Math.round(sp.height * f.sc * fr);
@@ -298,7 +302,7 @@ function renderScreen() {
 let spBtn = null;
 const FINE_PTR = matchMedia('(pointer:fine)').matches;
 function drawSpecialBtn(small) {
-  const sp = SPECIALS[G.cid]; if (!sp) { spBtn = null; return; }
+  const sp = SPECIALS[G.cid]; if (!sp) { spBtn = null; drawDashBtn(small, SWd - 50, SHd - 170); return; }
   const r = small ? 30 : 34, x = SWd - r - 16, y = SHd - r - 74, ready = P.spT <= 0, fr = ready ? 1 : clamp(1 - P.spT / sp.cd, 0, 1);
   spBtn = { x, y, r: r + 8 };
   if (ready) { ctx.globalAlpha = .35 + .25 * Math.sin(performance.now() / 180); ctx.fillStyle = sp.col; ctx.beginPath(); ctx.arc(x, y, r + 7, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
@@ -314,6 +318,21 @@ function drawSpecialBtn(small) {
   if (!ready) txt(String(Math.ceil(P.spT)), x, y + 1, small ? 12 : 14, '#ffffff', 'center');
   txt(ready ? '¡LISTA!' : 'ESPECIAL', x, y - r - 12, small ? 6 : 7, ready ? sp.col : '#8a90b8', 'center');
   if (FINE_PTR) keycap('Q', x - r * .78, y - r * .78);
+  drawDashBtn(small, x, y - r - (small ? 52 : 58));
+}
+/* Botón de esquiva, encima del especial (Shift en el teclado, RT en el mando) */
+let dashBtn = null;
+function drawDashBtn(small, x, y) {
+  const r = small ? 20 : 22, ready = P.dashCd <= 0, fr = ready ? 1 : clamp(1 - P.dashCd / DASH_CD, 0, 1);
+  dashBtn = { x, y, r: r + 8 };
+  ctx.fillStyle = '#0d0716'; ctx.beginPath(); ctx.arc(x, y, r + 3, 0, TAU); ctx.fill();
+  ctx.fillStyle = ready ? '#1f3a6a' : '#141a3a'; ctx.beginPath(); ctx.arc(x, y, r - 2, 0, TAU); ctx.fill();
+  ctx.strokeStyle = '#2a3572'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = ready ? '#9fd8ff' : '#4a7ab8'; ctx.beginPath(); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + fr * TAU); ctx.stroke();
+  // tres flechitas »
+  ctx.fillStyle = ready ? '#e8f7ff' : '#6b75a8';
+  for (let k = 0; k < 2; k++) { const ox = x - 7 + k * 7; ctx.beginPath(); ctx.moveTo(ox - 3, y - 6); ctx.lineTo(ox + 4, y); ctx.lineTo(ox - 3, y + 6); ctx.lineTo(ox - 3, y + 3); ctx.lineTo(ox + 1, y); ctx.lineTo(ox - 3, y - 3); ctx.fill(); }
+  txt('ESQUIVA', x, y - r - 9, small ? 5 : 6, ready ? '#9fd8ff' : '#6b75a8', 'center');
 }
 /* Barra de técnicas abajo en el centro: una casilla por ataque, con su tecla y su recarga */
 let hotbar = [];
@@ -326,22 +345,27 @@ function drawHotbar(small) {
   for (let i = 0; i < N; i++) {
     const x = x0 + i * (sz + gap), w = P.weapons[i];
     hotbar.push({ x, y, s: sz, i });
-    if (!w) { ctx.globalAlpha = .4; draw9(ctx, 'slot', x, y, sz, sz, S); ctx.globalAlpha = 1; if (FINE_PTR) txt(String(i + 1), x + sz / 2, y + sz / 2 + 1, small ? 7 : 8, '#4a5384', 'center'); continue; }
-    const d = WEAPONS[w.id], col = w.evo ? '#ffd23f' : d.col, on = w.act > 0, ready = !(w.cdT > 0);
+    if (!w) { ctx.globalAlpha = .4; draw9(ctx, 'slot', x, y, sz, sz, S); ctx.globalAlpha = 1; if (FINE_PTR) txt(String(i), x + sz / 2, y + sz / 2 + 1, small ? 7 : 8, '#4a5384', 'center'); continue; }
+    const d = WEAPONS[w.id], col = w.evo ? '#ffd23f' : d.col, auto = i === 0, on = w.act > 0, ready = !auto && !(w.cdT > 0);
     if (ready) { ctx.globalAlpha = .2 + .25 * pulse; ctx.fillStyle = col; ctx.fillRect(x - 3, y - 3, sz + 6, sz + 6); ctx.globalAlpha = 1; }
     draw9(ctx, w.evo ? 'evo' : 'slot', x, y, sz, sz, S);
     const pd = Math.round(sz * .17); ctx.drawImage(makeIcon(d.icon, col), x + pd, y + pd, sz - pd * 2, sz - pd * 2);
     if (on) { ctx.fillStyle = col; ctx.fillRect(x + 4, y + sz - 7, Math.max(0, (sz - 8) * w.act / w.actMax), 3); }
+    else if (auto) {   // el ataque principal se dispara solo: una barrita muestra cuánto falta para el siguiente
+      const s = wstats(w), fr = clamp(1 - w.t / s.cd, 0, 1); ctx.fillStyle = col; ctx.fillRect(x + 4, y + sz - 7, Math.max(0, (sz - 8) * fr), 3);
+    }
     else if (!ready) {
       const fr = clamp(w.cdT / (w.cdMax || 1), 0, 1), ih = sz - 6;
       ctx.fillStyle = 'rgba(8,10,28,.72)'; ctx.fillRect(x + 3, y + 3 + ih * (1 - fr), sz - 6, ih * fr);
       if (w.cdT >= .95) txt(String(Math.ceil(w.cdT)), x + sz / 2, y + sz / 2 + 1, small ? 9 : 11, '#ffffff', 'center');
     }
+    if (w.readyFx > 0) { ctx.globalAlpha = w.readyFx / .35; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.strokeRect(x - 2, y - 2, sz + 4, sz + 4); ctx.globalAlpha = 1; }
     if (w.castFx > 0) { ctx.globalAlpha = w.castFx / .18 * .7; ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 3, y + 3, sz - 6, sz - 6); ctx.globalAlpha = 1; }
     txt(w.evo ? '★' : String(w.lvl), x + sz - 7, y + sz - 8, small ? 6 : 7, w.evo ? '#ffd23f' : '#ffffff', 'center');
-    if (FINE_PTR) txt(String(i + 1), x + 7, y + 8, small ? 7 : 8, ready ? '#ffffff' : '#8a90b8', 'center');
+    if (auto) txt('AUTO', x + sz / 2, y - 6, small ? 5 : 6, '#9fd8ff', 'center');
+    else if (FINE_PTR) txt(String(i), x + 7, y + 8, small ? 7 : 8, ready ? '#ffffff' : '#8a90b8', 'center');
   }
-  if (!G.casted && P.weapons[0] && !(G.intro && G.intro.t > 0)) {
+  if (!G.casted && P.weapons[1] && !(G.intro && G.intro.t > 0)) {
     ctx.globalAlpha = .6 + .4 * pulse;
     txt(FINE_PTR ? 'PULSA 1 PARA LANZAR TU TÉCNICA' : 'TOCA LA CASILLA PARA LANZAR TU TÉCNICA', SWd / 2, y - 14, small ? 7 : 8, '#ffd23f', 'center');
     ctx.globalAlpha = 1;
@@ -856,7 +880,7 @@ function openLevelUp() {
   renderChoices();
 }
 function renderChoices() {
-  $('#luTitle').textContent = `¡NIVEL ${G.lvl - G.pendingLv + 1}!`;
+  $('#luTitle').textContent = G.freeUp > 0 ? '¡RECOMPENSA DEL JEFE!' : `¡NIVEL ${G.lvl - G.pendingLv + 1}!`;
   const box = $('#choices'); box.innerHTML = '';
   G.choices.forEach((o, i) => {
     const inf = choiceInfo(o), b = document.createElement('button');
@@ -881,7 +905,7 @@ function pickChoice(i) {
   nextLevel();
 }
 function nextLevel() {
-  G.pendingLv--;
+  G.pendingLv--; if (G.freeUp > 0) G.freeUp--;
   if (G.pendingLv > 0) { G.choices = buildChoices(P.luck >= 1.5 ? 4 : 3); renderChoices(); }
   else resumeGame();
 }
@@ -1071,7 +1095,7 @@ function renderDex() {
 /* ---------- Cápsulas ---------- */
 /* ---------- Opciones ---------- */
 function renderOpts() {
-  const L = [['sfx', 'Efectos de sonido'], ['music', 'Música'], ['names', 'Nombre de todos los enemigos'], ['dmg', 'Números de daño'], ['shake', 'Temblor de pantalla'], ['vib', 'Vibración (móvil)'], ['autofire', 'Disparo automático (las técnicas se lanzan solas)'], ['voice', 'Voces al abrir cajas (Kamehameha)'], ['smooth', 'Movimiento suave (quítalo si el juego va lento)']];
+  const L = [['sfx', 'Efectos de sonido'], ['music', 'Música'], ['names', 'Nombre de todos los enemigos'], ['dmg', 'Números de daño'], ['shake', 'Temblor de pantalla'], ['vib', 'Vibración (móvil)'], ['autofire', 'Disparo automático (todas las técnicas se lanzan solas)'], ['voice', 'Voces al abrir cajas (Kamehameha)'], ['smooth', 'Movimiento suave (quítalo si el juego va lento)']];
   const box = $('#optList'); box.innerHTML = '';
   L.forEach(([k, n]) => {
     const row = document.createElement('div'); row.className = 'opt';
@@ -1100,10 +1124,11 @@ function onKey(e) {
   }
   if (state === 'play' && G && G.intro && ['Space', 'Enter', 'Escape'].includes(e.code)) { G.intro.t = Math.min(G.intro.t, .15); return; }
   if (state === 'play' && (e.code === 'Escape' || e.code === 'KeyP')) { pauseGame(); return; }
-  // Técnicas: teclas 1-6 (se leen cada fotograma en updateWeapons). Especial: Espacio, E o Q. Fusión: F.
+  // Técnicas: teclas 1-5 (también se leen cada fotograma en updateWeapons). Especial: Espacio, E o Q. Fusión: F. Esquiva: Shift o C.
   if (state === 'play' && ['Space', 'KeyE', 'KeyQ'].includes(e.code)) { e.preventDefault(); useSpecial(); return; }
   if (state === 'play' && e.code === 'KeyF') { startFusion(); return; }
-  if (state === 'play' && !save.opts.autofire) { const m = e.code.match(/^(?:Digit|Numpad)([1-6])$/); if (m) { castWeapon(+m[1] - 1); return; } }
+  if (state === 'play' && ['ShiftLeft', 'ShiftRight', 'KeyC'].includes(e.code)) { dash(); return; }
+  if (state === 'play' && !save.opts.autofire) { const m = e.code.match(/^(?:Digit|Numpad)([1-5])$/); if (m) { castWeapon(+m[1]); return; } }
   if (state === 'paused' && (e.code === 'Escape' || e.code === 'KeyP')) { resumeGame(); return; }
   if (state === 'shrine') { const m = e.code.match(/^(?:Digit|Numpad)([1-3])$/); if (m) { pickBoon(+m[1] - 1); return; } }
   if (state === 'levelup') {
