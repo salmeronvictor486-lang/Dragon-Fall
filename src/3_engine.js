@@ -382,7 +382,7 @@ function musicSet(on) {
 /* =================== GUARDADO =================== */
 const SAVE_KEY = 'dragonfall_save_v1';
 let saveKey = SAVE_KEY;   // invitado; con cuenta: SAVE_KEY + '_' + uid
-function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, pid: '', streak: { last: '', n: 0 }, daily: { day: '', bought: {} }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true, vib: true, voice: true, cardStyle: '3d', smooth: true }, clearedD: {}, stats: defStats(), acc: { lvl: 1, xp: 0 }, missions: { day: '', list: [], bonus: 0 }, ach: {}, titles: { novato: 1 }, title: 'novato', buddy: '', diff: 0, mode: 'saga', rankSent: {}, lang: '', cards: {}, sim: {} }; }
+function defSave() { return { zeni: 0, shop: {}, cleared: {}, best: {}, bosses: {}, seen: {}, bought: {}, owned: {}, gifts: {}, tickets: { n: 0, g: 0 }, pid: '', streak: { last: '', n: 0 }, daily: { day: '', bought: {} }, kills: 0, maxTime: 0, runs: 0, ts: 0, opts: { sfx: true, music: true, names: false, shake: true, dmg: true, vib: true, voice: true, cardStyle: '3d', smooth: true , autofire: false }, clearedD: {}, stats: defStats(), acc: { lvl: 1, xp: 0 }, missions: { day: '', list: [], bonus: 0 }, ach: {}, titles: { novato: 1 }, title: 'novato', buddy: '', diff: 0, mode: 'saga', rankSent: {}, lang: '', cards: {}, sim: {} }; }
 function defStats() { return { wins: 0, time: 0, specials: 0, bosses: 0, boxes: 0, events: 0, fusions: 0, shenron: 0, evos: 0, trans: 0, zeniRun: 0, daily: 0, bestKills: 0, bestInf: 0, bestInfT: 0, shrines: 0, chests: 0, crates: 0, healed: 0, packs: 0, play: 0, chars: {} }; }
 function normalizeSave(o) {
   const s = Object.assign(defSave(), o || {});
@@ -473,11 +473,12 @@ cv.addEventListener('pointerdown', e => {
   if (state === 'play' && G && G.intro) G.intro.t = Math.min(G.intro.t, .15);
   if (state === 'play' && G && spBtn && (e.clientX - spBtn.x) ** 2 + (e.clientY - spBtn.y) ** 2 < spBtn.r ** 2) { useSpecial(); return; }
   if (state === 'play' && G && fuBtn && (e.clientX - fuBtn.x) ** 2 + (e.clientY - fuBtn.y) ** 2 < fuBtn.r ** 2) { startFusion(); return; }
+  if (state === 'play' && G) { const h = hotbar.find(b => e.clientX >= b.x - 2 && e.clientX <= b.x + b.s + 2 && e.clientY >= b.y - 2 && e.clientY <= b.y + b.s + 2); if (h) { touchSlots[e.pointerId] = h.i; castWeapon(h.i); return; } }
   if (state !== 'play' || e.pointerType === 'mouse') return;
   joy.on = true; joy.id = e.pointerId; joy.ox = joy.x = e.clientX; joy.oy = joy.y = e.clientY;
 });
 addEventListener('pointermove', e => { if (joy.on && e.pointerId === joy.id) { joy.x = e.clientX; joy.y = e.clientY; } });
-const endJoy = e => { if (e.pointerId === joy.id) joy.on = false; };
+const endJoy = e => { if (e.pointerId === joy.id) joy.on = false; delete touchSlots[e.pointerId]; };
 addEventListener('pointerup', endJoy); addEventListener('pointercancel', endJoy);
 
 </script>

@@ -184,7 +184,7 @@ function drawFusionBtn(small) {
   ctx.strokeStyle = '#2a3572'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.stroke();
   ctx.strokeStyle = ready || on ? '#ffd23f' : '#b06bff'; ctx.beginPath(); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + fr * TAU); ctx.stroke();
   txt(on ? Math.ceil(P.fused.t) + ' s' : ready ? '¡FUSIÓN!' : 'FUSIÓN', x, y - r - 12, small ? 6 : 7, ready || on ? '#ffd23f' : '#8a90b8', 'center');
-  if (FINE_PTR && !on) keycap('2', x - r * .78, y - r * .78);
+  if (FINE_PTR && !on) keycap('F', x - r * .78, y - r * .78);
 }
 function drawRunInfo(small, y) {
   // dificultad / Supervivencia y evento activo, centrados bajo el tiempo (o la barra del jefe)
@@ -269,7 +269,9 @@ function pollPad(dt) {
   pad.x = x; pad.y = y;
   if (state === 'play') {
     if (G && G.intro && (hit(0) || hit(9))) G.intro.t = Math.min(G.intro.t, .15);
-    else { if (hit(0)) useSpecial(); if (hit(2) || hit(3)) startFusion(); if (hit(9)) pauseGame(); }
+    // A: especial · B, X, Y, LB, RB, RT: técnicas 1-6 · LT o Select: fusión · Start: pausa
+    else { if (hit(0)) useSpecial(); if (hit(6) || hit(8) || (save.opts.autofire && (hit(2) || hit(3)))) startFusion(); if (hit(9)) pauseGame(); }
+    pad.slots = [1, 2, 3, 4, 5, 7].map(bt);
   } else {
     const dir = Math.abs(x) > .5 || Math.abs(y) > .5 ? (Math.abs(x) > Math.abs(y) ? (x > 0 ? 'right' : 'left') : (y > 0 ? 'down' : 'up')) : '';
     if (dir && (dir !== pad.dir || (pad.rep -= dt) <= 0)) { padMove(dir); pad.rep = dir !== pad.dir ? .35 : .16; }

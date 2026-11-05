@@ -100,7 +100,7 @@ function renderWorld(dt) {
   if (P.hp > 0) drawShadow(P.x, P.y, 7);
   // aura (Kienzan/aura de ki) por debajo
   const auraW = P.weapons.find(w => w.id === 'aura');
-  if (auraW) {
+  if (auraW && (save.opts.autofire || auraW.act > 0)) {
     const R = 30 * wstats(auraW).area, col = auraW.evo ? '#dfe6ff' : '#ffd23f';
     lx.globalAlpha = .18 + Math.sin(t * 6) * .04; circ(P.x, P.y - 6, R, col); lx.globalAlpha = .6;
     lx.strokeStyle = col; lx.lineWidth = 1; lx.beginPath(); lx.arc(rd(P.x - camX), rd(P.y - 6 - camY), Math.max(.5, R), 0, TAU); lx.stroke(); lx.globalAlpha = 1;
@@ -282,6 +282,7 @@ function renderScreen() {
   drawMoon();
   if (G.spTint) { ctx.globalAlpha = .22 * Math.min(1, G.spTint.t / .4); ctx.fillStyle = G.spTint.col; ctx.fillRect(0, 0, SWd, SHd); ctx.globalAlpha = 1; }
   drawHUD(small);
+  drawHotbar(small);
   drawSpecialBtn(small);
   drawFusionBtn(small);
   drawPointers();
@@ -293,7 +294,7 @@ function renderScreen() {
     ctx.globalAlpha = .6; ctx.fillStyle = '#ff8a1c'; ctx.beginPath(); ctx.arc(joy.ox + dx * m, joy.oy + dy * m, 20, 0, TAU); ctx.fill(); ctx.globalAlpha = 1;
   }
 }
-/* Botón de técnica especial (abajo a la derecha). Tecla 1 o tocarlo. */
+/* Botón de técnica especial (abajo a la derecha). Espacio, E o Q, o tocarlo. */
 let spBtn = null;
 const FINE_PTR = matchMedia('(pointer:fine)').matches;
 function drawSpecialBtn(small) {
@@ -312,7 +313,39 @@ function drawSpecialBtn(small) {
   ctx.strokeStyle = ready ? '#ffffff' : sp.col; ctx.beginPath(); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + fr * TAU); ctx.stroke();
   if (!ready) txt(String(Math.ceil(P.spT)), x, y + 1, small ? 12 : 14, '#ffffff', 'center');
   txt(ready ? '¡LISTA!' : 'ESPECIAL', x, y - r - 12, small ? 6 : 7, ready ? sp.col : '#8a90b8', 'center');
-  if (FINE_PTR) keycap('1', x - r * .78, y - r * .78);
+  if (FINE_PTR) keycap('Q', x - r * .78, y - r * .78);
+}
+/* Barra de técnicas abajo en el centro: una casilla por ataque, con su tecla y su recarga */
+let hotbar = [];
+function drawHotbar(small) {
+  hotbar = [];
+  if (save.opts.autofire || P.hp <= 0) return;
+  // en pantallas estrechas se centra en el hueco que deja el botón de pausa (abajo a la derecha)
+  const N = 6, gap = small ? 4 : 6, room = small ? SWd - 96 : SWd - 176, sz = Math.round(Math.min(small ? 46 : 52, (room - gap * (N - 1)) / N)), tw = N * sz + (N - 1) * gap;
+  const x0 = Math.round(small ? 12 + (room - tw) / 2 : (SWd - tw) / 2), y = SHd - sz - (small ? 12 : 16), S = small ? 1 : 1.5, pulse = .5 + .5 * Math.sin(performance.now() / 160);
+  for (let i = 0; i < N; i++) {
+    const x = x0 + i * (sz + gap), w = P.weapons[i];
+    hotbar.push({ x, y, s: sz, i });
+    if (!w) { ctx.globalAlpha = .4; draw9(ctx, 'slot', x, y, sz, sz, S); ctx.globalAlpha = 1; if (FINE_PTR) txt(String(i + 1), x + sz / 2, y + sz / 2 + 1, small ? 7 : 8, '#4a5384', 'center'); continue; }
+    const d = WEAPONS[w.id], col = w.evo ? '#ffd23f' : d.col, on = w.act > 0, ready = !(w.cdT > 0);
+    if (ready) { ctx.globalAlpha = .2 + .25 * pulse; ctx.fillStyle = col; ctx.fillRect(x - 3, y - 3, sz + 6, sz + 6); ctx.globalAlpha = 1; }
+    draw9(ctx, w.evo ? 'evo' : 'slot', x, y, sz, sz, S);
+    const pd = Math.round(sz * .17); ctx.drawImage(makeIcon(d.icon, col), x + pd, y + pd, sz - pd * 2, sz - pd * 2);
+    if (on) { ctx.fillStyle = col; ctx.fillRect(x + 4, y + sz - 7, Math.max(0, (sz - 8) * w.act / w.actMax), 3); }
+    else if (!ready) {
+      const fr = clamp(w.cdT / (w.cdMax || 1), 0, 1), ih = sz - 6;
+      ctx.fillStyle = 'rgba(8,10,28,.72)'; ctx.fillRect(x + 3, y + 3 + ih * (1 - fr), sz - 6, ih * fr);
+      if (w.cdT >= .95) txt(String(Math.ceil(w.cdT)), x + sz / 2, y + sz / 2 + 1, small ? 9 : 11, '#ffffff', 'center');
+    }
+    if (w.castFx > 0) { ctx.globalAlpha = w.castFx / .18 * .7; ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 3, y + 3, sz - 6, sz - 6); ctx.globalAlpha = 1; }
+    txt(w.evo ? '★' : String(w.lvl), x + sz - 7, y + sz - 8, small ? 6 : 7, w.evo ? '#ffd23f' : '#ffffff', 'center');
+    if (FINE_PTR) txt(String(i + 1), x + 7, y + 8, small ? 7 : 8, ready ? '#ffffff' : '#8a90b8', 'center');
+  }
+  if (!G.casted && P.weapons[0] && !(G.intro && G.intro.t > 0)) {
+    ctx.globalAlpha = .6 + .4 * pulse;
+    txt(FINE_PTR ? 'PULSA 1 PARA LANZAR TU TÉCNICA' : 'TOCA LA CASILLA PARA LANZAR TU TÉCNICA', SWd / 2, y - 14, small ? 7 : 8, '#ffd23f', 'center');
+    ctx.globalAlpha = 1;
+  }
 }
 // Tecla dibujada en la esquina de los botones redondos
 function keycap(k, x, y) {
@@ -437,15 +470,16 @@ function drawHUD(small) {
   txt(`${Math.ceil(P.hp)}/${P.maxHp}`, tx + hbw / 2, hby + hbh / 2 + 1, small ? 6 : 7, '#ffffff', 'center');
   if (P.revive > 0) { ctx.drawImage(makeIcon('senzu', '#59d66b'), tx, py0 + ph - 14 * f - 4, 12 * f, 12 * f); txt('x' + P.revive, tx + 14 * f, py0 + ph - 8 * f - 4, 6, '#a8f0b0', 'left'); }
   // --- ranuras de ataques y pasivas
-  const is = Math.round(32 * f), gap = 3;
-  P.weapons.forEach((w, i) => {
+  // (con la barra de técnicas los ataques ya se ven abajo: aquí solo quedan las pasivas)
+  const is = Math.round(32 * f), gap = 3, man = !save.opts.autofire;
+  if (!man) P.weapons.forEach((w, i) => {
     const x = 8 + i * (is + gap), y = py0 + ph + 6, d = WEAPONS[w.id];
     draw9(ctx, w.evo ? 'evo' : 'slot', x, y, is, is, S / 2 + .5);
     ctx.drawImage(makeIcon(d.icon, w.evo ? '#ffd23f' : d.col), x + 5, y + 5, is - 10, is - 10);
     txt(w.evo ? '★' : String(w.lvl), x + is - 5, y + is - 5, small ? 6 : 7, w.evo ? '#ffd23f' : '#ffffff', 'center');
   });
   P.passives.forEach((p, i) => {
-    const s2 = is - 6, x = 8 + i * (s2 + gap), y = py0 + ph + 10 + is, d = PASSIVES[p.id];
+    const s2 = is - 6, x = 8 + i * (s2 + gap), y = py0 + ph + (man ? 6 : 10 + is), d = PASSIVES[p.id];
     draw9(ctx, 'slot', x, y, s2, s2, S / 2 + .5);
     ctx.drawImage(makeIcon(d.icon, d.col), x + 5, y + 5, s2 - 10, s2 - 10);
     txt(String(p.lvl), x + s2 - 5, y + s2 - 5, 6, '#ffffff', 'center');
@@ -686,7 +720,7 @@ function statBars(c) {
   return `<div class="statbars">${rows.map(([n, v, t]) => `<span>${n}</span><i><b style="width:${Math.round(clamp(v, .05, 1) * 100)}%"></b></i><span class="gold">${t}</span>`).join('')}</div>`;
 }
 const starTxt = n => '★'.repeat(n) + '☆'.repeat(MAX_STARS - n);
-const spInfo = id => { const sp = SPECIALS[id]; return sp ? `<div class="spinfo" style="--sc:${sp.col}"><b class="px">⚡ ${sp.name}</b><span class="muted">${sp.desc}</span><small>Técnica especial · tecla 1 o botón · recarga ${sp.cd} s</small></div>` : ''; };
+const spInfo = id => { const sp = SPECIALS[id]; return sp ? `<div class="spinfo" style="--sc:${sp.col}"><b class="px">⚡ ${sp.name}</b><span class="muted">${sp.desc}</span><small>Técnica especial · tecla Espacio/Q o botón · recarga ${sp.cd} s</small></div>` : ''; };
 const rarTag = r => `<span class="rar" style="background:${RAR[r].col}">${RAR[r].name.toUpperCase()}</span>`;
 function renderSelect() {
   $('#zSel').innerHTML = `<i></i>${fmtNum(save.zeni)}`;
@@ -1037,7 +1071,7 @@ function renderDex() {
 /* ---------- Cápsulas ---------- */
 /* ---------- Opciones ---------- */
 function renderOpts() {
-  const L = [['sfx', 'Efectos de sonido'], ['music', 'Música'], ['names', 'Nombre de todos los enemigos'], ['dmg', 'Números de daño'], ['shake', 'Temblor de pantalla'], ['vib', 'Vibración (móvil)'], ['voice', 'Voces al abrir cajas (Kamehameha)'], ['smooth', 'Movimiento suave (quítalo si el juego va lento)']];
+  const L = [['sfx', 'Efectos de sonido'], ['music', 'Música'], ['names', 'Nombre de todos los enemigos'], ['dmg', 'Números de daño'], ['shake', 'Temblor de pantalla'], ['vib', 'Vibración (móvil)'], ['autofire', 'Disparo automático (las técnicas se lanzan solas)'], ['voice', 'Voces al abrir cajas (Kamehameha)'], ['smooth', 'Movimiento suave (quítalo si el juego va lento)']];
   const box = $('#optList'); box.innerHTML = '';
   L.forEach(([k, n]) => {
     const row = document.createElement('div'); row.className = 'opt';
@@ -1066,9 +1100,10 @@ function onKey(e) {
   }
   if (state === 'play' && G && G.intro && ['Space', 'Enter', 'Escape'].includes(e.code)) { G.intro.t = Math.min(G.intro.t, .15); return; }
   if (state === 'play' && (e.code === 'Escape' || e.code === 'KeyP')) { pauseGame(); return; }
-  // Técnica especial: tecla 1 (también Espacio, E o Q). Fusión: tecla 2 (o F).
-  if (state === 'play' && ['Digit1', 'Numpad1', 'Space', 'KeyE', 'KeyQ'].includes(e.code)) { e.preventDefault(); useSpecial(); return; }
-  if (state === 'play' && ['Digit2', 'Numpad2', 'KeyF'].includes(e.code)) { startFusion(); return; }
+  // Técnicas: teclas 1-6 (se leen cada fotograma en updateWeapons). Especial: Espacio, E o Q. Fusión: F.
+  if (state === 'play' && ['Space', 'KeyE', 'KeyQ'].includes(e.code)) { e.preventDefault(); useSpecial(); return; }
+  if (state === 'play' && e.code === 'KeyF') { startFusion(); return; }
+  if (state === 'play' && !save.opts.autofire) { const m = e.code.match(/^(?:Digit|Numpad)([1-6])$/); if (m) { castWeapon(+m[1] - 1); return; } }
   if (state === 'paused' && (e.code === 'Escape' || e.code === 'KeyP')) { resumeGame(); return; }
   if (state === 'shrine') { const m = e.code.match(/^(?:Digit|Numpad)([1-3])$/); if (m) { pickBoon(+m[1] - 1); return; } }
   if (state === 'levelup') {

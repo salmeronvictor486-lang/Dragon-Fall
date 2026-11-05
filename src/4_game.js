@@ -17,7 +17,7 @@ function newRun(cid, si, opt = {}) {
     ev: null, evT: 95, moonDone: 0, fuse: 0, fuseNeed: 150, fusionPair: null, buddy: null,
     stat: { specials: 0, events: 0, fusions: 0, evos: 0, trans: 0, shenron: 0, buddySp: 0, crates: 0, chests: 0, shrines: 0, healed: 0 },
     objs: [], objT: 0, curse: 0,
-    tut: save.tut ? null : [[1, 'Muévete con WASD o las flechas. En el móvil, arrastra el dedo por la pantalla.'], [8, 'Tus ataques se lanzan solos contra el enemigo más cercano.'], [15, 'Recoge los cristales de ki para subir de nivel y elegir mejoras.'], [24, 'Los enemigos con nombre naranja sueltan Bolas de Dragón. ¡Reúne las 7!'], [31, 'Pulsa 1 (o toca el botón redondo) para usar la técnica especial de tu guerrero.'], [42, 'Rompe cajas y jarrones: sueltan comida que cura. Las fuentes azules también te curan.'], [52, 'Quédate en un altar de ki para cargarlo y ganar una bendición. Los cofres se abren con zenis.']], shake: 0, flash: 0, victoryT: -1, killedBosses: [], seen: {}, endT: -1, auraT: 0, pid: 0, maxCombo: 0,
+    tut: save.tut ? null : [[1, 'Muévete con WASD o las flechas. En el móvil, arrastra el dedo por la pantalla.'], [8, save.opts.autofire ? 'Tus ataques se lanzan solos contra el enemigo más cercano.' : 'Lanza tus técnicas con las teclas 1-6 o tocando su casilla en la barra de abajo.'], [15, 'Recoge los cristales de ki para subir de nivel y elegir mejoras.'], [24, 'Los enemigos con nombre naranja sueltan Bolas de Dragón. ¡Reúne las 7!'], [31, 'Pulsa Espacio o Q (o toca el botón redondo) para usar la técnica especial de tu guerrero.'], [42, 'Rompe cajas y jarrones: sueltan comida que cura. Las fuentes azules también te curan.'], [52, 'Quédate en un altar de ki para cargarlo y ganar una bendición. Los cofres se abren con zenis.']], shake: 0, flash: 0, victoryT: -1, killedBosses: [], seen: {}, endT: -1, auraT: 0, pid: 0, maxCombo: 0,
   };
   P = {
     x: 0, y: 0, r: 6, dirx: 1, diry: 0, face: 1, ft: 0, frame: 0, inv: 1, moving: false,
@@ -244,7 +244,7 @@ function updateEProjs(dt) {
 function killEnemy(e, w) {
   if (e.dead) return;
   e.dead = true; G.kills++;
-  if (G.fusionPair && !P.fused && G.fuse < G.fuseNeed && ++G.fuse >= G.fuseNeed) { floatText(FINE_PTR ? '¡FUSIÓN LISTA! PULSA 2' : '¡FUSIÓN LISTA!', '#ffd23f'); sfx('ball'); }
+  if (G.fusionPair && !P.fused && G.fuse < G.fuseNeed && ++G.fuse >= G.fuseNeed) { floatText(FINE_PTR ? '¡FUSIÓN LISTA! PULSA F' : '¡FUSIÓN LISTA!', '#ffd23f'); sfx('ball'); }
   if (e.elite && !e.boss) hitstop(.02);
   const luck = P.luck;
   burst(e.x, e.y - e.h / 2, e.boss ? 40 : e.elite ? 16 : 5, e.boss ? e.aura : '#ffffff', e.boss ? 3 : 1.4);
@@ -449,12 +449,37 @@ function fireWeapon(w) {
   return true;
 }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; }
+/* Barra de técnicas: cada ataque se lanza a mano con su tecla (1-6), tocando su casilla o con el mando, y después
+   se recarga. El aura y la barrera de ki no son un disparo: al lanzarlas se quedan activas unos segundos.
+   Con la opción «Disparo automático» todo se lanza solo, como antes. */
+const ACTIVE_W = { aura: { dur: 4, cd: 6 }, orbital: { dur: 5, cd: 7 } };
+const touchSlots = {};
+const autoFire = () => !!save.opts.autofire;
+function heldSlot(i) {
+  return !!(keys['Digit' + (i + 1)] || keys['Numpad' + (i + 1)] || Object.values(touchSlots).includes(i) || (pad.on && pad.slots && pad.slots[i]));
+}
+function castWeapon(i) {
+  const w = P.weapons[i]; if (!w || w.cdT > 0 || state !== 'play' || P.hp <= 0 || (G.intro && G.intro.t > 0)) return false;
+  const A = ACTIVE_W[w.id];
+  if (A) { w.act = w.actMax = A.dur * P.dur; w.t = 0; w.cdT = w.cdMax = w.act + A.cd * P.cdm; }
+  else { if (fireWeapon(w) === false) { w.cdT = w.cdMax = .25; return false; } w.cdT = w.cdMax = wstats(w).cd; }
+  w.castFx = .18; G.casted = true; return true;
+}
 function updateWeapons(dt) {
-  for (const w of P.weapons) {
-    if (w.id === 'orbital') { updateOrbital(w, dt); continue; }
+  const man = !autoFire();
+  P.weapons.forEach((w, i) => {
+    if (w.castFx > 0) w.castFx -= dt;
+    if (man) {
+      w.cdT = Math.max(0, (w.cdT || 0) - dt);
+      if (w.cdT <= 0 && heldSlot(i)) castWeapon(i);
+      if (!ACTIVE_W[w.id]) return;
+      if (!(w.act > 0)) { w.orbs = []; return; }
+      w.act -= dt;
+    }
+    if (w.id === 'orbital') { updateOrbital(w, dt); return; }
     w.t -= dt;
     if (w.t <= 0) { const s = wstats(w); const ok = fireWeapon(w); w.t = ok === false ? .25 : s.cd; }
-  }
+  });
 }
 function updateOrbital(w, dt) {
   const s = wstats(w), R = 36 * s.area, r = (w.evo ? 7 : 5) * Math.sqrt(s.area);
@@ -719,7 +744,7 @@ function buildChoices(count) {
   return out;
 }
 function applyChoice(o) {
-  if (o.t === 'wnew') P.weapons.push(newWeapon(o.id));
+  if (o.t === 'wnew') { P.weapons.push(newWeapon(o.id)); if (!autoFire()) floatText((FINE_PTR ? `TECLA ${P.weapons.length}: ` : '') + WEAPONS[o.id].name.toUpperCase(), WEAPONS[o.id].col); }
   else if (o.t === 'wup') P.weapons.find(w => w.id === o.id).lvl++;
   else if (o.t === 'evo') { const w = P.weapons.find(w => w.id === o.id); w.evo = true; G.stat.evos++; banner('¡EVOLUCIÓN!', WEAPONS[o.id].evo.name); sfx('trans'); markSeen('evo_' + o.id); }
   else if (o.t === 'pnew') P.passives.push({ id: o.id, lvl: 1 });
