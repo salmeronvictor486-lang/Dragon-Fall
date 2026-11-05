@@ -17,12 +17,12 @@ function newRun(cid, si, opt = {}) {
     ev: null, evT: 95, moonDone: 0, fuse: 0, fuseNeed: 150, fusionPair: null, buddy: null,
     stat: { specials: 0, events: 0, fusions: 0, evos: 0, trans: 0, shenron: 0, buddySp: 0, crates: 0, chests: 0, shrines: 0, healed: 0 },
     objs: [], objT: 0, curse: 0,
-    tut: save.tut ? null : [[1, 'Muévete con WASD o las flechas. En el móvil, arrastra el dedo por la pantalla.'], [8, save.opts.autofire ? 'Tus ataques se lanzan solos contra el enemigo más cercano.' : 'Lanza tus técnicas con las teclas 1-6 o tocando su casilla en la barra de abajo.'], [15, 'Recoge los cristales de ki para subir de nivel y elegir mejoras.'], [24, 'Los enemigos con nombre naranja sueltan Bolas de Dragón. ¡Reúne las 7!'], [31, 'Pulsa Espacio o Q (o toca el botón redondo) para usar la técnica especial de tu guerrero.'], [42, 'Rompe cajas y jarrones: sueltan comida que cura. Las fuentes azules también te curan.'], [52, 'Quédate en un altar de ki para cargarlo y ganar una bendición. Los cofres se abren con zenis.']], shake: 0, flash: 0, victoryT: -1, killedBosses: [], seen: {}, endT: -1, auraT: 0, pid: 0, maxCombo: 0,
+    tut: save.tut ? null : [[1, 'Muévete con WASD o las flechas. En el móvil, arrastra el dedo por la pantalla.'], [8, 'Tu ataque principal se lanza solo. Las técnicas nuevas se lanzan con las teclas 1-5 o tocando su casilla en la barra de abajo.'], [19, 'Esquiva con Shift (o el botón ESQUIVA): durante la esquiva no te hacen daño. Los enemigos que parpadean en rojo van a embestir.'], [15, 'Recoge los cristales de ki para subir de nivel y elegir mejoras.'], [24, 'Los enemigos con nombre naranja sueltan Bolas de Dragón. ¡Reúne las 7!'], [31, 'Pulsa Espacio o Q (o toca el botón redondo) para usar la técnica especial de tu guerrero.'], [42, 'Rompe cajas y jarrones: sueltan comida que cura. Las fuentes azules también te curan.'], [52, 'Quédate en un altar de ki para cargarlo y ganar una bendición. Los cofres se abren con zenis.']], shake: 0, flash: 0, victoryT: -1, killedBosses: [], seen: {}, endT: -1, auraT: 0, pid: 0, maxCombo: 0,
   };
   P = {
     x: 0, y: 0, r: 6, dirx: 1, diry: 0, face: 1, ft: 0, frame: 0, inv: 1, moving: false,
     spr: c.id, name: c.name, aura: null, formIdx: -1, weapons: [], passives: [], hp: 1, maxHp: 1, revive: 0, immortal: 0,
-    spT: 4, rage: null, shieldT: 0, fused: null, moon: 0, boons: {},
+    spT: 4, rage: null, shieldT: 0, fused: null, moon: 0, boons: {}, dashT: 0, dashCd: 0, dashV: [0, 0], ghostT: 0,
   };
   G.spq = []; G.spTint = null;
   P.weapons.push(newWeapon(c.weapon));
@@ -202,6 +202,15 @@ function updateEnemies(dt) {
     } else if (e.ai === 'ranged') {
       const s = d < 95 ? -.5 : d < 150 ? .15 : 1; mvx = dx * e.spd * s - dy * e.spd * .35; mvy = dy * e.spd * s + dx * e.spd * .35;
       e.shootT -= dt; if (e.shootT <= 0 && d < 200 && G.eprojs.length < 90) { e.shootT = rand(3.5, 5.5); enemyShoot(e, Math.atan2(P.y - 8 - (e.y - e.h * .5), P.x - e.x), 95, e.dmg * .8, 3.5, e.elite ? '#ffb03a' : '#ff5a3a'); }
+    } else if (e.ai === 'fast') {
+      // los rápidos se agachan un instante (parpadean en rojo) y embisten en línea recta: hay tiempo para esquivar
+      if (e.lunge) {
+        if (e.lunge.w > 0) { e.lunge.w -= dt; e.lunge.a = Math.atan2(P.y - e.y, P.x - e.x); }
+        else { mvx = Math.cos(e.lunge.a) * e.spd * 3.6; mvy = Math.sin(e.lunge.a) * e.spd * 3.6; if ((e.lunge.t -= dt) <= 0) { e.lunge = null; e.lungeT = rand(2.5, 4.5); } }
+      } else {
+        mvx = dx * e.spd; mvy = dy * e.spd;
+        if ((e.lungeT = (e.lungeT ?? rand(1, 3)) - dt) <= 0 && d < 120 && d > 28) e.lunge = { w: .5, t: .34, a: 0 };
+      }
     } else { mvx = dx * e.spd; mvy = dy * e.spd; if (e.elite && e.ai === 'tank' && d < 160) { e.shootT -= dt; if (e.shootT <= 0) { e.shootT = 3; for (let i = 0; i < 10; i++) enemyShoot(e, i / 10 * TAU, 80, e.dmg * .6, 4, '#ff8a3a'); } } }
     if (Math.abs(mvx) > .1) e.face = mvx > 0 ? 1 : -1;
     e.view = viewOf(mvx, mvy, e.view);
@@ -272,6 +281,7 @@ function killEnemy(e, w) {
     banner(`¡${e.name.toUpperCase()} DERROTADO!`, e.final ? '¡Has completado la saga!' : G.endless ? 'Recoge la cápsula y sigue aguantando' : 'Recoge la cápsula');
     hitstop(.16); vibrate(90);
     if (e.final) G.victoryT = 3;
+    else { G.freeUp = (G.freeUp || 0) + 1; G.pendingLv++; }   // recompensa: una mejora gratis
   }
 }
 function dropGem(x, y, v) {
@@ -287,7 +297,7 @@ function dropBall(x, y) {
 
 /* =================== JUGADOR =================== */
 function hurtPlayer(d) {
-  if (P.inv > 0 || P.immortal > 0 || P.shieldT > 0 || G.endT >= 0) return;
+  if (P.inv > 0 || P.immortal > 0 || P.shieldT > 0 || P.dashT > 0 || G.endT >= 0) return;
   d = Math.max(1, d - P.armor);
   P.hp -= d; P.inv = .5; G.shake = Math.max(G.shake, .18); G.hurtT = .25; sfx('hurt'); vibrate(25);
   if (P.hp <= 0) {
@@ -318,7 +328,11 @@ function updatePlayer(dt) {
   if (P.aim) { const ax = P.aim.x - P.x, ay = (P.aim.y - P.aim.h * .4) - (P.y - 8); if (Math.abs(ax) > 4) P.face = ax > 0 ? 1 : -1; P.view = viewOf(ax, ay, P.view); }
   else if (P.moving) { if (Math.abs(mx) > .05) P.face = mx > 0 ? 1 : -1; P.view = viewOf(mx, my, P.view); }
   else if (P.still > .12) P.view = 0;
-  P.x += mx * P.spd * dt; P.y += my * P.spd * dt;
+  if (P.dashT > 0) {   // esquiva: avance rápido e invulnerable, dejando estelas
+    P.dashT -= dt; P.x += P.dashV[0] * dt; P.y += P.dashV[1] * dt;
+    if ((P.ghostT -= dt) <= 0) { P.ghostT = .035; G.fx.push({ k: 'ghost', spr: P.spr, x: P.x, y: P.y, face: P.face, view: P.view, frame: P.frame, life: .22, max: .22 }); }
+  } else { P.x += mx * P.spd * dt; P.y += my * P.spd * dt; }
+  P.dashCd -= dt;
   P.ft += dt; if (P.ft > (P.moving ? .14 : .4)) { P.ft = 0; P.frame = P.moving ? P.frame ^ 1 : 0; }
   P.inv -= dt; P.immortal -= dt; P.shieldT -= dt; P.spT -= dt; G.hurtT = (G.hurtT || 0) - dt;
   if (P.rage && (P.rage.t -= dt) <= 0) { P.rage = null; recalc(); }
@@ -332,7 +346,8 @@ function wstats(w) {
   const d = WEAPONS[w.id], s = Object.assign({ spd: 0, pierce: 1, life: 1 }, d.base);
   for (let i = 0; i < w.lvl - 1; i++) for (const k in d.up[i]) s[k] = (s[k] || 0) + d.up[i][k];
   if (w.evo) for (const k in d.evo.mod) s[k] = (s[k] || 0) + d.evo.mod[k];
-  return { dmg: s.dmg * P.might, cd: Math.max(.1, s.cd * P.cdm), n: s.n + P.amount, area: s.area * P.area, spd: s.spd, pierce: s.pierce, life: s.life * P.dur };
+  const man = !save.opts.autofire && P.weapons.indexOf(w) > 0;   // las técnicas que lanzas a mano pegan un 25% más
+  return { dmg: s.dmg * P.might * (man ? 1.25 : 1), cd: Math.max(.1, s.cd * P.cdm), n: s.n + P.amount, area: s.area * P.area, spd: s.spd, pierce: s.pierce, life: s.life * P.dur };
 }
 function wname(w) { return w.evo ? WEAPONS[w.id].evo.name : WEAPONS[w.id].name; }
 function addProj(p) { p.id = ++G.pid; G.projs.push(p); return p; }
@@ -449,17 +464,25 @@ function fireWeapon(w) {
   return true;
 }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; }
-/* Barra de técnicas: cada ataque se lanza a mano con su tecla (1-6), tocando su casilla o con el mando, y después
-   se recarga. El aura y la barrera de ki no son un disparo: al lanzarlas se quedan activas unos segundos.
-   Con la opción «Disparo automático» todo se lanza solo, como antes. */
+/* Barra de técnicas: el ataque con el que empieza el guerrero (casilla AUTO) se dispara solo; los que vas
+   consiguiendo se lanzan a mano con su tecla (1-5), tocando su casilla o con el mando, y después se recargan.
+   El aura y la barrera de ki no son un disparo: al lanzarlas se quedan activas unos segundos.
+   Con la opción «Disparo automático» todo se lanza solo. */
 const ACTIVE_W = { aura: { dur: 4, cd: 6 }, orbital: { dur: 5, cd: 7 } };
 const touchSlots = {};
 const autoFire = () => !!save.opts.autofire;
 function heldSlot(i) {
-  return !!(keys['Digit' + (i + 1)] || keys['Numpad' + (i + 1)] || Object.values(touchSlots).includes(i) || (pad.on && pad.slots && pad.slots[i]));
+  return !!(keys['Digit' + i] || keys['Numpad' + i] || Object.values(touchSlots).includes(i) || (pad.on && pad.slots && pad.slots[i - 1]));
 }
+function dash() {
+  if (state !== 'play' || P.dashCd > 0 || P.hp <= 0 || (G.intro && G.intro.t > 0)) return;
+  let [x, y] = moveVec(); if (!x && !y) { x = P.dirx; y = P.diry; }
+  const m = Math.hypot(x, y) || 1, sp = 340;
+  P.dashT = .2; P.dashCd = DASH_CD; P.dashV = [x / m * sp, y / m * sp]; P.ghostT = 0; sfx('dash');
+}
+const DASH_CD = 2.2;
 function castWeapon(i) {
-  const w = P.weapons[i]; if (!w || w.cdT > 0 || state !== 'play' || P.hp <= 0 || (G.intro && G.intro.t > 0)) return false;
+  const w = P.weapons[i]; if (!w || i < 1 || w.cdT > 0 || state !== 'play' || P.hp <= 0 || (G.intro && G.intro.t > 0)) return false;
   const A = ACTIVE_W[w.id];
   if (A) { w.act = w.actMax = A.dur * P.dur; w.t = 0; w.cdT = w.cdMax = w.act + A.cd * P.cdm; }
   else { if (fireWeapon(w) === false) { w.cdT = w.cdMax = .25; return false; } w.cdT = w.cdMax = wstats(w).cd; }
@@ -469,9 +492,10 @@ function updateWeapons(dt) {
   const man = !autoFire();
   P.weapons.forEach((w, i) => {
     if (w.castFx > 0) w.castFx -= dt;
-    if (man) {
-      w.cdT = Math.max(0, (w.cdT || 0) - dt);
-      if (w.cdT <= 0 && heldSlot(i)) castWeapon(i);
+    if (w.readyFx > 0) w.readyFx -= dt;
+    if (man && i > 0) {
+      if (w.cdT > 0 && (w.cdT -= dt) <= 0) { w.cdT = 0; if (w.cdMax >= 2) { w.readyFx = .35; sfx('ready'); } }   // aviso de técnica lista
+      if (!(w.cdT > 0) && heldSlot(i)) castWeapon(i);
       if (!ACTIVE_W[w.id]) return;
       if (!(w.act > 0)) { w.orbs = []; return; }
       w.act -= dt;
@@ -744,7 +768,7 @@ function buildChoices(count) {
   return out;
 }
 function applyChoice(o) {
-  if (o.t === 'wnew') { P.weapons.push(newWeapon(o.id)); if (!autoFire()) floatText((FINE_PTR ? `TECLA ${P.weapons.length}: ` : '') + WEAPONS[o.id].name.toUpperCase(), WEAPONS[o.id].col); }
+  if (o.t === 'wnew') { P.weapons.push(newWeapon(o.id)); if (!autoFire()) floatText((FINE_PTR ? `TECLA ${P.weapons.length - 1}: ` : '') + WEAPONS[o.id].name.toUpperCase(), WEAPONS[o.id].col); }
   else if (o.t === 'wup') P.weapons.find(w => w.id === o.id).lvl++;
   else if (o.t === 'evo') { const w = P.weapons.find(w => w.id === o.id); w.evo = true; G.stat.evos++; banner('¡EVOLUCIÓN!', WEAPONS[o.id].evo.name); sfx('trans'); markSeen('evo_' + o.id); }
   else if (o.t === 'pnew') P.passives.push({ id: o.id, lvl: 1 });

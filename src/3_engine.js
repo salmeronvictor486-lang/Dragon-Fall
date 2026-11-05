@@ -334,6 +334,8 @@ function sfx(n) {
     case 'boom': noise(.45, .18, 120); tone(90, .4, 'sine', .25, -50); break;
     case 'boss': [196, 185, 175, 165].forEach((f, i) => tone(f, .28, 'sawtooth', .1, 0, i * .22)); break;
     case 'trans': noise(1.1, .1, 300); [262, 330, 392, 523, 659, 784].forEach((f, i) => tone(f, .25, 'square', .07, 0, i * .09)); break;
+    case 'dash': noise(.12, .07, 2600); tone(520, .1, 'triangle', .05, 500); break;
+    case 'ready': tone(1320, .05, 'triangle', .04, 0); tone(1760, .07, 'triangle', .04, 0, .05); break;
     case 'pick': tone(660, .08, 'square', .08, 0); tone(990, .1, 'square', .08, 0, .07); break;
     case 'ball': [784, 988, 1175, 1568].forEach((f, i) => tone(f, .16, 'triangle', .1, 0, i * .08)); break;
     case 'heal': [440, 554, 659].forEach((f, i) => tone(f, .14, 'triangle', .1, 0, i * .06)); break;
@@ -472,6 +474,7 @@ cv.addEventListener('pointerdown', e => {
   audioInit();
   if (state === 'play' && G && G.intro) G.intro.t = Math.min(G.intro.t, .15);
   if (state === 'play' && G && spBtn && (e.clientX - spBtn.x) ** 2 + (e.clientY - spBtn.y) ** 2 < spBtn.r ** 2) { useSpecial(); return; }
+  if (state === 'play' && G && dashBtn && (e.clientX - dashBtn.x) ** 2 + (e.clientY - dashBtn.y) ** 2 < dashBtn.r ** 2) { dash(); return; }
   if (state === 'play' && G && fuBtn && (e.clientX - fuBtn.x) ** 2 + (e.clientY - fuBtn.y) ** 2 < fuBtn.r ** 2) { startFusion(); return; }
   if (state === 'play' && G) { const h = hotbar.find(b => e.clientX >= b.x - 2 && e.clientX <= b.x + b.s + 2 && e.clientY >= b.y - 2 && e.clientY <= b.y + b.s + 2); if (h) { touchSlots[e.pointerId] = h.i; castWeapon(h.i); return; } }
   if (state !== 'play' || e.pointerType === 'mouse') return;
