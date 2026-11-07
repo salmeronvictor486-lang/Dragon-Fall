@@ -334,6 +334,7 @@ function sfx(n) {
     case 'boom': noise(.45, .18, 120); tone(90, .4, 'sine', .25, -50); break;
     case 'boss': [196, 185, 175, 165].forEach((f, i) => tone(f, .28, 'sawtooth', .1, 0, i * .22)); break;
     case 'trans': noise(1.1, .1, 300); [262, 330, 392, 523, 659, 784].forEach((f, i) => tone(f, .25, 'square', .07, 0, i * .09)); break;
+    case 'fuse': [880, 990, 1100, 1240].forEach((f, i) => tone(f, .07, 'square', .05, 0, i * .17)); break;
     case 'dash': noise(.12, .07, 2600); tone(520, .1, 'triangle', .05, 500); break;
     case 'ready': tone(1320, .05, 'triangle', .04, 0); tone(1760, .07, 'triangle', .04, 0, .05); break;
     case 'pick': tone(660, .08, 'square', .08, 0); tone(990, .1, 'square', .08, 0, .07); break;

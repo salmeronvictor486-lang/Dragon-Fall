@@ -66,7 +66,7 @@ const GRIDS = 40; const egrid = new Map();
 function gkey(x, y) { return (Math.floor(x / GRIDS) + 5000) * 10007 + (Math.floor(y / GRIDS) + 5000); }
 function rebuildGrid() {
   egrid.clear();
-  for (const e of G.enemies) { if (e.dead) continue; const k = gkey(e.x, e.y); let a = egrid.get(k); if (!a) { a = []; egrid.set(k, a); } a.push(e); }
+  for (const e of G.enemies) { if (e.dead || e.hide) continue; const k = gkey(e.x, e.y); let a = egrid.get(k); if (!a) { a = []; egrid.set(k, a); } a.push(e); }
 }
 function query(x, y, r, cb) {
   const x0 = Math.floor((x - r) / GRIDS), x1 = Math.floor((x + r) / GRIDS), y0 = Math.floor((y - r) / GRIDS), y1 = Math.floor((y + r) / GRIDS);
@@ -77,12 +77,12 @@ function query(x, y, r, cb) {
 }
 function nearestN(n, maxD = 320, x = P.x, y = P.y) {
   const arr = [];
-  for (const e of G.enemies) { if (e.dead) continue; const d = (e.x - x) ** 2 + (e.y - y) ** 2; if (d < maxD * maxD) arr.push([d, e]); }
+  for (const e of G.enemies) { if (e.dead || e.hide) continue; const d = (e.x - x) ** 2 + (e.y - y) ** 2; if (d < maxD * maxD) arr.push([d, e]); }
   arr.sort((a, b) => a[0] - b[0]);
   return arr.slice(0, n).map(a => a[1]);
 }
-function nearest(maxD = 320, x = P.x, y = P.y) { let best = null, bd = maxD * maxD; for (const e of G.enemies) { if (e.dead) continue; const d = (e.x - x) ** 2 + (e.y - y) ** 2; if (d < bd) { bd = d; best = e; } } return best; }
-function visibleEnemies(margin = 0) { const hw = VW / 2 + margin, hh = VH / 2 + margin; return G.enemies.filter(e => !e.dead && Math.abs(e.x - P.x) < hw && Math.abs(e.y - P.y) < hh); }
+function nearest(maxD = 320, x = P.x, y = P.y) { let best = null, bd = maxD * maxD; for (const e of G.enemies) { if (e.dead || e.hide) continue; const d = (e.x - x) ** 2 + (e.y - y) ** 2; if (d < bd) { bd = d; best = e; } } return best; }
+function visibleEnemies(margin = 0) { const hw = VW / 2 + margin, hh = VH / 2 + margin; return G.enemies.filter(e => !e.dead && !e.hide && Math.abs(e.x - P.x) < hw && Math.abs(e.y - P.y) < hh); }
 function aimAt(e) { return e ? Math.atan2(e.y - e.h * .4 - (P.y - 8), e.x - P.x) : Math.atan2(P.diry, P.dirx); }
 function segDist2(px, py, x1, y1, x2, y2) {
   const dx = x2 - x1, dy = y2 - y1, l2 = dx * dx + dy * dy; let t = l2 ? ((px - x1) * dx + (py - y1) * dy) / l2 : 0; t = clamp(t, 0, 1);
@@ -101,6 +101,12 @@ function hurtEnemy(e, dmg, w, kx = 0, ky = 0, forceCrit = false) {
   if (e.dead) return;
   const crit = forceCrit || Math.random() < P.crit;
   dmg = dmg * (crit ? 2 : 1) * rand(.92, 1.08);
+  if (e.hide) return;
+  if (e.shield > 0) {   // la barrera de ki se come el daño primero
+    const a = Math.min(e.shield, dmg); e.shield -= a; dmg -= a; e.shieldT = 3.5;
+    if (e.shield <= 0) { e.shield = 0; G.fx.push({ k: 'ring', x: e.x, y: e.y - e.h * .5, r0: e.h * .5, r1: e.h, life: .3, max: .3, col: '#7fe3ff' }); burst(e.x, e.y - e.h * .5, 8, '#7fe3ff', 1.2); sfx('boom'); }
+    if (dmg <= 0) { if (G.fx.length < 260) G.fx.push({ k: 'spark', x: e.x + rand(-4, 4), y: e.y - e.h * .55 + rand(-4, 4), life: .16, max: .16, crit: false }); sfx('hit'); return; }
+  }
   e.hp -= dmg; e.flash = .06;
   if (!e.boss) { const m = e.elite ? .25 : 1; e.kx += kx * m; e.ky += ky * m; }
   if (w) w.dealt += dmg;
@@ -118,13 +124,14 @@ function spawnPos(dist) {
   return [P.x + Math.cos(a) * d, P.y + Math.sin(a) * d];
 }
 function spawnEnemy(id, x, y, isElite) {
-  const d = ENEMIES[id], sc = sprScale(id) * (isElite ? 1.25 : 1);
+  const d = ENEMIES[id], sc = (d.sc || sprScale(id)) * (isElite ? 1.25 : 1);
   const hm = enemyHpMul();
   const e = {
     id, spr: d.vars ? pick(d.vars) : id, name: d.name, x, y, hp: d.hp * hm, maxHp: d.hp * hm, spd: d.spd * rand(.9, 1.1), dmg: d.dmg * enemyDmgMul(), xp: d.xp,
     r: 5 * sc, scale: sc, h: 28 * sc, ai: d.ai || 'chase', elite: !!(d.elite || isElite), boss: false,
     flash: 0, stun: 0, kx: 0, ky: 0, ft: Math.random(), frame: 0, face: -1, hitT: {}, shootT: rand(2, 5), dead: false,
   };
+  if (e.ai === 'shield') { e.shield = e.shieldMax = e.maxHp * .9; e.shieldT = 0; }
   G.enemies.push(e);
   if (!G.seen[id]) { G.seen[id] = 1; markSeen(id); if (G.t > 1) G.fx.push({ k: 'text', t: `Aparece: ${d.name}`, col: e.elite ? '#ffb070' : '#e6e9ff', x: P.x, y: P.y - 48, life: 1.8, max: 1.8 }); }
   return e;
@@ -199,6 +206,37 @@ function updateEnemies(dt) {
         if (e.dash.warn > 0) { e.dash.warn -= dt; e.dash.ang = Math.atan2(P.y - e.y, P.x - e.x); }
         else { mvx = Math.cos(e.dash.ang) * e.spd * 4.2; mvy = Math.sin(e.dash.ang) * e.spd * 4.2; e.dash.t -= dt; if (e.dash.t <= 0) e.dash = null; }
       } else { mvx = dx * e.spd; mvy = dy * e.spd; if (e.atkT <= 0) { e.atkT = rand(2, 3.4) - G.si * .15; bossAttack(e); } }
+    } else if (e.ai === 'bomb') {
+      // kamikaze: corre hacia ti y, al llegar, se hincha y explota (el círculo rojo marca el alcance)
+      if (e.fuse != null) { if ((e.fuse -= dt) <= 0) { bombBlast(e, true); continue; } }
+      else { mvx = dx * e.spd * 1.15; mvy = dy * e.spd * 1.15; if (d < 30) { e.fuse = .75; sfx('fuse'); } }
+    } else if (e.ai === 'sniper') {
+      // se queda lejos y apunta: la línea roja avisa del rayo
+      const s = d < 150 ? -.8 : d > 230 ? .9 : 0; mvx = dx * e.spd * s - dy * e.spd * .25; mvy = dy * e.spd * s + dx * e.spd * .25;
+      e.shootT -= dt;
+      if (e.shootT <= 0 && d < 300 && G.eprojs.length < 90) { e.shootT = rand(4.5, 6.5); G.eprojs.push({ k: 'beam', x: e.x, y: e.y - e.h * .5, ang: Math.atan2(P.y - 8 - (e.y - e.h * .5), P.x - e.x), len: 340, w: 7, warn: 1, life: .25, dmg: e.dmg * 1.6, col: '#ff3a3a', owner: e, hit: false }); }
+    } else if (e.ai === 'healer') {
+      // curandero: se mantiene detrás y cada 4 s cura a los de su alrededor
+      const s = d < 110 ? -.6 : d > 170 ? 1 : .1; mvx = dx * e.spd * s - dy * e.spd * .2; mvy = dy * e.spd * s + dx * e.spd * .2;
+      if ((e.shootT -= dt) <= 0) {
+        e.shootT = 4; let n = 0;
+        query(e.x, e.y, 95, o => { if (o !== e && !o.dead && o.hp < o.maxHp && (o.x - e.x) ** 2 + (o.y - e.y) ** 2 < 95 * 95) { o.hp = Math.min(o.maxHp, o.hp + o.maxHp * .3); n++; if (G.fx.length < 260) G.fx.push({ k: 'heal', x: o.x, y: o.y - o.h, life: .6, max: .6 }); } });
+        if (n) G.fx.push({ k: 'ring', x: e.x, y: e.y - e.h * .4, r0: 4, r1: 95, life: .5, max: .5, col: '#59d66b' });
+      }
+    } else if (e.ai === 'shield') {
+      mvx = dx * e.spd; mvy = dy * e.spd;
+      if (e.shield < e.shieldMax && (e.shieldT -= dt) <= 0) e.shield = Math.min(e.shieldMax, e.shield + e.shieldMax * .4 * dt);
+    } else if (e.ai === 'blink') {
+      // se esfuma (humo morado), deja una marca a tu lado y reaparece ahí
+      if (e.blink) {
+        e.blink.t -= dt;
+        if (e.blink.ph === 0 && e.blink.t <= 0) { const a = Math.random() * TAU; e.hide = true; e.blink = { ph: 1, t: .5, x: P.x + Math.cos(a) * 44, y: P.y + Math.sin(a) * 44 }; }
+        else if (e.blink.ph === 1 && e.blink.t <= 0) { e.x = e.blink.x; e.y = e.blink.y; e.hide = false; e.blink = null; e.lungeT = rand(3, 5); G.fx.push({ k: 'poof', x: e.x, y: e.y - e.h * .4, r: e.r * 2, life: .35, max: .35 }); }
+        if (e.hide) continue;
+      } else {
+        mvx = dx * e.spd; mvy = dy * e.spd;
+        if ((e.lungeT = (e.lungeT ?? rand(1.5, 3.5)) - dt) <= 0 && d > 70 && d < 260) { e.blink = { ph: 0, t: .4 }; G.fx.push({ k: 'poof', x: e.x, y: e.y - e.h * .4, r: e.r * 2, life: .4, max: .4 }); }
+      }
     } else if (e.ai === 'ranged') {
       const s = d < 95 ? -.5 : d < 150 ? .15 : 1; mvx = dx * e.spd * s - dy * e.spd * .35; mvy = dy * e.spd * s + dx * e.spd * .35;
       e.shootT -= dt; if (e.shootT <= 0 && d < 200 && G.eprojs.length < 90) { e.shootT = rand(3.5, 5.5); enemyShoot(e, Math.atan2(P.y - 8 - (e.y - e.h * .5), P.x - e.x), 95, e.dmg * .8, 3.5, e.elite ? '#ffb03a' : '#ff5a3a'); }
@@ -258,6 +296,11 @@ function killEnemy(e, w) {
   const luck = P.luck;
   burst(e.x, e.y - e.h / 2, e.boss ? 40 : e.elite ? 16 : 5, e.boss ? e.aura : '#ffffff', e.boss ? 3 : 1.4);
   if (G.fx.length < 280) G.fx.push({ k: 'poof', x: e.x, y: e.y - e.h * .4, r: e.r * 1.6, life: .38, max: .38 });
+  if (e.ai === 'bomb' && !e.blown) bombBlast(e, false);   // derribado antes de tiempo: su explosión solo daña a los enemigos
+  if (e.ai === 'split' && !e.mini && G.enemies.length < 380) for (const s of [-1, 1]) {
+    const m = spawnEnemy(e.id, e.x + s * 7, e.y + rand(-3, 3)); m.mini = true; m.scale *= .65; m.r *= .65; m.h *= .65;
+    m.hp = m.maxHp = e.maxHp * .35; m.spd *= 1.3; m.xp = Math.max(1, e.xp >> 1); m.kx = s * 90;
+  }
   if (!e.boss && G.fx.length < 300) G.fx.push({ k: 'die', spr: e.spr, x: e.x, y: e.y, sc: e.scale, face: e.face, view: e.view, life: .2, max: .2 });
   sfx('kill');
   const candy = w && w.id === 'candy' && !e.boss;
@@ -283,6 +326,16 @@ function killEnemy(e, w) {
     if (e.final) G.victoryT = 3;
     else { G.freeUp = (G.freeUp || 0) + 1; G.pendingLv++; }   // recompensa: una mejora gratis
   }
+}
+/* Explosión del kamikaze: con live, también te alcanza a ti; siempre daña a los enemigos del radio */
+function bombBlast(e, live) {
+  if (e.blown) return; e.blown = true;
+  const R = 46, x = e.x, y = e.y - e.h * .4;
+  G.fx.push({ k: 'boom', x, y, r: R, life: .4, max: .4, col: '#ff8a1c' }, { k: 'ring', x, y, r0: 6, r1: R, life: .35, max: .35, col: '#ffd23f' });
+  burst(x, y, 14, '#ff8a1c', 1.8); sfx('boom'); G.shake = Math.max(G.shake, .25);
+  if (live && (P.x - e.x) ** 2 + (P.y - e.y) ** 2 < (R + P.r) ** 2) hurtPlayer(e.dmg * 2.2);
+  query(e.x, e.y, R + 10, o => { if (o !== e && !o.dead && !o.boss && (o.x - e.x) ** 2 + (o.y - e.y) ** 2 < R * R) hurtEnemy(o, 30 * (1 + G.si * .6), null); });
+  if (live) killEnemy(e, null);
 }
 function dropGem(x, y, v) {
   if (G.gems.length > 300) { const g = G.gems[Math.floor(Math.random() * G.gems.length)]; g.v += v; return; }
