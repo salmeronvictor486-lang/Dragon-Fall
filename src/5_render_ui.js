@@ -12,6 +12,29 @@ function drawEnt(spr, x, y, sc, face, frame, variant, squash, view) {
   if (squash) { w = Math.round(w * 1.12); h = Math.round(h * .9); }
   lx.drawImage(s, rd(x - w / 2 - camX), rd(y - h - camY + 1 - (frame & 1)), w, h);
 }
+/* Marcas de los enemigos con comportamiento propio */
+function drawEnemyMark(e, t) {
+  const x = rd(e.x - camX);
+  if (e.shield > 0) {   // burbuja de la barrera: más opaca cuanto más carga tiene
+    const k = e.shield / e.shieldMax, cy = e.y - e.h * .45, R = e.h * .58;
+    lx.globalAlpha = .1 + .15 * k; circ(e.x, cy, R, '#7fe3ff');
+    lx.globalAlpha = .35 + .45 * k; lx.strokeStyle = '#bff3ff'; lx.lineWidth = 1; lx.beginPath(); lx.arc(x, rd(cy - camY), R, 0, TAU); lx.stroke(); lx.globalAlpha = 1;
+  } else if (e.ai === 'healer') {   // cruz verde sobre la cabeza
+    const y = rd(e.y - e.h - camY - 4 + Math.sin(t * 4) * 1.5);
+    lx.fillStyle = '#05360f'; lx.fillRect(x - 3, y - 1, 7, 3); lx.fillRect(x - 1, y - 3, 3, 7); lx.fillStyle = '#59d66b'; lx.fillRect(x - 2, y, 5, 1); lx.fillRect(x, y - 2, 1, 5);
+  } else if (e.ai === 'bomb' && e.fuse == null) {   // mecha encendida
+    const y = rd(e.y - e.h - camY - 2), on = Math.floor(t * 6 + e.x) % 2;
+    lx.fillStyle = '#4a2a10'; lx.fillRect(x, y, 1, 3); lx.fillStyle = on ? '#ffd23f' : '#ff6a1c'; lx.fillRect(x - 1, y - 2, 3, 2);
+  } else if (e.ai === 'sniper') {   // mira roja
+    const y = rd(e.y - e.h - camY - 3); lx.fillStyle = '#ff3a3a'; lx.fillRect(x - 2, y, 5, 1); lx.fillRect(x, y - 2, 1, 5);
+  }
+}
+// Marca morada en el suelo donde va a reaparecer el ninja
+function drawBlinkMark(b, t) {
+  const k = 1 - b.t / .5, x = rd(b.x - camX), y = rd(b.y - camY);
+  lx.globalAlpha = .25 + .45 * k; lx.strokeStyle = '#c89bff'; lx.lineWidth = 1.5; lx.beginPath(); lx.ellipse(x, y, 10 - 4 * k, 5 - 2 * k, 0, 0, TAU); lx.stroke();
+  lx.globalAlpha = .15 + .25 * k; lx.fillStyle = '#b06bff'; lx.beginPath(); lx.ellipse(x, y, 10 - 4 * k, 5 - 2 * k, 0, 0, TAU); lx.fill(); lx.globalAlpha = 1;
+}
 /* Cristales de ki y monedas */
 const gemCache = new Map();
 function gemSprite(col, big) {
@@ -132,10 +155,18 @@ function renderWorld(dt) {
       continue;
     }
     if (e.x < camX - 60 || e.x > camX + VW + 60 || e.y < camY - 20 || e.y > camY + VH + 120) continue;
+    if (e.hide) { if (e.blink && e.blink.ph === 1) drawBlinkMark(e.blink, t); continue; }
     if (e.boss) drawAura(e.x, e.y, e.h, e.aura, t + e.x, true);
     else if (e.elite) drawAura(e.x, e.y, e.h, '#ff7a3a', t + e.x, false);
+    if (e.fuse != null) {   // kamikaze a punto de explotar: alcance marcado y parpadeo cada vez más rápido
+      const k = 1 - e.fuse / .75; lx.globalAlpha = .25 + .5 * k; lx.strokeStyle = '#ff3a2a'; lx.lineWidth = 1.5; lx.beginPath(); lx.arc(rd(e.x - camX), rd(e.y - e.h * .4 - camY), 46, 0, TAU); lx.stroke();
+      lx.globalAlpha = .12 + .15 * k; circ(e.x, e.y - e.h * .4, 46, '#ff3a2a'); lx.globalAlpha = 1;
+      if (Math.floor(t * (8 + 24 * k)) % 2) { drawEnt(e.spr, e.x, e.y, e.scale * (1 + .2 * k), e.face, 0, '#ffb03a', false, e.view); continue; }
+    }
+    if (e.blink && e.blink.ph === 0 && Math.floor(t * 20) % 2) { drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, '#b06bff', false, e.view); continue; }
     if (((e.dash && e.dash.warn > 0) || (e.lunge && e.lunge.w > 0)) && Math.floor(t * 16) % 2) { drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, '#ff4040', false, e.view); continue; }
     drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, e.flash > 0 && !e.boss ? 'white' : '', e.flash > 0 && !e.boss, e.view);
+    drawEnemyMark(e, t);
     if (e.stun > 0 && !e.boss) { lx.fillStyle = '#fff6a0'; lx.fillRect(rd(e.x - camX + Math.sin(t * 8) * 4), rd(e.y - e.h - camY - 2), 2, 2); }
   }
   // proyectiles
@@ -210,6 +241,10 @@ function renderWorld(dt) {
     else if (f.k === 'spark') {
       const x = rd(f.x - camX), y = rd(f.y - camY), s = rd((1 - fr) * 4) + 1, c = f.crit ? '#ffd23f' : '#ffffff';
       lx.fillStyle = c; lx.fillRect(x - s, y, s * 2 + 1, 1); lx.fillRect(x, y - s, 1, s * 2 + 1); if (fr > .5) { lx.fillRect(x - 1, y - 1, 3, 3); }
+    }
+    else if (f.k === 'heal') {   // cruz verde que sube al curar
+      lx.globalAlpha = fr; const x = rd(f.x - camX), y = rd(f.y - camY - (1 - fr) * 8);
+      lx.fillStyle = '#05360f'; lx.fillRect(x - 3, y - 1, 7, 3); lx.fillRect(x - 1, y - 3, 3, 7); lx.fillStyle = '#59d66b'; lx.fillRect(x - 2, y, 5, 1); lx.fillRect(x, y - 2, 1, 5); lx.globalAlpha = 1;
     }
     else if (f.k === 'ghost') {   // estela de la esquiva
       const sp = getSpriteV(f.spr, f.frame, f.face < 0, '#7fd0ff', f.view), w = Math.round(sp.width * sprScale(f.spr)), h = Math.round(sp.height * sprScale(f.spr));
@@ -1061,7 +1096,7 @@ function dexEntries(tab) {
     });
     return out;
   }
-  if (tab === 'enemies') return Object.entries(ENEMIES).map(([id, d]) => ({ id, spr: id, name: d.name, saga: d.saga + (d.elite ? ' · Élite' : ''), desc: d.desc, met: !!save.seen[id] }));
+  if (tab === 'enemies') return Object.entries(ENEMIES).map(([id, d]) => ({ id, spr: SPR[id] || !d.vars ? id : d.vars[0], name: d.name, saga: d.saga + (d.elite ? ' · Élite' : ''), desc: d.desc, met: !!save.seen[id] }));
   if (tab === 'bosses') return Object.entries(BOSSES).map(([id, d]) => ({ id, spr: d.spr || id, name: d.name, saga: d.saga + (d.final ? ' · Jefe final' : ' · Jefe'), desc: d.desc, met: !!save.seen[id], beat: !!save.bosses[id] }));
   return Object.entries(WEAPONS).map(([id, d]) => ({ id, icon: [d.icon, d.col], name: d.name, saga: 'Evoluciona con ' + PASSIVES[d.evo.with].name + ' → ' + d.evo.name, desc: d.desc }))
     .concat(Object.entries(PASSIVES).map(([id, d]) => ({ id, icon: [d.icon, d.col], name: d.name, saga: 'Pasiva', desc: d.desc })));

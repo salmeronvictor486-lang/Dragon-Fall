@@ -66,6 +66,19 @@ Hordas sorpresa, cápsulas que defender, un **Torneo de Artes Marciales** en mit
 </tr>
 </table>
 
+## 👾 Enemigos que te obligan a pensar
+No todos se limitan a perseguirte. Cada saga mezcla enemigos con su propia forma de atacar:
+
+| Tipo | Qué hace | Cómo se nota |
+|:--|:--|:--|
+| 💣 **Kamikaze** | Corre hacia ti y explota | Mecha encendida y círculo rojo con el alcance. Si lo derribas antes, su explosión daña a los demás |
+| 🎯 **Francotirador** | Dispara un rayo rápido desde lejos | Mira roja y una línea que avisa por dónde va a pasar |
+| ➕ **Curandero** | Cura a los enemigos que tiene cerca | Cruz verde sobre la cabeza: derríbalo primero |
+| 🛡️ **Barrera** | Absorbe el daño y se recarga | Burbuja azul que se apaga al romperla |
+| 🧪 **Divisor** | Al morir se parte en dos más rápidos | Las Gotas de Buu y los zombis gemelos |
+| 🌀 **Ninja** | Desaparece y reaparece a tu lado | Humo morado y una marca en el suelo |
+| ⚡ **Rápido** | Se agacha y embiste en línea recta | Parpadea en rojo justo antes |
+
 ## 🧬 110 guerreros de todo Dragon Ball
 
 <div align="center">
