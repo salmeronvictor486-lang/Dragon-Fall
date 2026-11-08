@@ -56,7 +56,7 @@ function updateObjs(dt) {
     const d2 = (o.x - P.x) ** 2 + (o.y - P.y) ** 2;
     if (o.k === 'crate') { if (d2 < 11 * 11) breakCrate(o); }
     else if (o.k === 'fountain') {
-      if (o.water > 0 && d2 < o.R * o.R && P.hp < P.maxHp && P.hp > 0) {
+      if (o.water > 0 && d2 < o.R * o.R && P.hp < P.maxHp && P.hp > 0 && !(G.daily && G.daily.mod.noheal)) {
         const h = Math.min(P.maxHp * .09 * dt, P.maxHp - P.hp, o.water * P.maxHp);
         P.hp += h; o.water -= h / P.maxHp; G.stat.healed += h;
         if (Math.random() < dt * 14) G.fx.push({ k: 'p', x: P.x + rand(-6, 6), y: P.y - rand(4, 20), vx: rand(-8, 8), vy: -rand(20, 40), life: .5, max: .5, col: Math.random() < .5 ? '#9fd8ff' : '#59d66b', s: 1 });

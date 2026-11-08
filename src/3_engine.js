@@ -444,7 +444,7 @@ function normalizeSave(o) {
   if (st.play < st.time) st.play = Math.round(st.time);   // partidas antiguas: al menos el tiempo jugado en partidas
   s.acc = { lvl: Math.max(1, Number(s.acc && s.acc.lvl) || 1), xp: Math.max(0, Number(s.acc && s.acc.xp) || 0) };
   if (!s.missions || typeof s.missions !== 'object' || !Array.isArray(s.missions.list)) s.missions = { day: '', list: [], bonus: 0 };
-  s.diff = 0; if (s.mode !== 'inf') s.mode = 'saga';
+  s.diff = 0; if (s.mode !== 'inf' && s.mode !== 'day') s.mode = 'saga';
   if (typeof s.buddy !== 'string') s.buddy = '';
   return s;
 }

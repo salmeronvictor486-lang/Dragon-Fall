@@ -1,5 +1,25 @@
 <script>
 /* =================== PANTALLA DE MISIONES, LOGROS Y PERFIL =================== */
+// Historial: las últimas partidas y quién te derrota más a menudo
+function historyPanel() {
+  const H = Array.isArray(save.hist) ? save.hist : [], sec = document.createElement('div'); sec.className = 'panel shopsec';
+  const by = {}; H.forEach(h => { if (h.by) by[h.by] = (by[h.by] || 0) + 1; });
+  const top = Object.entries(by).sort((a, b) => b[1] - a[1])[0];
+  const fall = H.filter(h => !h.w && h.by), avg = fall.length ? fall.reduce((a, h) => a + h.t, 0) / fall.length : 0;
+  sec.innerHTML = `<div class="sechd"><b class="px gold">ÚLTIMAS PARTIDAS</b><span class="muted">${H.length ? `${H.filter(h => h.w).length} victorias de ${H.length}` : ''}</span></div>
+    ${top ? `<p class="muted" style="margin:4px 0">Quien más te derrota: <b class="gold">${top[0]}</b> (${top[1]} ${top[1] === 1 ? 'vez' : 'veces'}) · caes de media en el minuto <b class="gold">${fmtTime(avg)}</b></p>` : ''}
+    <div class="hist"></div>`;
+  const list = sec.querySelector('.hist');
+  if (!H.length) list.innerHTML = '<p class="muted">Todavía no has jugado ninguna partida.</p>';
+  H.slice(0, 10).forEach(h => {
+    const st = STAGES.find(s => s.id === h.s), row = document.createElement('div'); row.className = 'hrow' + (h.w ? ' win' : '');
+    row.innerHTML = `<span class="pc"></span><span class="hm"><b>${CHAR[h.c] ? CHAR[h.c].name : '???'}</b><small>${h.m === 'day' ? '⚡ Reto diario · ' : h.m === 'inf' ? '∞ ' : ''}${st ? st.name : ''}</small></span>
+      <span class="hr">${h.w ? '<b class="gold">VICTORIA</b>' : h.by ? `Cae ante <b>${h.by}</b>` : 'Retirada'}<small>${fmtTime(h.t)} · Nv ${h.l} · ${fmtNum(h.k)} bajas</small></span>`;
+    if (CHAR[h.c]) row.querySelector('.pc').appendChild(portraitCanvas(h.c));
+    list.appendChild(row);
+  });
+  return sec;
+}
 let misTab = 'daily', misTimer = null;
 function toastIn(id, t) { const el = $('#' + id); if (!el) return; el.textContent = t; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); }
 function progBar(p, g) { const f = clamp(p / g, 0, 1); return `<div class="bar"><i style="width:${f * 100}%"></i><b>${fmtNum(Math.min(p, g))}/${fmtNum(g)}</b></div>`; }
@@ -69,6 +89,7 @@ function renderMissions() {
      ['Guerreros', `${CHARS.filter(isUnlocked).length}/${CHARS.length}`], ['Logros', `${ACHIEVEMENTS.filter(a => save.ach[a.id]).length}/${ACHIEVEMENTS.length}`], ['Misiones completadas', fmtNum(S.daily)], ['Favorito', fav ? `${favC.name} (${fav[1]})` : '—']]
       .forEach(([k, v]) => sec.querySelector('.statgrid').insertAdjacentHTML('beforeend', `<div>${k}<b>${v}</b></div>`));
     body.appendChild(sec);
+    body.appendChild(historyPanel());
   }
   clearInterval(misTimer);
   misTimer = setInterval(() => { if (state !== 'missions') { clearInterval(misTimer); return; } document.querySelectorAll('#misBody .cd').forEach(e => e.textContent = untilMidnight()); if (save.missions.day !== dayKey()) renderMissions(); }, 1000);
@@ -78,6 +99,7 @@ function renderMissions() {
 const RANK_BOARDS = [
   { id: 'inf', name: '∞ SUPERVIVENCIA', unit: 'pts', desc: 'Puntuación en el modo Supervivencia' },
   { id: 'kill', name: 'BAJAS', unit: 'bajas', desc: 'Más enemigos derrotados en una sola partida (cualquier modo)' },
+  { id: 'day', name: '⚡ RETO DIARIO', unit: 'pts', desc: 'Puntuación en el reto de hoy' },
 ];
 let rankTab = 'inf', rankReq = 0;
 function isoWeek(d = new Date()) {
@@ -87,7 +109,7 @@ function isoWeek(d = new Date()) {
   return t.getUTCFullYear() + 'w' + String(w).padStart(2, '0');
 }
 function untilMonday() { const n = new Date(), m = new Date(n); m.setHours(24, 0, 0, 0); while (m.getDay() !== 1) m.setDate(m.getDate() + 1); const s = Math.floor((m - n) / 1000), d = Math.floor(s / 86400), h = Math.floor(s / 3600) % 24; return d ? `${d} d ${h} h` : `${h} h ${Math.floor(s / 60) % 60} min`; }
-const rankCol = (b, w = isoWeek()) => `rank_${b}_${w}`;
+const rankCol = (b, w = isoWeek()) => b === 'day' ? `rank_day_${dayKey().replace(/-/g, '')}` : `rank_${b}_${w}`;
 const canRank = () => !!(ACCT && ACCT.backend && ACCT.backend.rankTop);
 async function rankSubmit(board, score, t, cid) {
   if (!canRank() || !ACCT.user || !(score > 0)) return 'guest';
@@ -95,7 +117,7 @@ async function rankSubmit(board, score, t, cid) {
   if ((save.rankSent[col] || 0) >= score) return 'same';
   try {
     await ACCT.backend.rankPut(col, ACCT.user.uid, { name: String(ACCT.user.name).slice(0, 24), title: TITLES[save.title] || '', cid, score: Math.round(score), t: Math.round(t), ts: Date.now() });
-    const wk = isoWeek(); for (const k in save.rankSent) if (!k.endsWith(wk)) delete save.rankSent[k];
+    const wk = isoWeek(), dk = rankCol('day'); for (const k in save.rankSent) if (!k.endsWith(wk) && k !== dk) delete save.rankSent[k];
     save.rankSent[col] = score; persist(); return 'ok';
   } catch (e) { console.warn('Ranking no disponible', e); return 'err'; }
 }
@@ -104,7 +126,7 @@ function renderRank() {
   const tabs = $('#rankTabs'); tabs.innerHTML = '';
   RANK_BOARDS.forEach(b => { const el = document.createElement('button'); el.className = 'btn small' + (rankTab === b.id ? ' on' : ''); el.textContent = b.name; el.onclick = () => { rankTab = b.id; sfx('click'); renderRank(); }; tabs.appendChild(el); });
   const B = RANK_BOARDS.find(b => b.id === rankTab), body = $('#rankBody');
-  const head = `<div class="sechd"><b class="px gold">${B.name}</b><span class="muted">${B.desc}. Se reinicia cada lunes.</span></div>`;
+  const head = `<div class="sechd"><b class="px gold">${B.name}</b><span class="muted">${B.desc}. ${B.id === 'day' ? 'Se reinicia cada día.' : 'Se reinicia cada lunes.'}</span></div>`;
   const who = ACCT && ACCT.user ? '' : `<p class="muted" style="font-size:17px;margin:0">Para aparecer en el ranking, <a href="#" id="rkLogin" style="color:var(--gold)">inicia sesión o crea una cuenta</a> con tu correo.</p>`;
   if (!canRank()) { body.innerHTML = head + '<p class="muted">El ranking necesita conexión a internet. Vuelve a intentarlo más tarde.</p>'; return; }
   body.innerHTML = head + who + '<p class="muted">Cargando…</p>';
@@ -113,7 +135,7 @@ function renderRank() {
   ACCT.backend.rankTop(rankCol(rankTab)).then(list => {
     if (req !== rankReq || state !== 'rank') return;
     const me = ACCT.user && ACCT.user.uid;
-    body.innerHTML = head + who + (list.length ? '' : '<p class="muted">Todavía no hay nadie esta semana. ¡Sé el primero!</p>');
+    body.innerHTML = head + who + (list.length ? '' : (B.id === 'day' ? '<p class="muted">Todavía no hay nadie hoy. ¡Sé el primero!</p>' : '<p class="muted">Todavía no hay nadie esta semana. ¡Sé el primero!</p>'));
     list.forEach((r, i) => {
       const row = document.createElement('div'); row.className = 'rkrow' + (r.uid === me ? ' me' : '');
       row.innerHTML = `<span class="pos">${i + 1}</span><span class="pc"></span><span class="nm">${escHtml(r.name || '???')}<small>${escHtml(r.title || '')}${CHAR[r.cid] ? ' · ' + CHAR[r.cid].name : ''}</small></span><span class="sc">${fmtNum(r.score)}<small>${B.unit} · ${fmtTime(r.t || 0)}</small></span>`;
@@ -121,7 +143,7 @@ function renderRank() {
       body.appendChild(row);
     });
     const mine = save.rankSent[rankCol(rankTab)];
-    if (ACCT.user) body.insertAdjacentHTML('beforeend', `<p class="muted" style="font-size:16px;margin:0">${mine ? `Tu mejor marca esta semana: <b class="gold">${fmtNum(mine)}</b> ${B.unit}.` : 'Juega una partida para entrar en el ranking de esta semana.'}</p>`);
+    if (ACCT.user) body.insertAdjacentHTML('beforeend', `<p class="muted" style="font-size:16px;margin:0">${B.id === 'day' ? (mine ? `Tu mejor marca hoy: <b class="gold">${fmtNum(mine)}</b> ${B.unit}.` : 'Juega el reto diario para entrar en este ranking.') : mine ? `Tu mejor marca esta semana: <b class="gold">${fmtNum(mine)}</b> ${B.unit}.` : 'Juega una partida para entrar en el ranking de esta semana.'}</p>`);
   }).catch(e => {
     if (req !== rankReq) return;
     console.warn('Ranking', e);

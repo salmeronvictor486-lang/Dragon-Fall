@@ -4,6 +4,19 @@
 const DIFFS = [
   { id: 0, name: 'Muy difícil', col: '#e8433a', hp: 1.8, dmg: 1.5, spawn: 1.25, zeni: 1.6, xp: 1.3, desc: 'Solo hay una dificultad, y es muy difícil: los enemigos aguantan más, pegan más fuerte y no paran de llegar. Zenis x1,6.' },
 ];
+/* Reto diario: cada día, la misma saga, el mismo guerrero (prestado) y la misma regla especial para todo el mundo */
+const DAILY_MODS = [
+  { id: 'horde', name: 'Horda', desc: 'Llegan el doble de enemigos.', spawn: 1.8 },
+  { id: 'glass', name: 'Cañón de cristal', desc: 'Haces el doble de daño, pero tienes la mitad de vida.', might: 1, hp: .5 },
+  { id: 'rush', name: 'A toda prisa', desc: 'Todo va más rápido: tú y los enemigos.', espd: 1.3, spd: .25 },
+  { id: 'noheal', name: 'Sin curación', desc: 'No hay comida, ni semillas, ni fuentes que curen.', noheal: 1 },
+  { id: 'elite', name: 'Élites', desc: 'Los enemigos de élite aparecen el doble de a menudo.', elite: 2 },
+];
+function dailyChallenge(day = dayKey()) {
+  const r = seeded('reto' + day), si = Math.floor(r() * STAGES.length), pool = CHARS.filter(c => !c.fusion);
+  return { day, si, cid: pool[Math.floor(r() * pool.length)].id, mod: DAILY_MODS[Math.floor(r() * DAILY_MODS.length)] };
+}
+const dailyDone = () => save.dailyCh && save.dailyCh.day === dayKey() ? save.dailyCh : null;
 function endlessUnlocked() { return !!save.cleared.saiyan; }
 function runScore() { return Math.round(G.kills + G.t * 5 + G.killedBosses.length * 300 + G.lvl * 10); }
 
@@ -279,6 +292,10 @@ function addAccXp(v) {
 // Resumen de la partida que acaba: estadísticas, misiones, nivel de cuenta y récords
 function recordRun(win, earned) {
   const S = save.stats, st = G.stat, minutes = Math.floor(G.t / 60);
+  // historial de las últimas 20 partidas: para ver dónde y contra quién caes
+  if (!Array.isArray(save.hist)) save.hist = [];
+  save.hist.unshift({ d: Date.now(), c: G.cid, s: G.stage.id, t: Math.round(G.t), l: G.lvl, k: G.kills, w: win ? 1 : 0, m: G.endless ? 'inf' : G.daily ? 'day' : 'saga', by: !win && P.hp <= 0 ? (P.lastHit || '') : '' });
+  save.hist.length = Math.min(save.hist.length, 20);
   S.time += G.t; S.chars[G.cid] = (S.chars[G.cid] || 0) + 1;
   S.bosses += G.killedBosses.length; S.specials += st.specials; S.events += st.events; S.fusions += st.fusions;
   S.evos += st.evos; S.trans += st.trans; S.zeniRun += earned; S.shenron += st.shenron;
