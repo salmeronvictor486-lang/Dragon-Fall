@@ -79,6 +79,11 @@ No todos se limitan a perseguirte. Cada saga mezcla enemigos con su propia forma
 | 🌀 **Ninja** | Desaparece y reaparece a tu lado | Humo morado y una marca en el suelo |
 | ⚡ **Rápido** | Se agacha y embiste en línea recta | Parpadea en rojo justo antes |
 
+### 💥 Jefes con dos fases y choques de rayos
+A mitad de vida cada jefe **se enfurece**: va más rápido, ataca más a menudo y añade ráfagas y rayos. Y cuando te lanza su rayo puede empezar un **choque de rayos**: el mundo se para, tu onda y la suya se encuentran en el centro y gana quien empuje más. Machaca la tecla (o toca la pantalla sin parar): si ganas, el jefe se lleva un golpe enorme y queda aturdido.
+
+Al transformarte, tu guerrero **carga el ki** con el aura creciendo, el pelo parpadea entre las dos formas y, con un destello, aparece la nueva. Y al lanzar sus técnicas adopta la **pose de ataque** con la energía en las manos.
+
 ## 🧬 110 guerreros de todo Dragon Ball
 
 <div align="center">

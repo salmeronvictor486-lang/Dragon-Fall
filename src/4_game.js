@@ -107,7 +107,8 @@ function hurtEnemy(e, dmg, w, kx = 0, ky = 0, forceCrit = false) {
     if (e.shield <= 0) { e.shield = 0; G.fx.push({ k: 'ring', x: e.x, y: e.y - e.h * .5, r0: e.h * .5, r1: e.h, life: .3, max: .3, col: '#7fe3ff' }); burst(e.x, e.y - e.h * .5, 8, '#7fe3ff', 1.2); sfx('boom'); }
     if (dmg <= 0) { if (G.fx.length < 260) G.fx.push({ k: 'spark', x: e.x + rand(-4, 4), y: e.y - e.h * .55 + rand(-4, 4), life: .16, max: .16, crit: false }); sfx('hit'); return; }
   }
-  e.hp -= dmg; e.flash = .06;
+  e.hp -= dmg;
+  if (e.boss && !e.phase2 && e.hp > 0 && e.hp < e.maxHp * .5) bossEnrage(e); e.flash = .06;
   if (!e.boss) { const m = e.elite ? .25 : 1; e.kx += kx * m; e.ky += ky * m; }
   if (w) w.dealt += dmg;
   if (G.fx.length < 260) G.fx.push({ k: 'spark', x: e.x + rand(-3, 3), y: e.y - e.h * .55 + rand(-3, 3), life: .16, max: .16, crit });
@@ -181,22 +182,30 @@ function director(dt) {
 }
 
 function enemyShoot(e, ang, spd = 90, dmg = e.dmg * .8, r = 4, col = '#ff5a3a') {
+  e.poseT = .3;
   G.eprojs.push({ x: e.x, y: e.y - e.h * .5, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, r, dmg, life: 4, col });
 }
 function bossAttack(e) {
-  const d = BOSSES[e.id], a = pick(d.atk), ang = Math.atan2(P.y - 8 - (e.y - e.h * .5), P.x - e.x);
+  const d = BOSSES[e.id], a = pick(e.atk || d.atk), ang = Math.atan2(P.y - 8 - (e.y - e.h * .5), P.x - e.x);
+  e.poseT = a === 'beam' ? 1.3 : .5;
   const col = e.aura;
   if (a === 'aim') { for (let i = -2; i <= 2; i++) enemyShoot(e, ang + i * .14, 120, e.dmg * .7, 5, col); }
   else if (a === 'burst') { const n = 18 + G.si * 2, off = Math.random(); for (let i = 0; i < n; i++) enemyShoot(e, off + i / n * TAU, 85, e.dmg * .6, 5, col); }
   else if (a === 'dash') { e.dash = { warn: .6, t: .55, ang }; }
   else if (a === 'summon') { for (let i = 0; i < 6 + G.si; i++) { const aa = i / 6 * TAU; spawnEnemy(poolPick(), e.x + Math.cos(aa) * 30, e.y + Math.sin(aa) * 30); } }
-  else if (a === 'beam') { G.eprojs.push({ k: 'beam', x: e.x, y: e.y - e.h * .5, ang, len: 420, w: 16, warn: .9, life: .5, dmg: e.dmg * 1.2, col, owner: e, hit: false }); }
+  else if (a === 'beam') {
+    // a veces el rayo del jefe se convierte en un choque de rayos contra el tuyo
+    const near = (P.x - e.x) ** 2 + (P.y - e.y) ** 2 < 300 * 300;
+    const b = { k: 'beam', x: e.x, y: e.y - e.h * .5, ang, len: 420, w: 16, warn: .9, life: .5, dmg: e.dmg * 1.2, col, owner: e, hit: false };
+    if (near && G.t >= (G.clashCd || 0) && Math.random() < (e.phase2 ? .8 : .5)) { b.clash = true; b.warn = 1.2; G.clashCd = G.t + 22; G.fx.push({ k: 'text', t: '¡CHOQUE DE RAYOS!', col: '#ffd23f', x: P.x, y: P.y - 40, life: 1.2, max: 1.2 }); }
+    G.eprojs.push(b);
+  }
 }
 function updateEnemies(dt) {
   const far2 = (Math.hypot(VW, VH) * .85) ** 2;
   for (const e of G.enemies) {
     if (e.dead) continue;
-    e.flash -= dt; e.ft += dt; if (e.ft > .22) { e.ft = 0; e.frame ^= 1; }
+    e.flash -= dt; if (e.poseT > 0) e.poseT -= dt; e.ft += dt; if (e.ft > .22) { e.ft = 0; e.frame ^= 1; }
     let dx = P.x - e.x, dy = P.y - e.y; const d = Math.hypot(dx, dy) || 1; dx /= d; dy /= d;
     let mvx = 0, mvy = 0;
     if (e.stun > 0) { e.stun -= dt; }
@@ -205,7 +214,7 @@ function updateEnemies(dt) {
       if (e.dash) {
         if (e.dash.warn > 0) { e.dash.warn -= dt; e.dash.ang = Math.atan2(P.y - e.y, P.x - e.x); }
         else { mvx = Math.cos(e.dash.ang) * e.spd * 4.2; mvy = Math.sin(e.dash.ang) * e.spd * 4.2; e.dash.t -= dt; if (e.dash.t <= 0) e.dash = null; }
-      } else { mvx = dx * e.spd; mvy = dy * e.spd; if (e.atkT <= 0) { e.atkT = rand(2, 3.4) - G.si * .15; bossAttack(e); } }
+      } else { mvx = dx * e.spd; mvy = dy * e.spd; if (e.atkT <= 0) { e.atkT = (rand(2, 3.4) - G.si * .15) * (e.phase2 ? .7 : 1); bossAttack(e); } }
     } else if (e.ai === 'bomb') {
       // kamikaze: corre hacia ti y, al llegar, se hincha y explota (el círculo rojo marca el alcance)
       if (e.fuse != null) { if ((e.fuse -= dt) <= 0) { bombBlast(e, true); continue; } }
@@ -214,7 +223,7 @@ function updateEnemies(dt) {
       // se queda lejos y apunta: la línea roja avisa del rayo
       const s = d < 150 ? -.8 : d > 230 ? .9 : 0; mvx = dx * e.spd * s - dy * e.spd * .25; mvy = dy * e.spd * s + dx * e.spd * .25;
       e.shootT -= dt;
-      if (e.shootT <= 0 && d < 300 && G.eprojs.length < 90) { e.shootT = rand(4.5, 6.5); G.eprojs.push({ k: 'beam', x: e.x, y: e.y - e.h * .5, ang: Math.atan2(P.y - 8 - (e.y - e.h * .5), P.x - e.x), len: 340, w: 7, warn: 1, life: .25, dmg: e.dmg * 1.6, col: '#ff3a3a', owner: e, hit: false }); }
+      if (e.shootT <= 0 && d < 300 && G.eprojs.length < 90) { e.shootT = rand(4.5, 6.5); e.poseT = 1.2; G.eprojs.push({ k: 'beam', x: e.x, y: e.y - e.h * .5, ang: Math.atan2(P.y - 8 - (e.y - e.h * .5), P.x - e.x), len: 340, w: 7, warn: 1, life: .25, dmg: e.dmg * 1.6, col: '#ff3a3a', owner: e, hit: false }); }
     } else if (e.ai === 'healer') {
       // curandero: se mantiene detrás y cada 4 s cura a los de su alrededor
       const s = d < 110 ? -.6 : d > 170 ? 1 : .1; mvx = dx * e.spd * s - dy * e.spd * .2; mvy = dy * e.spd * s + dx * e.spd * .2;
@@ -277,7 +286,7 @@ function updateEProjs(dt) {
   for (const b of G.eprojs) {
     if (b.k === 'beam') {
       if (b.owner && !b.owner.dead && b.warn > 0) { b.x = b.owner.x; b.y = b.owner.y - b.owner.h * .5; }
-      if (b.warn > 0) { b.warn -= dt; if (b.warn <= 0) { sfx('beam'); G.shake = Math.max(G.shake, .25); } continue; }
+      if (b.warn > 0) { b.warn -= dt; if (b.owner && !b.owner.dead) { b.x = b.owner.x; b.y = b.owner.y - b.owner.h * .5; if (b.clash) b.ang = Math.atan2(P.y - 8 - b.y, P.x - b.x); } if (b.warn <= 0) { sfx('beam'); G.shake = Math.max(G.shake, .25); if (b.clash && b.owner && !b.owner.dead && P.hp > 0) { startClash(b); b.life = 0; } } continue; }
       b.life -= dt;
       if (!b.hit && segDist2(P.x, P.y - 8, b.x, b.y, b.x + Math.cos(b.ang) * b.len, b.y + Math.sin(b.ang) * b.len) < (b.w / 2 + P.r) ** 2) { b.hit = true; hurtPlayer(b.dmg); }
       continue;
@@ -327,6 +336,48 @@ function killEnemy(e, w) {
     else { G.freeUp = (G.freeUp || 0) + 1; G.pendingLv++; }   // recompensa: una mejora gratis
   }
 }
+/* Segunda fase: a mitad de vida el jefe se enfurece, va más rápido, ataca más a menudo y suma ráfagas y rayos */
+const PHASE_SPR = { cell_semi: 'cell' };
+function bossEnrage(e) {
+  e.phase2 = true; e.spd *= 1.25; e.atkT = .8; e.dash = null; e.stun = 0;
+  e.atk = [...new Set([...(BOSSES[e.id].atk || ['aim']), 'burst', 'beam'])];
+  if (PHASE_SPR[e.id] && SPR[PHASE_SPR[e.id]]) e.spr = PHASE_SPR[e.id];
+  e.aura = '#ff3a2a'; e.poseT = .8;
+  G.fx.push({ k: 'ring', x: e.x, y: e.y - e.h * .5, r0: e.h * .4, r1: e.h * 2.2, life: .6, max: .6, col: '#ff3a2a' }, { k: 'text', t: `¡${e.name.toUpperCase()} SE ENFURECE!`, col: '#ff6a4a', x: e.x, y: e.y - e.h - 12, life: 1.8, max: 1.8 });
+  burst(e.x, e.y - e.h * .5, 30, '#ff6a4a', 2.4); sfx('boss'); G.shake = Math.max(G.shake, .8); G.flash = Math.max(G.flash, .3); hitstop(.25); vibrate(60);
+}
+/* Choque de rayos: el mundo se para y gana quien empuje más. Cada pulsación empuja tu rayo; el jefe empuja solo. */
+function startClash(b) {
+  const e = b.owner;
+  G.clash = { e, pos: .5, t: 0, max: 5, col: b.col || e.aura, pcol: P.aura || (P.weapons[0] && WEAPONS[P.weapons[0].id].col) || '#5fd0ff', presses: 0 };
+  P.face = e.x >= P.x ? 1 : -1; P.view = 2; e.face = -P.face; e.view = 2;
+  G.projs = G.projs.filter(p => p.k !== 'beam');   // fuera los rayos que estaban en el aire: solo quedan los dos del choque
+  G.shake = Math.max(G.shake, .6); G.flash = Math.max(G.flash, .4); sfx('beam'); vibrate(40);
+}
+function clashPress() {
+  const c = G && G.clash; if (!c) return;
+  c.pos = Math.min(1, c.pos + .055); c.presses++; c.kick = .08; sfx('hit'); G.shake = Math.max(G.shake, .12);
+}
+function updateClash(dt) {
+  const c = G.clash; c.t += dt; if (c.kick > 0) c.kick -= dt;
+  if (c.pos < 1) c.pos -= (.15 + .02 * G.si + (c.e.phase2 ? .05 : 0)) * dt;   // al llegar al 100 % ya has ganado
+  P.poseT = Math.max(P.poseT, .2); P.poseCol = c.pcol; c.e.poseT = Math.max(c.e.poseT || 0, .2);
+  G.shake = Math.max(G.shake, .1); updateFx(dt);
+  if (Math.random() < dt * 30) { const j = clashPoint(c); G.fx.push({ k: 'spark', x: j[0] + rand(-6, 6), y: j[1] + rand(-6, 6), life: .2, max: .2, crit: Math.random() < .5 }); }
+  if (c.pos >= 1 || c.pos <= 0 || c.t >= c.max) {
+    const win = c.pos >= 1 || (c.pos > 0 && c.pos >= .5), e = c.e; G.clash = null;
+    if (win) {
+      const j = [e.x, e.y - e.h * .5]; G.fx.push({ k: 'boom', x: j[0], y: j[1], r: 70, life: .6, max: .6, col: c.pcol });
+      hurtEnemy(e, e.maxHp * .09, null, 0, 0, true); e.stun = 2; burst(j[0], j[1], 40, c.pcol, 3);
+      banner('¡GANAS EL CHOQUE!', `${e.name} queda aturdido`); G.stat.clash = (G.stat.clash || 0) + 1;
+    } else {
+      G.fx.push({ k: 'boom', x: P.x, y: P.y - 10, r: 60, life: .6, max: .6, col: c.col });
+      P.inv = 0; P.dashT = 0; hurtPlayer(e.dmg * 2); banner('¡PIERDES EL CHOQUE!', 'Pulsa más rápido la próxima vez');
+    }
+    sfx('boom'); G.shake = 1; G.flash = .5; hitstop(.15);
+  }
+}
+function clashPoint(c) { const e = c.e, px = P.x, py = P.y - 9, ex = e.x, ey = e.y - e.h * .5; return [px + (ex - px) * c.pos, py + (ey - py) * c.pos]; }
 /* Explosión del kamikaze: con live, también te alcanza a ti; siempre daña a los enemigos del radio */
 function bombBlast(e, live) {
   if (e.blown) return; e.blown = true;
@@ -387,6 +438,7 @@ function updatePlayer(dt) {
   } else { P.x += mx * P.spd * dt; P.y += my * P.spd * dt; }
   P.dashCd -= dt;
   P.ft += dt; if (P.ft > (P.moving ? .14 : .4)) { P.ft = 0; P.frame = P.moving ? P.frame ^ 1 : 0; }
+  if (P.poseT > 0) P.poseT -= dt;
   P.inv -= dt; P.immortal -= dt; P.shieldT -= dt; P.spT -= dt; G.hurtT = (G.hurtT || 0) - dt;
   if (P.rage && (P.rage.t -= dt) <= 0) { P.rage = null; recalc(); }
   for (const q of G.spq) if ((q.t -= dt) <= 0) q.fn();
@@ -407,6 +459,7 @@ function addProj(p) { p.id = ++G.pid; G.projs.push(p); return p; }
 const PY = () => P.y - 9;
 function fireWeapon(w) {
   const s = wstats(w), d = WEAPONS[w.id], col = w.evo && w.id === 'deathbeam' ? '#ffd23f' : d.col;
+  if (!ACTIVE_W[w.id]) { P.poseT = .22; P.poseCol = col; }   // pose de ataque con ki en las manos
   switch (w.id) {
     case 'kamehameha': {
       const tg = nearest(260), base = tg ? aimAt(tg) : Math.atan2(P.diry, P.dirx), angs = [];
@@ -679,11 +732,12 @@ function checkForm() {
   if (f && G.lvl >= f.lv) {
     P.formIdx++; G.stat.trans++;
     if (P.fused) { P.fused.prev = { spr: f.spr, name: f.name, aura: f.aura || (SPR[f.spr] && SPR[f.spr].aura) || '#ffffff' }; recalc(); markSeen(f.spr); return; }
+    const from = P.spr;
     P.spr = f.spr; P.name = f.name; P.aura = f.aura || (SPR[f.spr] && SPR[f.spr].aura) || '#ffffff';
     recalc(); P.hp = Math.min(P.maxHp, P.hp + P.maxHp * .3);
     markSeen(f.spr);
-    G.intro = { kind: 'trans', t: 1.7, max: 1.7, spr: f.spr, name: f.name, col: P.aura };
-    sfx('trans'); G.shake = .7; G.flash = .5;
+    G.intro = { kind: 'trans', t: 2.4, max: 2.4, spr: f.spr, from, name: f.name, col: P.aura };
+    sfx('charge'); G.shake = .7;
     shockwave(150, 60 + G.lvl * 4);
     G.fx.push({ k: 'pillar', x: P.x, y: P.y, life: 1.1, max: 1.1, col: P.aura });
   }
@@ -710,7 +764,7 @@ function spPow() { return P.might * (1 + G.lvl * .08) * SP_MUL; }
 function useSpecial() {
   if (state !== 'play' || !G || G.intro || P.hp <= 0 || G.endT >= 0 || P.spT > 0) return;
   const sp = curSpecial(); if (!sp) return;
-  P.spT = sp.cd; G.stat.specials++; vibrate(20); sfx('trans'); G.flash = Math.max(G.flash, .2);
+  P.spT = sp.cd; G.stat.specials++; vibrate(20); sfx('trans'); G.flash = Math.max(G.flash, .2); P.poseT = .45; P.poseCol = sp.col;
   G.fx.push({ k: 'ring', x: P.x, y: P.y - 10, r0: 4, r1: 46, life: .45, max: .45, col: sp.col });
   floatText(sp.name.toUpperCase(), sp.col);
   for (const [k, o] of sp.fx) SPFX[k](o, sp.col);
@@ -863,6 +917,7 @@ function upDesc(u) {
 function update(dt) {
   if (G.intro) { G.intro.t -= dt; if (G.intro.t <= 0) G.intro = null; return; }
   if (G.hs > 0) { G.hs -= dt; return; }
+  if (G.clash) { updateClash(dt); return; }
   G.t += dt;
   updatePlayer(dt);
   updateFusion(dt);
