@@ -86,6 +86,12 @@ function drawBeam(x, y, ang, len, wd, col, frac) {
   lx.fillStyle = '#ffffff'; lx.beginPath(); lx.arc(0, 0, w * .45, 0, TAU); lx.fill();
   lx.restore();
 }
+// Bola de ki en las manos durante la pose de ataque (de frente, delante del pecho; de perfil, en la mano estirada)
+function drawHandKi(x, y, sc, face, view, col, a) {
+  if (view === 1) return;
+  const hx = view === 2 ? x + face * 7.5 * sc : x, hy = y - 9 * sc, r = (2 + Math.sin(performance.now() / 60) * .6) * Math.sqrt(sc);
+  lx.globalAlpha = a; drawGlowBall(hx, hy, r, col || '#9fd8ff'); lx.globalAlpha = 1;
+}
 function drawGlowBall(x, y, r, col) {
   lx.globalAlpha = .35; circ(x, y, r * 1.55, col); lx.globalAlpha = 1;
   circ(x, y, r + .6, sh(col, -.35)); circ(x, y, r, col); circ(x, y, r * .55, sh(col, .6)); circ(x - r * .2, y - r * .2, r * .25, '#ffffff');
@@ -149,7 +155,7 @@ function renderWorld(dt) {
     if (e === P) {
       if (P.aura || P.rage) drawAura(P.x, P.y, 28, P.rage ? P.rage.col : P.aura, t, P.formIdx >= 2 || !!P.rage);
       const blink = P.inv > 0 && Math.floor(t * 20) % 2 === 0;
-      if (!blink) drawEnt(P.spr, P.x, P.y, sprScale(P.spr), P.face, P.frame, (G.hurtT || 0) > .1 ? '#ff6a6a' : '', (G.hurtT || 0) > .15, P.view);
+      if (!blink) { drawEnt(P.spr, P.x, P.y, sprScale(P.spr), P.face, P.poseT > 0 ? 2 : P.frame, (G.hurtT || 0) > .1 ? '#ff6a6a' : '', (G.hurtT || 0) > .15, P.view); if (P.poseT > 0) drawHandKi(P.x, P.y, sprScale(P.spr), P.face, P.view, P.poseCol, Math.min(1, P.poseT * 6)); }
       if (P.immortal > 0) { lx.globalAlpha = .4; circ(P.x, P.y - 12, 16, '#ffd23f'); lx.globalAlpha = 1; }
       if (P.shieldT > 0 && (P.shieldT > .6 || Math.floor(t * 12) % 2)) { lx.globalAlpha = .28; circ(P.x, P.y - 11, 18, '#9fd8ff'); lx.globalAlpha = .7; lx.strokeStyle = '#e6f6ff'; lx.lineWidth = 1; lx.beginPath(); lx.arc(rd(P.x - camX), rd(P.y - 11 - camY), 18, 0, TAU); lx.stroke(); lx.globalAlpha = 1; }
       continue;
@@ -165,7 +171,8 @@ function renderWorld(dt) {
     }
     if (e.blink && e.blink.ph === 0 && Math.floor(t * 20) % 2) { drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, '#b06bff', false, e.view); continue; }
     if (((e.dash && e.dash.warn > 0) || (e.lunge && e.lunge.w > 0)) && Math.floor(t * 16) % 2) { drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, '#ff4040', false, e.view); continue; }
-    drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.frame, e.flash > 0 && !e.boss ? 'white' : '', e.flash > 0 && !e.boss, e.view);
+    drawEnt(e.spr, e.x, e.y, e.scale, e.face, e.poseT > 0 ? 2 : e.frame, e.flash > 0 && !e.boss ? 'white' : '', e.flash > 0 && !e.boss, e.view);
+    if (e.poseT > 0 && (e.boss || e.ai === 'sniper')) drawHandKi(e.x, e.y, e.scale, e.face, e.view, e.boss ? e.aura : '#ff3a3a', Math.min(1, e.poseT * 3));
     drawEnemyMark(e, t);
     if (e.stun > 0 && !e.boss) { lx.fillStyle = '#fff6a0'; lx.fillRect(rd(e.x - camX + Math.sin(t * 8) * 4), rd(e.y - e.h - camY - 2), 2, 2); }
   }
@@ -271,7 +278,18 @@ function renderWorld(dt) {
       } else drawBeam(b.x, b.y, b.ang, b.len, b.w, b.col, b.life / .5);
     } else { circ(b.x, b.y, b.r + 1, OUTLINE); circ(b.x, b.y, b.r, b.col); circ(b.x, b.y, b.r * .45, '#ffffff'); }
   }
+  if (G.clash) drawClashWorld(G.clash);
   drawAtmosphere(G.stage.id, state === 'play' ? dt : 0);
+}
+/* Choque de rayos: tu rayo y el del jefe se encuentran en un punto que se mueve según quién empuja más */
+function drawClashWorld(c) {
+  const e = c.e, [jx, jy] = clashPoint(c), px = P.x + P.face * 7, py = P.y - 9, ex = e.x - P.face * 7 * e.scale, ey = e.y - e.h * .5;
+  const w = 10 + Math.sin(performance.now() / 40) * 1.5;
+  drawBeam(px, py, Math.atan2(jy - py, jx - px), Math.hypot(jx - px, jy - py), w, c.pcol, 1);
+  drawBeam(ex, ey, Math.atan2(jy - ey, jx - ex), Math.hypot(jx - ex, jy - ey), w + 2, c.col, 1);
+  const r = 11 + Math.sin(performance.now() / 30) * 2 + (c.kick > 0 ? 4 : 0);
+  lx.globalAlpha = .35; circ(jx, jy, r * 1.9, c.pcol); circ(jx, jy, r * 1.5, c.col); lx.globalAlpha = 1;
+  drawGlowBall(jx, jy, r, '#ffffff');
 }
 function tri(x, y, r) { lx.beginPath(); lx.moveTo(x, y - r); lx.lineTo(x + r * .87, y + r * .5); lx.lineTo(x - r * .87, y + r * .5); lx.closePath(); }
 
@@ -322,6 +340,7 @@ function renderScreen() {
   if (G.spTint) { ctx.globalAlpha = .22 * Math.min(1, G.spTint.t / .4); ctx.fillStyle = G.spTint.col; ctx.fillRect(0, 0, SWd, SHd); ctx.globalAlpha = 1; }
   drawHUD(small);
   drawHotbar(small);
+  if (G.clash) drawClashUI(G.clash, small);
   drawSpecialBtn(small);
   drawFusionBtn(small);
   drawPointers();
@@ -332,6 +351,19 @@ function renderScreen() {
     const dx = joy.x - joy.ox, dy = joy.y - joy.oy, d = Math.hypot(dx, dy), m = Math.min(d, 48) / (d || 1);
     ctx.globalAlpha = .6; ctx.fillStyle = '#ff8a1c'; ctx.beginPath(); ctx.arc(joy.ox + dx * m, joy.oy + dy * m, 20, 0, TAU); ctx.fill(); ctx.globalAlpha = 1;
   }
+}
+/* Barra de fuerza del choque y aviso de que hay que machacar */
+function drawClashUI(c, small) {
+  const w = Math.min(520, SWd * .8), h = small ? 14 : 18, x = (SWd - w) / 2, y = Math.max(SHd * .3, 190), pulse = Math.floor(performance.now() / 120) % 2;
+  txt('¡CHOQUE DE RAYOS!', SWd / 2, y - (small ? 30 : 38), small ? 12 : 18, pulse ? '#ffd23f' : '#ffffff', 'center');
+  ctx.fillStyle = '#05060f'; ctx.fillRect(x - 3, y - 3, w + 6, h + 6);
+  ctx.fillStyle = c.col; ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = c.pcol; ctx.fillRect(x, y, w * c.pos, h);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(Math.round(x + w * c.pos) - 2, y - 4, 4, h + 8);
+  ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.fillRect(x + w / 2 - 1, y, 2, h);
+  txt(P.name.toUpperCase(), x, y + h + 14, small ? 6 : 8, c.pcol, 'left'); txt(c.e.name.toUpperCase(), x + w, y + h + 14, small ? 6 : 8, c.col, 'right');
+  txt(FINE_PTR ? '¡MACHACA ESPACIO!' : '¡TOCA LA PANTALLA SIN PARAR!', SWd / 2, y + h + (small ? 34 : 42), small ? 9 : 13, pulse ? '#ffffff' : '#ffd23f', 'center');
+  txt(Math.ceil(c.max - c.t) + ' s', SWd / 2, y + h / 2 + 1, small ? 7 : 9, '#ffffff', 'center');
 }
 /* Botón de técnica especial (abajo a la derecha). Espacio, E o Q, o tocarlo. */
 let spBtn = null;
@@ -478,13 +510,30 @@ function drawIntro(it) {
     txt(P.name.toUpperCase(), SWd * .26, by - 22, SWd < 560 ? 8 : 12, '#9ad0ff', 'center');
     txt(it.name.toUpperCase(), SWd * .74, by - 22, SWd < 560 ? 9 : 14, '#ff9a8a', 'center');
     txt(it.final ? '¡JEFE FINAL!' : it.saga, SWd / 2, by + bh + 26, SWd < 560 ? 8 : 11, it.final ? '#ffd23f' : '#ffffff', 'center');
+  } else if (it.kind === 'trans' && it.from && p < .42) {
+    // 1) carga: el guerrero aprieta los puños, tiembla y el aura crece; el pelo parpadea entre las dos formas
+    const k = p / .42, cx = SWd / 2, cy = SHd / 2, now = performance.now(), jit = k * big * 1.4;
+    const flick = k > .6 && Math.floor(now / (110 - k * 80)) % 2, id = flick ? it.spr : it.from;
+    const s = getSpriteV(id, 2, false, '', 0), sc = big, w = s.width * sc, h = s.height * sc;
+    const ox = Math.round((Math.random() - .5) * jit), oy = Math.round((Math.random() - .5) * jit);
+    const au = getSpriteV(id, 2, false, it.col || '#ffd23f', 0), as = sc * (1.12 + .25 * k + Math.sin(now / 70) * .04);
+    ctx.globalAlpha = fade * (.35 + .4 * k); ctx.drawImage(au, Math.round(cx - au.width * as / 2), Math.round(cy - au.height * as / 2 - 20 - (as - sc) * 6), Math.round(au.width * as), Math.round(au.height * as));
+    ctx.globalAlpha = fade; ctx.strokeStyle = it.col || '#ffd23f'; ctx.lineWidth = 2;
+    for (let i = 0; i < 3 + k * 6; i++) {   // chispas eléctricas alrededor
+      const a = Math.random() * TAU, r0 = h * .45, r1 = r0 + 12 + Math.random() * 20 * (1 + k);
+      ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r0, cy - 20 + Math.sin(a) * r0); ctx.lineTo(cx + Math.cos(a + .15) * (r0 + r1) / 2 + 6, cy - 20 + Math.sin(a + .15) * (r0 + r1) / 2); ctx.lineTo(cx + Math.cos(a) * r1, cy - 20 + Math.sin(a) * r1); ctx.stroke();
+    }
+    ctx.drawImage(s, Math.round(cx - w / 2) + ox, Math.round(cy - h / 2 - 20) + oy, Math.round(w), Math.round(h));
+    txt('¡AAAAAAH!', cx + ox, cy - h / 2 - 44, Math.round((SWd < 560 ? 9 : 12) * (1 + k * .5)), '#ffffff', 'center');
   } else {
     const cx = SWd / 2, cy = SHd / 2, R = Math.hypot(SWd, SHd), rot = performance.now() / 900;
     ctx.globalAlpha = .35 * fade; ctx.fillStyle = it.col || '#ffd23f';
     for (let i = 0; i < 18; i++) { const a = rot + i / 18 * TAU; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx.lineTo(cx + Math.cos(a + .12) * R, cy + Math.sin(a + .12) * R); ctx.fill(); }
     ctx.globalAlpha = fade;
-    const s = getSprite(it.spr, 0, false), sc = big * (1 + (1 - ease(p * 3)) * .6);
-    if (p < .18) { ctx.globalAlpha = 1 - p / .18; ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, SWd, SHd); ctx.globalAlpha = fade; }
+    // 2) destello y la nueva forma (en las transformaciones, la escena empieza en p = .42)
+    const q = it.kind === 'trans' && it.from ? (p - .42) / .58 : p;
+    const s = getSprite(it.spr, 0, false), sc = big * (1 + (1 - ease(q * 3)) * .6);
+    if (q < .18) { ctx.globalAlpha = 1 - q / .18; ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, SWd, SHd); ctx.globalAlpha = fade; }
     ctx.drawImage(s, Math.round(cx - s.width * sc / 2), Math.round(cy - s.height * sc / 2 - 20), Math.round(s.width * sc), Math.round(s.height * sc));
     txt(it.name.toUpperCase(), cx, cy + s.height * big / 2 + 20, SWd < 560 ? 10 : 16, '#ffd23f', 'center');
     txt(it.top || '¡TRANSFORMACIÓN!', cx, cy - s.height * big / 2 - 40, SWd < 560 ? 8 : 10, '#ffffff', 'center');
@@ -1158,6 +1207,7 @@ function onKey(e) {
     if (eggBuf === 'wasd') { eggBuf = ''; shopEgg(); return; }
   }
   if (state === 'play' && G && G.intro && ['Space', 'Enter', 'Escape'].includes(e.code)) { G.intro.t = Math.min(G.intro.t, .15); return; }
+  if (state === 'play' && G && G.clash && e.code !== 'Escape' && e.code !== 'KeyP') { e.preventDefault(); if (!e.repeat) clashPress(); return; }
   if (state === 'play' && (e.code === 'Escape' || e.code === 'KeyP')) { pauseGame(); return; }
   // Técnicas: teclas 1-5 (también se leen cada fotograma en updateWeapons). Especial: Espacio, E o Q. Fusión: F. Esquiva: Shift o C.
   if (state === 'play' && ['Space', 'KeyE', 'KeyQ'].includes(e.code)) { e.preventDefault(); useSpecial(); return; }

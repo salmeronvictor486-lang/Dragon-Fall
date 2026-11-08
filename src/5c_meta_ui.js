@@ -270,6 +270,7 @@ function pollPad(dt) {
   if (state === 'play') {
     if (G && G.intro && (hit(0) || hit(9))) G.intro.t = Math.min(G.intro.t, .15);
     // A: especial · B, X, Y, LB, RB: técnicas 1-5 · RT: esquiva · LT o Select: fusión · Start: pausa
+    else if (G && G.clash) { if ([0, 1, 2, 3, 4, 5, 7].some(hit)) clashPress(); }
     else { if (hit(0)) useSpecial(); if (hit(7)) dash(); if (hit(6) || hit(8) || (save.opts.autofire && (hit(2) || hit(3)))) startFusion(); if (hit(9)) pauseGame(); }
     pad.slots = [1, 2, 3, 4, 5].map(bt);
   } else {

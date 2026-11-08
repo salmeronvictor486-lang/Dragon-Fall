@@ -145,9 +145,30 @@ function gridSide(def, frame) {
   else { put(22, 6, 9, P); put(23, 6, 9, P2); put(24, 6, 9, O); put(25, 6, 10, O); }
   return g;
 }
-// Sprite con vista: view 0 frente, 1 espaldas, 2 perfil · mismo pixel art que la ficha del personaje
+/* Pose de ataque (frame 2): los brazos dejan de colgar y se juntan delante (de frente/espaldas)
+   o se estiran hacia delante (de perfil), como al lanzar una onda de ki */
+function attackPose(g, view, def) {
+  const rowsArm = [17, 18, 19], arm = rowsArm.map(y => { const r = g[y]; let L = r.findIndex(c => c), R = 15 - [...r].reverse().findIndex(c => c); return { L, R, cl: r[L], cr: r[R] }; });
+  if (view === 2) {
+    const F = buildGrid(def, 0);
+    for (let y = 16; y <= 19; y++) for (let x = 7; x <= 9; x++) if (g[y][x]) g[y][x] = F[y][x] || g[y][x];
+    const sleeve = F[16][3] || F[16][4] || 'G', skin = F[17][2] || 'S', wrist = F[18][2] || skin, hand = F[19][2] || skin;
+    g[16][9] = g[16][10] = sleeve; g[17][9] = sleeve;
+    for (let x = 10; x <= 12; x++) g[17][x] = skin;
+    g[17][13] = wrist; g[16][14] = g[16][15] = g[17][14] = g[17][15] = hand;   // mano abierta hacia delante
+    return g;
+  }
+  arm.forEach(({ L, R }, i) => { const y = rowsArm[i]; if (L < 0) return; g[y][L] = g[y][L + 1] = null; g[y][R] = g[y][R - 1] = null; });
+  const a = arm[0], b = arm[1], c = arm[2]; if (a.L < 0) return g;
+  // antebrazos en diagonal hacia el centro y las dos manos juntas delante del pecho
+  g[17][a.L + 2] = a.cl; g[17][a.R - 2] = a.cr;
+  g[18][a.L + 3] = b.cl; g[18][a.R - 3] = b.cr;
+  if (view !== 1) { for (let x = a.L + 4; x <= a.R - 4; x++) g[18][x] = c.cl; g[19][a.L + 4] = g[19][a.R - 4] = 'k'; }
+  return g;
+}
+// Sprite con vista: view 0 frente, 1 espaldas, 2 perfil · frame 2 = pose de ataque · mismo pixel art que la ficha
 function getSpriteV(id, frame, flip, variant, view) {
-  frame &= 1; if (!view) return getSprite(id, frame, flip, variant);
+  if (frame !== 2) { frame &= 1; if (!view) return getSprite(id, frame, flip, variant); }
   const key = 'v' + id + '|' + frame + '|' + (flip ? 1 : 0) + '|' + variant + '|' + view;
   let c = sprCache.get(key); if (c) return c;
   if (flip || variant) {
@@ -158,8 +179,8 @@ function getSpriteV(id, frame, flip, variant, view) {
     x.drawImage(base, 0, 0);
     if (variant) { x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-atop'; x.globalAlpha = variant === 'white' ? .5 : variant === 'black' ? 1 : .55; x.fillStyle = variant === 'black' ? '#000000' : variant === 'white' ? '#ffffff' : variant; x.fillRect(0, 0, c.width, c.height); }
   } else {
-    const def = SPR[id] || SPR.goku;
-    c = gridToCanvas(view === 1 ? gridBack(def, frame) : gridSide(def, frame), def.pal || {});
+    const def = SPR[id] || SPR.goku, f = frame & 1, g = view === 1 ? gridBack(def, f) : view === 2 ? gridSide(def, f) : buildGrid(def, f);
+    c = gridToCanvas(frame === 2 ? attackPose(g, view, def) : g, def.pal || {});
   }
   sprCache.set(key, c); return c;
 }
@@ -334,6 +355,7 @@ function sfx(n) {
     case 'boom': noise(.45, .18, 120); tone(90, .4, 'sine', .25, -50); break;
     case 'boss': [196, 185, 175, 165].forEach((f, i) => tone(f, .28, 'sawtooth', .1, 0, i * .22)); break;
     case 'trans': noise(1.1, .1, 300); [262, 330, 392, 523, 659, 784].forEach((f, i) => tone(f, .25, 'square', .07, 0, i * .09)); break;
+    case 'charge': noise(1, .06, 500); [110, 147, 196, 262, 330, 440].forEach((f, i) => tone(f, .2, 'sawtooth', .05, 60, i * .16)); setTimeout(() => sfx('trans'), 1000); break;
     case 'fuse': [880, 990, 1100, 1240].forEach((f, i) => tone(f, .07, 'square', .05, 0, i * .17)); break;
     case 'dash': noise(.12, .07, 2600); tone(520, .1, 'triangle', .05, 500); break;
     case 'ready': tone(1320, .05, 'triangle', .04, 0); tone(1760, .07, 'triangle', .04, 0, .05); break;
@@ -474,6 +496,7 @@ addEventListener('resize', resize); resize();
 cv.addEventListener('pointerdown', e => {
   audioInit();
   if (state === 'play' && G && G.intro) G.intro.t = Math.min(G.intro.t, .15);
+  if (state === 'play' && G && G.clash) { clashPress(); return; }
   if (state === 'play' && G && spBtn && (e.clientX - spBtn.x) ** 2 + (e.clientY - spBtn.y) ** 2 < spBtn.r ** 2) { useSpecial(); return; }
   if (state === 'play' && G && dashBtn && (e.clientX - dashBtn.x) ** 2 + (e.clientY - dashBtn.y) ** 2 < dashBtn.r ** 2) { dash(); return; }
   if (state === 'play' && G && fuBtn && (e.clientX - fuBtn.x) ** 2 + (e.clientY - fuBtn.y) ** 2 < fuBtn.r ** 2) { startFusion(); return; }

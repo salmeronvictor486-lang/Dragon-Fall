@@ -71,6 +71,12 @@ const TR = {
   'Tu ataque principal se lanza solo. Las técnicas nuevas se lanzan con las teclas 1-5 o tocando su casilla en la barra de abajo.': ['El teu atac principal es llança sol. Les tècniques noves es llancen amb les tecles 1-5 o tocant la seva casella a la barra de baix.', 'Your main attack fires on its own. New techniques are cast with keys 1-5 or by tapping their slot on the bottom bar.'],
   'Esquiva con Shift (o el botón ESQUIVA): durante la esquiva no te hacen daño. Los enemigos que parpadean en rojo van a embestir.': ['Esquiva amb Shift (o el botó ESQUIVA): mentre esquives no et fan mal. Els enemics que parpellegen en vermell envestiran.', 'Dodge with Shift (or the DODGE button): you can’t be hurt while dodging. Enemies flashing red are about to charge.'],
   'ESQUIVA': ['ESQUIVA', 'DODGE'],
+  '¡CHOQUE DE RAYOS!': ['XOC DE RAIGS!', 'BEAM CLASH!'],
+  '¡MACHACA ESPACIO!': ['PREM ESPAI SENSE PARAR!', 'MASH SPACE!'],
+  '¡TOCA LA PANTALLA SIN PARAR!': ['TOCA LA PANTALLA SENSE PARAR!', 'TAP THE SCREEN NONSTOP!'],
+  '¡GANAS EL CHOQUE!': ['GUANYES EL XOC!', 'YOU WIN THE CLASH!'],
+  '¡PIERDES EL CHOQUE!': ['PERDS EL XOC!', 'YOU LOSE THE CLASH!'],
+  'Pulsa más rápido la próxima vez': ['Prem més ràpid la propera vegada', 'Press faster next time'],
   "Saibaman kamikaze": ["Saibaman kamikaze", "Kamikaze Saibaman"],
   "Preso kamikaze": ["Pres kamikaze", "Kamikaze Prisoner"],
   "Francotirador de la Patrulla Roja": ["Franctirador de la Patrulla Vermella", "Red Ribbon Sniper"],
@@ -1470,6 +1476,8 @@ const TR = {
 // Patrones para textos con nombres o datos dentro (se traducen las partes)
 const PAT = (ca, en) => ({ ca, en });
 const I18N_PATTERNS = [
+  [/^¡(.+) SE ENFURECE!$/, PAT(m => `${L(m[1])} S'ENFUREIX!`, m => `${L(m[1])} IS ENRAGED!`)],
+  [/^(.+) queda aturdido$/, PAT(m => `${L(m[1])} queda atordit`, m => `${L(m[1])} is stunned`)],
   [/^TECLA (\d): (.+)$/, PAT(m => `TECLA ${m[1]}: ${L(m[2])}`, m => `KEY ${m[1]}: ${L(m[2])}`)],
   [/^Aparece: (.+)$/, PAT(m => 'Apareix: ' + L(m[1]), m => 'Appears: ' + L(m[1]))],
   [/^Consigue a (.+)\.$/, PAT(m => `Aconsegueix ${L(m[1])}.`, m => `Get ${L(m[1])}.`)],
