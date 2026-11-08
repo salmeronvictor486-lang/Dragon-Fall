@@ -323,41 +323,59 @@ function drawDragonBall(x, cx, cy, r, stars) {
 const AU = { ctx: null, last: {}, master: null };
 function audioInit() {
   if (AU.ctx) { if (AU.ctx.state === 'suspended') AU.ctx.resume(); return; }
-  try { AU.ctx = new (window.AudioContext || window.webkitAudioContext)(); AU.master = AU.ctx.createGain(); AU.master.gain.value = .35; AU.master.connect(AU.ctx.destination); } catch (e) { AU.ctx = null; }
+  try {
+    const a = AU.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // cadena: todo -> master -> compresor -> altavoz, y una copia suave a una reverb corta (da cuerpo y une los sonidos)
+    AU.master = a.createGain(); AU.master.gain.value = .35;
+    const comp = a.createDynamicsCompressor(); comp.threshold.value = -18; comp.knee.value = 12; comp.ratio.value = 4; comp.attack.value = .003; comp.release.value = .2;
+    AU.master.connect(comp); comp.connect(a.destination);
+    try {
+      const len = Math.floor(a.sampleRate * 1.1), ir = a.createBuffer(2, len, a.sampleRate);
+      for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+      const verb = a.createConvolver(), wet = a.createGain(); verb.buffer = ir; wet.gain.value = .16;
+      AU.master.connect(verb); verb.connect(wet); wet.connect(comp);
+    } catch (e) { }
+    // ruido blanco precalculado (antes se creaba uno nuevo en cada sonido)
+    const nl = a.sampleRate * 2; AU.nbuf = a.createBuffer(1, nl, a.sampleRate); const nd = AU.nbuf.getChannelData(0); for (let i = 0; i < nl; i++) nd[i] = Math.random() * 2 - 1;
+  } catch (e) { AU.ctx = null; }
 }
 function tone(f, d, type = 'square', v = .2, slide = 0, delay = 0) {
   const a = AU.ctx; if (!a) return;
   const t = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
   o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + slide), t + d);
-  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .004); g.gain.exponentialRampToValueAtTime(.001, t + d);   // ataque de 4 ms: sin chasquidos
   o.connect(g); g.connect(AU.master); o.start(t); o.stop(t + d + .02);
 }
-function noise(d, v = .2, hp = 400, delay = 0) {
-  const a = AU.ctx; if (!a) return;
-  const t = a.currentTime + delay, len = Math.floor(a.sampleRate * d), b = a.createBuffer(1, len, a.sampleRate), ch = b.getChannelData(0);
-  for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / len);
-  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
-  s.buffer = b; f.type = 'highpass'; f.frequency.value = hp; g.gain.value = v;
-  s.connect(f); f.connect(g); g.connect(AU.master); s.start(t);
+// Ruido filtrado: paso alto (hp) o, con lp, paso bajo que barre de lp a lpTo (explosiones, rayos, golpes)
+function noise(d, v = .2, hp = 400, delay = 0, lp = 0, lpTo = 0) {
+  const a = AU.ctx; if (!a || !AU.nbuf) return;
+  const t = a.currentTime + delay, s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  s.buffer = AU.nbuf;
+  if (lp) { f.type = 'lowpass'; f.frequency.setValueAtTime(lp, t); if (lpTo) f.frequency.exponentialRampToValueAtTime(lpTo, t + d); f.Q.value = 1.2; }
+  else { f.type = 'highpass'; f.frequency.value = hp; }
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+  s.connect(f); f.connect(g); g.connect(AU.master); s.start(t, Math.random() * 1.5); s.stop(t + d + .02);
 }
+// Golpe grave: seno que cae de tono (el «pum» de las explosiones y los impactos fuertes)
+function thump(f, d, v, delay = 0) { tone(f, d, 'sine', v, -(f * .6), delay); }
 function sfx(n) {
   if (!AU.ctx || !save.opts.sfx) return;
   const now = performance.now(), gap = { hit: 45, shot: 60, gem: 35, kill: 40 }[n] || 0;
   if (gap && now - (AU.last[n] || 0) < gap) return; AU.last[n] = now;
   switch (n) {
-    case 'shot': tone(880, .06, 'square', .05, -400); break;
-    case 'beam': tone(220, .4, 'sawtooth', .07, 400); noise(.35, .05, 1200); break;
-    case 'hit': tone(200, .05, 'square', .04, -80); break;
-    case 'kill': noise(.08, .06, 1500); break;
+    case 'shot': tone(880, .06, 'square', .04, -400); noise(.04, .03, 3000); break;
+    case 'beam': tone(220, .45, 'sawtooth', .06, 400); tone(224, .45, 'sawtooth', .05, 410); noise(.5, .09, 0, 0, 600, 4000); thump(110, .25, .14); break;
+    case 'hit': tone(200, .05, 'square', .035, -80); noise(.04, .05, 0, 0, 3500, 800); break;
+    case 'kill': noise(.1, .07, 0, 0, 5000, 600); tone(420, .07, 'triangle', .04, -260); break;
     case 'gem': { AU.gc = now - (AU.gl || 0) < 500 ? Math.min((AU.gc || 0) + 1, 16) : 0; AU.gl = now; tone(880 * Math.pow(1.045, AU.gc), .06, 'triangle', .06, 250); break; } // seguidas suben de tono
     case 'lvl': [523, 659, 784, 1046].forEach((f, i) => tone(f, .12, 'square', .08, 0, i * .07)); break;
-    case 'hurt': tone(160, .18, 'sawtooth', .12, -90); break;
-    case 'boom': noise(.45, .18, 120); tone(90, .4, 'sine', .25, -50); break;
-    case 'boss': [196, 185, 175, 165].forEach((f, i) => tone(f, .28, 'sawtooth', .1, 0, i * .22)); break;
-    case 'trans': noise(1.1, .1, 300); [262, 330, 392, 523, 659, 784].forEach((f, i) => tone(f, .25, 'square', .07, 0, i * .09)); break;
+    case 'hurt': tone(160, .18, 'sawtooth', .1, -90); thump(90, .2, .2); noise(.12, .08, 0, 0, 2000, 300); break;
+    case 'boom': noise(.7, .22, 0, 0, 2400, 90); thump(95, .5, .32); thump(55, .7, .2, .03); break;
+    case 'boss': [196, 185, 175, 165].forEach((f, i) => { tone(f, .3, 'sawtooth', .09, 0, i * .22); tone(f / 2, .3, 'square', .05, 0, i * .22); }); thump(70, .9, .3); noise(1, .08, 0, 0, 900, 120); break;
+    case 'trans': noise(1.2, .14, 0, 0, 300, 6000); thump(80, .8, .3); [262, 330, 392, 523, 659, 784].forEach((f, i) => { tone(f, .3, 'square', .06, 0, i * .09); tone(f * 1.005, .3, 'sawtooth', .03, 0, i * .09); }); break;
     case 'charge': noise(1, .06, 500); [110, 147, 196, 262, 330, 440].forEach((f, i) => tone(f, .2, 'sawtooth', .05, 60, i * .16)); setTimeout(() => sfx('trans'), 1000); break;
     case 'fuse': [880, 990, 1100, 1240].forEach((f, i) => tone(f, .07, 'square', .05, 0, i * .17)); break;
-    case 'dash': noise(.12, .07, 2600); tone(520, .1, 'triangle', .05, 500); break;
+    case 'dash': noise(.18, .1, 0, 0, 1200, 7000); tone(520, .1, 'triangle', .04, 500); break;
     case 'ready': tone(1320, .05, 'triangle', .04, 0); tone(1760, .07, 'triangle', .04, 0, .05); break;
     case 'pick': tone(660, .08, 'square', .08, 0); tone(990, .1, 'square', .08, 0, .07); break;
     case 'ball': [784, 988, 1175, 1568].forEach((f, i) => tone(f, .16, 'triangle', .1, 0, i * .08)); break;
