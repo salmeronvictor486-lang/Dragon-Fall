@@ -434,7 +434,7 @@ function drawHotbar(small) {
   }
   if (!G.casted && P.weapons[1] && !(G.intro && G.intro.t > 0)) {
     ctx.globalAlpha = .6 + .4 * pulse;
-    txt(FINE_PTR ? 'PULSA 1 PARA LANZAR TU TÉCNICA' : 'TOCA LA CASILLA PARA LANZAR TU TÉCNICA', SWd / 2, y - 14, small ? 7 : 8, '#ffd23f', 'center');
+    txt(FINE_PTR ? 'PULSA 1 PARA LANZAR TU TÉCNICA' : '¡TOCA LA CASILLA 1!', x0 + tw / 2, y - 14, small ? 7 : 8, '#ffd23f', 'center');
     ctx.globalAlpha = 1;
   }
 }
@@ -899,14 +899,15 @@ function stagePreview(cv2, st) {
   const h = getSprite(selChar, 0, false); x.drawImage(h, 22, 30, h.width, h.height);
 }
 function renderStages() {
-  const mode = save.mode === 'inf' && endlessUnlocked() ? 'inf' : 'saga';
+  const mode = save.mode === 'inf' && endlessUnlocked() ? 'inf' : save.mode === 'day' ? 'day' : 'saga';
   const mt = $('#modeTabs'); mt.innerHTML = '';
-  [['saga', 'SAGAS'], ['inf', '∞ SUPERVIVENCIA']].forEach(([k, n]) => {
+  [['saga', 'SAGAS'], ['inf', '∞ SUPERVIVENCIA'], ['day', '⚡ RETO DIARIO']].forEach(([k, n]) => {
     const b = document.createElement('button'); b.className = 'btn small' + (mode === k ? ' on' : ''); b.textContent = n;
     if (k === 'inf' && !endlessUnlocked()) { b.disabled = true; b.textContent += ' 🔒'; b.title = 'Completa la Saga Saiyan para desbloquearlo'; }
     b.onclick = () => { save.mode = k; persist(); sfx('click'); renderStages(); }; mt.appendChild(b);
   });
   $('#diffBar').hidden = true;
+  if (mode === 'day') { renderDaily(); return; }
   $('#modeInfo').innerHTML = mode === 'inf'
     ? `Aguanta todo lo que puedas: los enemigos no paran de hacerse más fuertes y los jefes vuelven una y otra vez. Tu récord: <b class="gold">${fmtNum(save.stats.bestInf)}</b> puntos. Elige el escenario.`
     : DIFFS[0].desc;
@@ -927,6 +928,22 @@ function renderStages() {
   });
 }
 
+/* Reto diario: misma saga, mismo guerrero y una regla especial para todos; ranking propio */
+function renderDaily() {
+  const D = dailyChallenge(), st = STAGES[D.si], c = CHAR[D.cid], done = dailyDone();
+  $('#modeInfo').innerHTML = `Cada día, un reto igual para todo el mundo: la misma saga, el mismo guerrero (prestado, aunque no lo tengas) y una regla especial. Cambia en <b class="cd gold">${untilMidnight()}</b>.`;
+  const g = $('#stageGrid'); g.innerHTML = '';
+  const card = document.createElement('div'); card.className = 'panel daily';
+  card.innerHTML = `<div class="dl-top"><canvas width="240" height="66"></canvas></div>
+    <div class="dl-row"><span class="dl-pc"></span><div><div class="t">${c.name}</div><div class="s">${st.name} · ${st.place}</div></div></div>
+    <div class="dl-mod"><b class="px gold">${D.mod.name.toUpperCase()}</b><span>${D.mod.desc}</span></div>
+    <p class="muted" style="margin:0">${done ? `Tu mejor puntuación hoy: <b class="gold">${fmtNum(done.best)}</b>. Puedes repetirlo para mejorarla.` : 'La primera partida del día te da una <b class="gold">Cápsula Normal</b>. La puntuación va al ranking del reto.'}</p>
+    <button class="btn primary" style="width:100%">JUGAR EL RETO ▶</button>`;
+  stagePreview(card.querySelector('canvas'), st);
+  card.querySelector('.dl-pc').appendChild(portraitCanvas(c.id));
+  card.querySelector('button').onclick = () => startRun(D.cid, D.si, { daily: true });
+  g.appendChild(card);
+}
 /* ---------- partida ---------- */
 let lastOpt = {};
 function startRun(cid, si, opt = {}) {
@@ -1091,14 +1108,20 @@ function endRun(win, quit) {
   const nextStage = win ? lockedBefore.find(s => stageUnlocked(STAGES.indexOf(s))) || null : null;
   const res = recordRun(win, earned);
   persist();
-  const rkA = G.endless ? rankSubmit('inf', runScore(), G.t, G.cid) : Promise.resolve('same'), rkB = rankSubmit('kill', G.kills, G.t, G.cid);
+  if (G.daily && G.daily.day === dayKey()) {
+    const sc = runScore(), d = dailyDone();
+    if (!d) { save.tickets.n++; tk.push('Cápsula Normal (reto diario)'); }
+    save.dailyCh = { day: G.daily.day, best: Math.max(sc, d ? d.best : 0), n: (d ? d.n : 0) + 1 }; persist();
+  }
+  const rkA = G.endless ? rankSubmit('inf', runScore(), G.t, G.cid) : G.daily && G.daily.day === dayKey() ? rankSubmit('day', runScore(), G.t, G.cid) : Promise.resolve('same'), rkB = rankSubmit('kill', G.kills, G.t, G.cid);
   Promise.all([rkA, rkB]).then(r => { const el = $('#overRank'); if (!el) return; el.innerHTML = r.includes('ok') ? '📊 Ranking semanal: <b>¡marca enviada!</b> Mírala en RANKING.' : r.includes('err') ? '📊 Ranking semanal: no se ha podido enviar ahora.' : r.includes('guest') ? '📊 Ranking semanal: inicia sesión con tu correo para aparecer.' : '📊 Ranking semanal: no has superado tu mejor marca de esta semana.'; });
   state = 'over'; showScreen('over'); musicSet(false);
   sfx(win ? 'win' : 'lose');
   const tot = P.weapons.reduce((a, w) => a + w.dealt, 0) || 1;
   $('#overPanel').innerHTML = `<h2 class="px" style="font-size:22px;color:${win ? 'var(--gold)' : 'var(--red)'}">${G.endless ? 'FIN DE LA SUPERVIVENCIA' : win ? '¡VICTORIA!' : quit ? 'RETIRADA' : 'HAS CAÍDO'}</h2>
    <canvas id="overPed" class="pedestal" width="72" height="84" style="align-self:center;width:108px;height:126px"></canvas>
-   <p style="text-align:center" class="muted">${P.name} · ${G.endless ? '∞ Supervivencia · ' + st.place : st.name}</p>
+   <p style="text-align:center" class="muted">${P.name} · ${G.daily ? '⚡ Reto diario · ' : ''}${G.endless ? '∞ Supervivencia · ' + st.place : st.name}</p>
+   ${!win && !quit && P.lastHit ? `<p style="text-align:center;margin:0">Te derrotó <b class="gold">${P.lastHit}</b> en el minuto ${fmtTime(G.t)}</p>` : ''}
    <div class="stats">${G.endless ? `<span>Puntuación</span><b class="gold">${fmtNum(runScore())}</b>` : ''}<span>Tiempo</span><b>${fmtTime(G.t)}</b><span>Nivel</span><b>${G.lvl}</b><span>Bajas</span><b>${fmtNum(G.kills)}</b><span>Jefes derrotados</span><b>${G.killedBosses.length}</b><span>Zenis</span><b class="gold">+${fmtNum(earned)}${bonus ? ` (bonus ${fmtNum(bonus)})` : ''}</b></div>
    <table class="dmgtable">${P.weapons.slice().sort((a, b) => b.dealt - a.dealt).map(w => `<tr><td>${wname(w)} ${w.evo ? '★' : 'Nv ' + w.lvl} <span class="muted">${Math.round(w.dealt / tot * 100)}%</span></td><td>${fmtNum(w.dealt)}</td></tr>`).join('')}</table>
    ${newly.map(c => `<div class="unlock">🔓 ¡Nuevo guerrero desbloqueado: <b class="gold">${c.name}</b>!</div>`).join('')}
@@ -1195,6 +1218,7 @@ $('#bResetSave').onclick = async () => { if (await ask('¿Seguro? Se borrarán z
 let banTimer = null;
 function banner(a, b) {
   const el = $('#banner'); $('#banA').textContent = a; $('#banB').textContent = b || '';
+  el.classList.toggle('low', !!(state === 'play' && G && G.boss));   // con jefe, el rótulo baja para no tapar su barra
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
   clearTimeout(banTimer); banTimer = setTimeout(() => el.classList.remove('on'), 2700);
 }

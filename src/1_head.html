@@ -29,6 +29,8 @@ html,body{height:100%;background:var(--bg);color:var(--ink);overflow:hidden;font
 canvas#game{position:fixed;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated}
 .screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;padding:16px;z-index:10;overflow:auto}
 .screen.on{display:flex;animation:scrIn .16s ease-out}
+.daily{width:min(560px,96vw);display:flex;flex-direction:column;gap:10px;margin:0 auto}.daily canvas{width:100%;image-rendering:pixelated}.dl-row{display:flex;gap:12px;align-items:center}.dl-row .t{font-family:'Press Start 2P';font-size:12px;color:var(--gold);line-height:1.5}.dl-row .s{color:#cfd6f5}.dl-mod{display:flex;flex-direction:column;gap:4px;background:#2a1030;padding:10px;box-shadow:0 0 0 2px #b06bff}.dl-pc canvas{width:54px;height:57px}
+.hist{display:flex;flex-direction:column;gap:6px}.hrow{display:flex;gap:10px;align-items:center;background:#0f1430;padding:6px 8px;box-shadow:0 0 0 2px var(--line)}.hrow.win{box-shadow:0 0 0 2px var(--gold)}.hrow .pc canvas{width:36px;height:38px;image-rendering:pixelated}.hrow .hm,.hrow .hr{display:flex;flex-direction:column;min-width:0}.hrow .hm{flex:1}.hrow .hr{text-align:right}.hrow small{color:#8a90b8;font-size:16px}
 .screen.on>.panel{animation:panIn .24s cubic-bezier(.2,.9,.3,1.15)}
 @keyframes scrIn{from{opacity:0}}
 @keyframes panIn{from{transform:translateY(14px) scale(.97);opacity:0}}
@@ -134,6 +136,7 @@ h2.px{font-size:18px;color:var(--gold);text-shadow:3px 3px 0 var(--line);text-al
 .choice .key{margin-left:auto;font-family:'Press Start 2P';font-size:9px;color:#6b75a8}
 #banner{position:fixed;left:0;right:0;top:22%;text-align:center;pointer-events:none;z-index:8;display:none}
 #banner.on{display:block;animation:ban 2.6s ease forwards}
+#banner.low{top:36%}
 #banner .a{font-family:'Press Start 2P';font-size:clamp(14px,3vw,26px);color:var(--gold);text-shadow:3px 3px 0 var(--line),0 0 18px rgba(255,200,40,.6);padding:0 16px;line-height:1.5}
 #banner .b{font-size:clamp(20px,3vw,28px);color:#fff;text-shadow:2px 2px 0 var(--line);margin-top:6px}
 @keyframes ban{0%{opacity:0;transform:scale(1.6)}10%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0}}

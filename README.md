@@ -161,9 +161,11 @@ Cada guerrero y cada transformación que consigues tiene su carta: **154 en tota
 ## 🏆 Siempre hay algo que hacer
 
 - 📋 **3 misiones diarias**, distintas para cada jugador.
-- 🎖️ **31 logros** con premios y **títulos** para presumir.
+- 🎖️ **29 logros** con premios y **títulos** para presumir.
 - ⭐ **Nivel de cuenta** con recompensas y un **perfil** con tus estadísticas y tus **horas jugadas**.
+- ⚡ **Reto diario**: cada día la misma saga, el mismo guerrero (prestado) y una regla especial (Horda, Cañón de cristal, A toda prisa, Sin curación o Élites) para todo el mundo, con su **propio ranking**. La primera partida del día da una Cápsula Normal.
 - 🥇 **Ranking semanal** de Supervivencia y de bajas. Se reinicia cada lunes.
+- 📜 **Historial** de tus últimas 20 partidas: dónde caes, en qué minuto y **quién te derrota más**.
 - 🏛️ **Templo de Kami**: mejoras permanentes para tu guerrero.
 - 📖 **Dragonpedia** con todos los guerreros, enemigos y jefes, y cómo conseguir los que te faltan.
 

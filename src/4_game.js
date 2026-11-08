@@ -13,7 +13,7 @@ function newRun(cid, si, opt = {}) {
     enemies: [], projs: [], eprojs: [], gems: [], picks: [], fx: [], nums: [],
     bossIdx: 0, boss: null, balls: [], spawnT: .5, eliteT: 55, waveT: 95, pendingLv: 0,
     rerolls: save.shop.reroll || 0, intro: null,
-    diff: DIFFS[0], endless: !!opt.endless, bossCycle: 0, nextBossT: 0, hs: 0,
+    diff: DIFFS[0], endless: !!opt.endless, daily: opt.daily ? dailyChallenge() : null, bossCycle: 0, nextBossT: 0, hs: 0,
     ev: null, evT: 95, moonDone: 0, fuse: 0, fuseNeed: 150, fusionPair: null, buddy: null,
     stat: { specials: 0, events: 0, fusions: 0, evos: 0, trans: 0, shenron: 0, buddySp: 0, crates: 0, chests: 0, shrines: 0, healed: 0 },
     objs: [], objT: 0, curse: 0,
@@ -54,6 +54,7 @@ function recalc(init) {
   if (P.fused) add({ might: .6, spd: .15, cd: .15, armor: 2, maxHp: 40 });
   if (P.moon) add({ might: .4 });
   if (P.rage) add({ might: P.rage.might || 0, spd: P.rage.spd || 0, cd: P.rage.cd || 0, crit: P.rage.crit || 0 });
+  const dm = G.daily && G.daily.mod; if (dm) { add({ might: dm.might || 0, spd: dm.spd || 0 }); if (dm.hp) s.maxHp *= dm.hp; if (dm.noheal) s.regen = 0; }
   const oldMax = P.maxHp;
   P.maxHp = Math.round(s.maxHp); P.spd = BASE_SPD * s.spd; P.might = s.might; P.area = s.area; P.cdm = Math.max(.35, 1 - s.cd);
   P.amount = s.amount; P.magnet = 40 * s.magnet; P.armor = s.armor; P.regen = s.regen; P.crit = s.crit; P.luck = s.luck; P.growth = s.growth; P.dur = s.dur; P.greed = s.greed;
@@ -128,13 +129,13 @@ function spawnEnemy(id, x, y, isElite) {
   const d = ENEMIES[id], sc = (d.sc || sprScale(id)) * (isElite ? 1.25 : 1);
   const hm = enemyHpMul();
   const e = {
-    id, spr: d.vars ? pick(d.vars) : id, name: d.name, x, y, hp: d.hp * hm, maxHp: d.hp * hm, spd: d.spd * rand(.9, 1.1), dmg: d.dmg * enemyDmgMul(), xp: d.xp,
+    id, spr: d.vars ? pick(d.vars) : id, name: d.name, x, y, hp: d.hp * hm, maxHp: d.hp * hm, spd: d.spd * rand(.9, 1.1) * (G.daily && G.daily.mod.espd || 1), dmg: d.dmg * enemyDmgMul(), xp: d.xp,
     r: 5 * sc, scale: sc, h: 28 * sc, ai: d.ai || 'chase', elite: !!(d.elite || isElite), boss: false,
     flash: 0, stun: 0, kx: 0, ky: 0, ft: Math.random(), frame: 0, face: -1, hitT: {}, shootT: rand(2, 5), dead: false,
   };
   if (e.ai === 'shield') { e.shield = e.shieldMax = e.maxHp * .9; e.shieldT = 0; }
   G.enemies.push(e);
-  if (!G.seen[id]) { G.seen[id] = 1; markSeen(id); if (G.t > 1) G.fx.push({ k: 'text', t: `Aparece: ${d.name}`, col: e.elite ? '#ffb070' : '#e6e9ff', x: P.x, y: P.y - 48, life: 1.8, max: 1.8 }); }
+  if (!G.seen[id]) { G.seen[id] = 1; markSeen(id); if (G.t > 1) { const n = G.fx.filter(f => f.k === 'text' && f.spawnTxt).length; G.fx.push({ k: 'text', t: `Aparece: ${d.name}`, col: e.elite ? '#ffb070' : '#e6e9ff', x: P.x, y: P.y - 48 - n * 11, life: 1.8, max: 1.8, spawnTxt: 1 }); } }
   return e;
 }
 function spawnBoss(id) {
@@ -159,14 +160,14 @@ function poolPick() {
 }
 function director(dt) {
   const t = G.t;
-  const target = Math.min(330, (16 + t * .4 + G.si * 10) * G.diff.spawn) * (G.boss ? .6 : 1) * (G.ev && G.ev.k === 'tourney' ? .35 : 1) * (1 + .25 * G.curse);
+  const target = Math.min(360, (16 + t * .4 + G.si * 10) * G.diff.spawn * (G.daily && G.daily.mod.spawn || 1)) * (G.boss ? .6 : 1) * (G.ev && G.ev.k === 'tourney' ? .35 : 1) * (1 + .25 * G.curse);
   G.spawnT -= dt;
   if (G.spawnT <= 0) {
     G.spawnT = .45;
     const n = Math.min(14, Math.ceil((target - G.enemies.length) / 3));
     for (let i = 0; i < n; i++) { const [x, y] = spawnPos(); spawnEnemy(poolPick(), x, y); }
   }
-  if (t >= G.eliteT) { G.eliteT += Math.max(28, 50 - G.si * 4); const [x, y] = spawnPos(); const e = spawnEnemy(pick(G.stage.elites), x, y, false); e.elite = true; }
+  if (t >= G.eliteT) { G.eliteT += Math.max(28, 50 - G.si * 4) / (G.daily && G.daily.mod.elite || 1); const [x, y] = spawnPos(); const e = spawnEnemy(pick(G.stage.elites), x, y, false); e.elite = true; }
   if (t >= G.waveT) {
     G.waveT += 80; const n = 22 + G.si * 4, id = poolPick(), R = Math.max(VW, VH) * .6;
     for (let i = 0; i < n; i++) { const a = i / n * TAU; spawnEnemy(id, P.x + Math.cos(a) * R, P.y + Math.sin(a) * R); }
@@ -183,7 +184,7 @@ function director(dt) {
 
 function enemyShoot(e, ang, spd = 90, dmg = e.dmg * .8, r = 4, col = '#ff5a3a') {
   e.poseT = .3;
-  G.eprojs.push({ x: e.x, y: e.y - e.h * .5, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, r, dmg, life: 4, col });
+  G.eprojs.push({ x: e.x, y: e.y - e.h * .5, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, r, dmg, life: 4, col, src: e.name });
 }
 function bossAttack(e) {
   const d = BOSSES[e.id], a = pick(e.atk || d.atk), ang = Math.atan2(P.y - 8 - (e.y - e.h * .5), P.x - e.x);
@@ -274,7 +275,7 @@ function updateEnemies(dt) {
     }
     // contacto
     const cr = e.r + P.r;
-    if ((e.x - P.x) ** 2 + (e.y - P.y) ** 2 < cr * cr) hurtPlayer(e.dmg);
+    if ((e.x - P.x) ** 2 + (e.y - P.y) ** 2 < cr * cr) hurtPlayer(e.dmg, e.name);
     // reposicionar enemigos lejanos
     if (!e.boss && (e.x - P.x) ** 2 + (e.y - P.y) ** 2 > far2) {
       const a = Math.atan2(P.diry, P.dirx) + rand(-1, 1), R = Math.hypot(VW, VH) / 2 + 15;
@@ -288,11 +289,11 @@ function updateEProjs(dt) {
       if (b.owner && !b.owner.dead && b.warn > 0) { b.x = b.owner.x; b.y = b.owner.y - b.owner.h * .5; }
       if (b.warn > 0) { b.warn -= dt; if (b.owner && !b.owner.dead) { b.x = b.owner.x; b.y = b.owner.y - b.owner.h * .5; if (b.clash) b.ang = Math.atan2(P.y - 8 - b.y, P.x - b.x); } if (b.warn <= 0) { sfx('beam'); G.shake = Math.max(G.shake, .25); if (b.clash && b.owner && !b.owner.dead && P.hp > 0) { startClash(b); b.life = 0; } } continue; }
       b.life -= dt;
-      if (!b.hit && segDist2(P.x, P.y - 8, b.x, b.y, b.x + Math.cos(b.ang) * b.len, b.y + Math.sin(b.ang) * b.len) < (b.w / 2 + P.r) ** 2) { b.hit = true; hurtPlayer(b.dmg); }
+      if (!b.hit && segDist2(P.x, P.y - 8, b.x, b.y, b.x + Math.cos(b.ang) * b.len, b.y + Math.sin(b.ang) * b.len) < (b.w / 2 + P.r) ** 2) { b.hit = true; hurtPlayer(b.dmg, b.owner && b.owner.name); }
       continue;
     }
     b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
-    if ((b.x - P.x) ** 2 + (b.y - (P.y - 8)) ** 2 < (b.r + P.r) ** 2) { hurtPlayer(b.dmg); b.life = 0; }
+    if ((b.x - P.x) ** 2 + (b.y - (P.y - 8)) ** 2 < (b.r + P.r) ** 2) { hurtPlayer(b.dmg, b.src); b.life = 0; }
   }
   G.eprojs = G.eprojs.filter(b => b.life > 0);
 }
@@ -372,7 +373,7 @@ function updateClash(dt) {
       banner('¡GANAS EL CHOQUE!', `${e.name} queda aturdido`); G.stat.clash = (G.stat.clash || 0) + 1;
     } else {
       G.fx.push({ k: 'boom', x: P.x, y: P.y - 10, r: 60, life: .6, max: .6, col: c.col });
-      P.inv = 0; P.dashT = 0; hurtPlayer(e.dmg * 2); banner('¡PIERDES EL CHOQUE!', 'Pulsa más rápido la próxima vez');
+      P.inv = 0; P.dashT = 0; hurtPlayer(e.dmg * 2, e.name); banner('¡PIERDES EL CHOQUE!', 'Pulsa más rápido la próxima vez');
     }
     sfx('boom'); G.shake = 1; G.flash = .5; hitstop(.15);
   }
@@ -384,7 +385,7 @@ function bombBlast(e, live) {
   const R = 46, x = e.x, y = e.y - e.h * .4;
   G.fx.push({ k: 'boom', x, y, r: R, life: .4, max: .4, col: '#ff8a1c' }, { k: 'ring', x, y, r0: 6, r1: R, life: .35, max: .35, col: '#ffd23f' });
   burst(x, y, 14, '#ff8a1c', 1.8); sfx('boom'); G.shake = Math.max(G.shake, .25);
-  if (live && (P.x - e.x) ** 2 + (P.y - e.y) ** 2 < (R + P.r) ** 2) hurtPlayer(e.dmg * 2.2);
+  if (live && (P.x - e.x) ** 2 + (P.y - e.y) ** 2 < (R + P.r) ** 2) hurtPlayer(e.dmg * 2.2, e.name);
   query(e.x, e.y, R + 10, o => { if (o !== e && !o.dead && !o.boss && (o.x - e.x) ** 2 + (o.y - e.y) ** 2 < R * R) hurtEnemy(o, 30 * (1 + G.si * .6), null); });
   if (live) killEnemy(e, null);
 }
@@ -400,9 +401,9 @@ function dropBall(x, y) {
 }
 
 /* =================== JUGADOR =================== */
-function hurtPlayer(d) {
+function hurtPlayer(d, src) {
   if (P.inv > 0 || P.immortal > 0 || P.shieldT > 0 || P.dashT > 0 || G.endT >= 0) return;
-  d = Math.max(1, d - P.armor);
+  d = Math.max(1, d - P.armor); if (src) P.lastHit = src;   // para el historial: quién te derrotó
   P.hp -= d; P.inv = .5; G.shake = Math.max(G.shake, .18); G.hurtT = .25; sfx('hurt'); vibrate(25);
   if (P.hp <= 0) {
     if (P.revive > 0) {
@@ -707,6 +708,7 @@ function updatePickups(dt) {
 }
 function collect(p) {
   if (p.k === 'zeni') { G.zeni += p.v * P.greed * (1 + .25 * G.curse); sfx('pick'); }
+  else if ((p.k === 'food' || p.k === 'senzu') && G.daily && G.daily.mod.noheal) { floatText('SIN CURACIÓN', '#8a90b8'); }
   else if (p.k === 'food') { const h = Math.min(P.maxHp * .15, P.maxHp - P.hp); P.hp += h; G.stat.healed += h; sfx('heal'); floatText('+' + Math.round(h) + ' VIDA', '#59d66b'); }
   else if (p.k === 'senzu') { P.hp = Math.min(P.maxHp, P.hp + P.maxHp * .35); sfx('heal'); floatText('+VIDA', '#59d66b'); }
   else if (p.k === 'radar') { G.gems.forEach(g => g.mag = true); sfx('pick'); floatText('¡RADAR!', '#59d66b'); }
